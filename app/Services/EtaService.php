@@ -79,3 +79,4 @@ class EtaService
         return Shipment::SEVERITY_HIGH;
     }
 }
+

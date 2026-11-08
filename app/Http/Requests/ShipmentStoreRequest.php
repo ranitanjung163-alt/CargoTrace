@@ -43,3 +43,4 @@ class ShipmentStoreRequest extends FormRequest
         ];
     }
 }
+

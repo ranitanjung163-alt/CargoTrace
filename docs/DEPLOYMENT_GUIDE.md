@@ -136,3 +136,4 @@ server {
 - [x] CSRF protection enabled on all web forms.
 - [x] Server-side authorization active across all controllers and API routes.
 - [x] Rate limiting active on authentication and API endpoints.
+

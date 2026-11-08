@@ -62,3 +62,4 @@ class LocationApiController extends Controller
         ], 201);
     }
 }
+

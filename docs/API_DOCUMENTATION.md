@@ -251,3 +251,4 @@ All requests and responses use standard JSON formatting:
 ### 5.2 Create Carrier: `POST /api/carriers` (Admin only)
 ### 5.3 List Locations: `GET /api/locations`
 ### 5.4 Register Location: `POST /api/locations` (Admin only)
+

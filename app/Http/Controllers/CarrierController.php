@@ -76,3 +76,4 @@ class CarrierController extends Controller
         return back()->with('success', "Carrier '{$carrier->name}' updated successfully.");
     }
 }
+

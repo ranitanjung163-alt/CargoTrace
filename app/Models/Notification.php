@@ -46,3 +46,4 @@ class Notification extends Model
         ]);
     }
 }
+

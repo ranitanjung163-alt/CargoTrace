@@ -96,3 +96,4 @@ class TrackingController extends Controller
         }
     }
 }
+

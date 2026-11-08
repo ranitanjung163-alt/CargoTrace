@@ -32,3 +32,4 @@ class Carrier extends Model
         return $this->hasMany(Shipment::class);
     }
 }
+

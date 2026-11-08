@@ -8,3 +8,4 @@ return [
     'weather_api_url' => env('WEATHER_API_URL', 'https://api.open-meteo.com/v1/forecast'),
     'weather_api_key' => env('WEATHER_API_KEY', null),
 ];
+

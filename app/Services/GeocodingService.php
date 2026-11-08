@@ -110,3 +110,4 @@ class GeocodingService
         return ($lat >= -90.0 && $lat <= 90.0) && ($lon >= -180.0 && $lon <= 180.0);
     }
 }
+

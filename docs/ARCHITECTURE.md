@@ -92,3 +92,4 @@ flowchart TD
 - Connects to Open-Meteo live API for worldwide weather observations (temperature, wind, precipitation, condition).
 - Implements 1-hour caching.
 - Handles timeouts and failures without interrupting application flow.
+

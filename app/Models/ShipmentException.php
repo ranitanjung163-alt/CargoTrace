@@ -87,3 +87,4 @@ class ShipmentException extends Model
         return $this->status === self::STATUS_RESOLVED;
     }
 }
+

@@ -34,3 +34,4 @@ class TrackingEventStoreRequest extends FormRequest
         ];
     }
 }
+

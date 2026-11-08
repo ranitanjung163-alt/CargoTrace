@@ -285,3 +285,4 @@ erDiagram
 - `ip_address`: VARCHAR(45) NULL. Client IP address.
 - `user_agent`: TEXT NULL. Client browser / device string.
 - `created_at`: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP.
+

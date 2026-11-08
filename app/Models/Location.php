@@ -60,3 +60,4 @@ class Location extends Model
         return implode(', ', $parts);
     }
 }
+
