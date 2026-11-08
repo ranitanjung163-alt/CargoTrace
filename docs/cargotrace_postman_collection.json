@@ -1,0 +1,326 @@
+{
+  "info": {
+    "_postman_id": "cargotrace-uas-collection-2026",
+    "name": "CargoTrace REST API - Complete UAS Collection",
+    "description": "Comprehensive Postman Collection for CargoTrace Global Shipment Visibility & Tracking Platform (Laravel 12+ Sanctum API).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "1. Login (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@cargotrace.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] }
+          }
+        },
+        {
+          "name": "2. Login (Operator)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"operator@cargotrace.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] }
+          }
+        },
+        {
+          "name": "3. Login (Customer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@cargotrace.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] }
+          }
+        },
+        {
+          "name": "4. Register (Customer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pacific Freight Corp\",\n  \"email\": \"pacific@cargotrace.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"company_name\": \"Pacific Freight Corp\",\n  \"phone\": \"+1-800-555-0199\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/register", "host": ["{{base_url}}"], "path": ["register"] }
+          }
+        },
+        {
+          "name": "5. Get Authenticated User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/user", "host": ["{{base_url}}"], "path": ["user"] }
+          }
+        },
+        {
+          "name": "6. Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/logout", "host": ["{{base_url}}"], "path": ["logout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shipments",
+      "item": [
+        {
+          "name": "1. List Shipments (Paginated, Filtered)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/shipments?page=1&per_page=10",
+              "host": ["{{base_url}}"],
+              "path": ["shipments"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Create Shipment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": 3,\n  \"carrier_id\": 1,\n  \"origin_location_id\": 1,\n  \"destination_location_id\": 2,\n  \"cargo_type\": \"Precision Machinery\",\n  \"weight\": 4200.5,\n  \"volume\": 18.2,\n  \"expected_departure\": \"2026-11-10 08:00:00\",\n  \"expected_arrival\": \"2026-11-14 18:00:00\",\n  \"estimated_arrival\": \"2026-11-14 18:00:00\",\n  \"description\": \"Heavy machinery parts sealed.\",\n  \"items\": [\n    {\n      \"item_name\": \"Hydraulic Rotor\",\n      \"quantity\": 4,\n      \"unit\": \"crates\",\n      \"weight\": 4200.5\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{base_url}}/shipments", "host": ["{{base_url}}"], "path": ["shipments"] }
+          }
+        },
+        {
+          "name": "3. Get Shipment By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/shipments/1", "host": ["{{base_url}}"], "path": ["shipments", "1"] }
+          }
+        },
+        {
+          "name": "4. Update Shipment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cargo_type\": \"Upgraded Electronics Components\",\n  \"weight\": 4800.0,\n  \"estimated_arrival\": \"2026-11-15 10:00:00\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/shipments/1", "host": ["{{base_url}}"], "path": ["shipments", "1"] }
+          }
+        },
+        {
+          "name": "5. Delete Shipment (Admin Only)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/shipments/1", "host": ["{{base_url}}"], "path": ["shipments", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tracking & Events",
+      "item": [
+        {
+          "name": "1. Get Shipment Tracking History",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/shipments/1/tracking", "host": ["{{base_url}}"], "path": ["shipments", "1", "tracking"] }
+          }
+        },
+        {
+          "name": "2. Add Tracking Waypoint Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"TRANSIT_HUB_SCAN\",\n  \"event_time\": \"2026-11-11 14:30:00\",\n  \"location_id\": 2,\n  \"location_name\": \"Chicago Intermodal Hub\",\n  \"latitude\": 41.878113,\n  \"longitude\": -87.629799,\n  \"status_after_event\": \"IN_TRANSIT\",\n  \"description\": \"Container scanned at Midwest intermodal rail yard.\",\n  \"is_exception\": false\n}"
+            },
+            "url": { "raw": "{{base_url}}/shipments/1/tracking", "host": ["{{base_url}}"], "path": ["shipments", "1", "tracking"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Exceptions",
+      "item": [
+        {
+          "name": "1. Get Shipment Exceptions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/shipments/1/exceptions", "host": ["{{base_url}}"], "path": ["shipments", "1", "exceptions"] }
+          }
+        },
+        {
+          "name": "2. Report Exception",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"exception_type\": \"WEATHER_DELAY\",\n  \"severity\": \"MEDIUM\",\n  \"description\": \"Blizzard advisory causing temporary highway closure.\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/shipments/1/exceptions", "host": ["{{base_url}}"], "path": ["shipments", "1", "exceptions"] }
+          }
+        },
+        {
+          "name": "3. Resolve Exception",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"RESOLVED\",\n  \"resolution_notes\": \"Highway reopened, vehicle resumed transit route.\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/exceptions/1", "host": ["{{base_url}}"], "path": ["exceptions", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Carriers & Locations",
+      "item": [
+        {
+          "name": "1. List Carriers",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/carriers", "host": ["{{base_url}}"], "path": ["carriers"] }
+          }
+        },
+        {
+          "name": "2. Create Carrier (Admin Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"EMR\",\n  \"name\": \"Emirates SkyCargo\",\n  \"contact_email\": \"skycargo@emirates.com\",\n  \"contact_phone\": \"+971-4-214-4444\",\n  \"service_type\": \"Air Freight\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/carriers", "host": ["{{base_url}}"], "path": ["carriers"] }
+          }
+        },
+        {
+          "name": "3. List Worldwide Locations",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/locations", "host": ["{{base_url}}"], "path": ["locations"] }
+          }
+        },
+        {
+          "name": "4. Register Worldwide Location (Admin Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"DE-HAM\",\n  \"name\": \"Port of Hamburg Container Hub\",\n  \"city\": \"Hamburg\",\n  \"country\": \"Germany\",\n  \"country_code\": \"DE\",\n  \"latitude\": 53.551086,\n  \"longitude\": 9.993682,\n  \"type\": \"PORT\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/locations", "host": ["{{base_url}}"], "path": ["locations"] }
+          }
+        }
+      ]
+    }
+  ]
+}
