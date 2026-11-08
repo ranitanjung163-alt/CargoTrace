@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Dashboard' }} – CargoTrace Global Visibility</title>
 
-    <!-- Tailwind CSS CDN with Custom Light Theme Config -->
+    <!-- Tailwind CSS CDN with Enhanced Light Theme Config -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -18,7 +18,7 @@
                             card: '#FFFFFF',
                             sidebar: '#FFFFFF',
                             primary: '#3182CE',
-                            'primary-hover': '#2B6CB0',
+                            'primary-hover': '#2563EB',
                             navy: '#183653',
                             secondary: '#64748B',
                             border: '#E4EAF2',
@@ -28,17 +28,23 @@
                         }
                     },
                     fontFamily: {
-                        sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft-sm': '0 2px 8px -2px rgba(24, 54, 83, 0.05), 0 1px 4px -1px rgba(24, 54, 83, 0.03)',
+                        'soft-md': '0 8px 24px -4px rgba(24, 54, 83, 0.06), 0 4px 12px -2px rgba(24, 54, 83, 0.03)',
+                        'soft-lg': '0 16px 36px -6px rgba(24, 54, 83, 0.08), 0 6px 16px -3px rgba(24, 54, 83, 0.04)',
+                        'glow-primary': '0 4px 20px -2px rgba(49, 130, 206, 0.35)',
                     }
                 }
             }
         }
     </script>
 
-    <!-- Inter Font -->
+    <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Leaflet.js CSS & JS for Worldwide Interactive Maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -51,40 +57,63 @@
         body {
             background-color: #F5F8FC;
             color: #183653;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            letter-spacing: -0.01em;
         }
         /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: #F1F5F9; }
-        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
         ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
         .leaflet-container { font-family: inherit; }
+        .leaflet-popup-content-wrapper {
+            border-radius: 14px;
+            box-shadow: 0 10px 25px -5px rgba(24, 54, 83, 0.15);
+            padding: 2px;
+            border: 1px solid #E4EAF2;
+        }
+        .leaflet-popup-tip {
+            box-shadow: 0 10px 25px -5px rgba(24, 54, 83, 0.15);
+        }
+        /* Pulse wave animation for active transit pins */
+        @keyframes radar-ping {
+            0% { transform: scale(0.9); opacity: 0.9; }
+            70% { transform: scale(2.2); opacity: 0; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+        .radar-pulse {
+            animation: radar-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
     </style>
 </head>
-<body class="bg-brand-bg min-h-screen flex flex-col antialiased">
+<body class="bg-brand-bg min-h-screen flex flex-col antialiased selection:bg-brand-primary selection:text-white">
 
     <div class="flex h-screen overflow-hidden">
         <!-- ================= SIDEBAR ================= -->
-        <aside id="sidebar" class="w-64 bg-white border-r border-brand-border flex flex-col justify-between transition-all duration-200 z-30 shrink-0">
+        <aside id="sidebar" class="w-64 bg-white border-r border-brand-border flex flex-col justify-between transition-all duration-300 z-30 shrink-0 shadow-soft-sm">
             <div>
-                <!-- Brand Logo (Matching Lecturer Photo) -->
-                <div class="h-20 flex items-center px-6 border-b border-brand-border space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <span class="text-xl font-bold tracking-tight text-brand-navy">CargoTrace</span>
-                        <span class="block text-[10px] uppercase font-semibold tracking-wider text-brand-secondary">Worldwide Logistics</span>
-                    </div>
+                <!-- Brand Logo (Creative High-End Identity) -->
+                <div class="h-20 flex items-center px-6 border-b border-brand-border/80">
+                    <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 group">
+                        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-brand-primary to-sky-400 flex items-center justify-center text-white shadow-glow-primary transform group-hover:scale-105 transition-transform duration-200">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="text-xl font-extrabold tracking-tight text-brand-navy flex items-center">
+                                Cargo<span class="text-brand-primary">Trace</span>
+                            </span>
+                            <span class="block text-[10px] uppercase font-bold tracking-widest text-brand-secondary/80">Global Visibility</span>
+                        </div>
+                    </a>
                 </div>
 
                 <!-- Navigation Links -->
-                <nav class="px-4 py-6 space-y-1.5 overflow-y-auto max-h-[calc(100vh-12rem)]">
+                <nav class="px-3.5 py-6 space-y-1.5 overflow-y-auto max-h-[calc(100vh-14rem)]">
                     <!-- Dashboard -->
                     <a href="{{ route('dashboard') }}"
-                       class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-colors {{ request()->routeIs('dashboard') ? 'bg-brand-primary text-white shadow-sm shadow-brand-primary/30 font-semibold' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary' }}">
+                       class="flex items-center px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 {{ request()->routeIs('dashboard') ? 'bg-gradient-to-r from-blue-600 to-brand-primary text-white shadow-glow-primary' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary hover:translate-x-1' }}">
                         <svg class="w-5 h-5 mr-3 {{ request()->routeIs('dashboard') ? 'text-white' : 'text-brand-secondary' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                         </svg>
@@ -93,7 +122,7 @@
 
                     <!-- Shipments -->
                     <a href="{{ route('shipments.index') }}"
-                       class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-colors {{ request()->routeIs('shipments.*') ? 'bg-brand-primary text-white shadow-sm shadow-brand-primary/30 font-semibold' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary' }}">
+                       class="flex items-center px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 {{ request()->routeIs('shipments.*') ? 'bg-gradient-to-r from-blue-600 to-brand-primary text-white shadow-glow-primary' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary hover:translate-x-1' }}">
                         <svg class="w-5 h-5 mr-3 {{ request()->routeIs('shipments.*') ? 'text-white' : 'text-brand-secondary' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                         </svg>
@@ -102,7 +131,7 @@
 
                     <!-- Tracking -->
                     <a href="{{ route('tracking.index') }}"
-                       class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-colors {{ request()->routeIs('tracking.*') ? 'bg-brand-primary text-white shadow-sm shadow-brand-primary/30 font-semibold' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary' }}">
+                       class="flex items-center px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 {{ request()->routeIs('tracking.*') ? 'bg-gradient-to-r from-blue-600 to-brand-primary text-white shadow-glow-primary' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary hover:translate-x-1' }}">
                         <svg class="w-5 h-5 mr-3 {{ request()->routeIs('tracking.*') ? 'text-white' : 'text-brand-secondary' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -112,7 +141,7 @@
 
                     <!-- Exceptions -->
                     <a href="{{ route('exceptions.index') }}"
-                       class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-colors {{ request()->routeIs('exceptions.*') ? 'bg-brand-primary text-white shadow-sm shadow-brand-primary/30 font-semibold' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary' }}">
+                       class="flex items-center px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 {{ request()->routeIs('exceptions.*') ? 'bg-gradient-to-r from-blue-600 to-brand-primary text-white shadow-glow-primary' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary hover:translate-x-1' }}">
                         <svg class="w-5 h-5 mr-3 {{ request()->routeIs('exceptions.*') ? 'text-white' : 'text-brand-secondary' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                         </svg>
@@ -122,7 +151,7 @@
                     <!-- Carriers (Admin & Operator only) -->
                     @if(auth()->user()->isAdmin() || auth()->user()->isOperator())
                     <a href="{{ route('carriers.index') }}"
-                       class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-colors {{ request()->routeIs('carriers.*') ? 'bg-brand-primary text-white shadow-sm shadow-brand-primary/30 font-semibold' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary' }}">
+                       class="flex items-center px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 {{ request()->routeIs('carriers.*') ? 'bg-gradient-to-r from-blue-600 to-brand-primary text-white shadow-glow-primary' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary hover:translate-x-1' }}">
                         <svg class="w-5 h-5 mr-3 {{ request()->routeIs('carriers.*') ? 'text-white' : 'text-brand-secondary' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
@@ -132,7 +161,7 @@
 
                     <!-- Worldwide Locations -->
                     <a href="{{ route('locations.index') }}"
-                       class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-colors {{ request()->routeIs('locations.*') ? 'bg-brand-primary text-white shadow-sm shadow-brand-primary/30 font-semibold' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary' }}">
+                       class="flex items-center px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 {{ request()->routeIs('locations.*') ? 'bg-gradient-to-r from-blue-600 to-brand-primary text-white shadow-glow-primary' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary hover:translate-x-1' }}">
                         <svg class="w-5 h-5 mr-3 {{ request()->routeIs('locations.*') ? 'text-white' : 'text-brand-secondary' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
@@ -142,7 +171,7 @@
 
                     <!-- Reports -->
                     <a href="{{ route('reports.index') }}"
-                       class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-colors {{ request()->routeIs('reports.*') ? 'bg-brand-primary text-white shadow-sm shadow-brand-primary/30 font-semibold' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary' }}">
+                       class="flex items-center px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 {{ request()->routeIs('reports.*') ? 'bg-gradient-to-r from-blue-600 to-brand-primary text-white shadow-glow-primary' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary hover:translate-x-1' }}">
                         <svg class="w-5 h-5 mr-3 {{ request()->routeIs('reports.*') ? 'text-white' : 'text-brand-secondary' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                         </svg>
@@ -151,12 +180,12 @@
 
                     <!-- Admin Only: Users Management & Audit Logs -->
                     @if(auth()->user()->isAdmin())
-                    <div class="pt-4 pb-1 border-t border-brand-border/60">
-                        <span class="px-4 text-[10px] font-bold uppercase tracking-wider text-brand-secondary/80">Admin Governance</span>
+                    <div class="pt-5 pb-1 px-4">
+                        <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Admin Governance</span>
                     </div>
 
                     <a href="{{ route('users.index') }}"
-                       class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-colors {{ request()->routeIs('users.*') ? 'bg-brand-primary text-white shadow-sm shadow-brand-primary/30 font-semibold' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary' }}">
+                       class="flex items-center px-4 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 {{ request()->routeIs('users.*') ? 'bg-gradient-to-r from-blue-600 to-brand-primary text-white shadow-glow-primary' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary hover:translate-x-1' }}">
                         <svg class="w-5 h-5 mr-3 {{ request()->routeIs('users.*') ? 'text-white' : 'text-brand-secondary' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                         </svg>
@@ -164,7 +193,7 @@
                     </a>
 
                     <a href="{{ route('audit_logs.index') }}"
-                       class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-colors {{ request()->routeIs('audit_logs.*') ? 'bg-brand-primary text-white shadow-sm shadow-brand-primary/30 font-semibold' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary' }}">
+                       class="flex items-center px-4 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 {{ request()->routeIs('audit_logs.*') ? 'bg-gradient-to-r from-blue-600 to-brand-primary text-white shadow-glow-primary' : 'text-brand-navy hover:bg-brand-bg hover:text-brand-primary hover:translate-x-1' }}">
                         <svg class="w-5 h-5 mr-3 {{ request()->routeIs('audit_logs.*') ? 'text-white' : 'text-brand-secondary' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
@@ -174,12 +203,20 @@
                 </nav>
             </div>
 
-            <!-- Sidebar Bottom: Log Out (Matching Lecturer Reference) -->
-            <div class="p-4 border-t border-brand-border">
+            <!-- Sidebar Bottom: System Live Indicator & Log Out -->
+            <div class="p-4 border-t border-brand-border/80 space-y-3">
+                <div class="px-3 py-2 bg-slate-50 border border-slate-200/60 rounded-xl flex items-center justify-between text-[11px]">
+                    <span class="flex items-center text-slate-600 font-medium">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
+                        Network Live
+                    </span>
+                    <span class="font-bold text-slate-700 font-mono">99.9% SLA</span>
+                </div>
+
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="w-full flex items-center px-4 py-3 text-sm font-medium text-brand-secondary hover:text-brand-danger hover:bg-red-50 rounded-xl transition-colors">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <button type="submit" class="w-full flex items-center px-4 py-2.5 text-xs font-semibold text-slate-500 hover:text-brand-danger hover:bg-rose-50 rounded-xl transition-colors">
+                        <svg class="w-4 h-4 mr-2.5 text-slate-400 group-hover:text-brand-danger" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                         </svg>
                         Logs Out
@@ -190,71 +227,94 @@
 
         <!-- ================= MAIN VIEWPORT ================= -->
         <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- Header (Matching Lecturer Reference) -->
-            <header class="h-20 bg-white border-b border-brand-border px-8 flex items-center justify-between shrink-0 z-20">
+            <!-- Header (Polished Light Theme) -->
+            <header class="h-20 bg-white/90 backdrop-blur-md border-b border-brand-border/80 px-8 flex items-center justify-between shrink-0 z-20 shadow-soft-sm">
                 <!-- Page Title -->
                 <div class="flex items-center space-x-4">
-                    <button id="mobileMenuBtn" class="md:hidden text-brand-navy p-1 rounded-lg hover:bg-brand-bg">
+                    <button id="mobileMenuBtn" class="md:hidden text-brand-navy p-2 rounded-xl hover:bg-brand-bg transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
-                    <h1 class="text-2xl font-bold text-brand-navy tracking-tight">{{ $title ?? 'Dashboard' }}</h1>
+                    <div>
+                        <h1 class="text-2xl font-extrabold text-brand-navy tracking-tight">{{ $title ?? 'Dashboard' }}</h1>
+                    </div>
                 </div>
 
                 <!-- Right Header Elements: Search Bar, Notification, Profile Avatar Pill -->
-                <div class="flex items-center space-x-5">
-                    <!-- Global Search -->
+                <div class="flex items-center space-x-4">
+                    <!-- Global Search with Keyboard Hint -->
                     <form action="{{ route('shipments.index') }}" method="GET" class="relative hidden sm:block">
                         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-brand-secondary">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                         </div>
-                        <input type="text" name="search" placeholder="Search shipments, carriers, origins..."
+                        <input type="text" name="search" placeholder="Search shipment, carrier, port..."
                                value="{{ request('search') }}"
-                               class="w-64 lg:w-80 pl-10 pr-4 py-2 bg-brand-bg border border-brand-border rounded-xl text-xs focus:outline-none focus:border-brand-primary focus:bg-white text-brand-navy placeholder-brand-secondary/70 transition-all">
+                               class="w-64 lg:w-80 pl-10 pr-12 py-2 bg-brand-bg/80 border border-brand-border rounded-xl text-xs font-medium focus:outline-none focus:border-brand-primary focus:bg-white focus:ring-2 focus:ring-brand-primary/10 text-brand-navy placeholder-brand-secondary/60 transition-all">
+                        <span class="absolute right-2.5 top-2 px-1.5 py-0.5 text-[10px] font-mono font-bold text-slate-400 bg-white border border-brand-border rounded-md shadow-xs pointer-events-none">/</span>
                     </form>
 
                     <!-- Notifications Bell Icon with Badge -->
                     @php
                         $unreadCount = auth()->user()->notifications()->where('is_read', false)->count();
                     @endphp
-                    <a href="{{ route('notifications.index') }}" class="relative p-2.5 text-brand-secondary hover:text-brand-navy hover:bg-brand-bg rounded-xl transition-colors">
+                    <a href="{{ route('notifications.index') }}" class="relative p-2.5 text-brand-secondary hover:text-brand-navy hover:bg-brand-bg rounded-xl transition-colors border border-transparent hover:border-brand-border">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                         </svg>
                         @if($unreadCount > 0)
-                            <span class="absolute top-1.5 right-1.5 w-4 h-4 bg-brand-danger text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
+                            <span class="absolute top-1.5 right-1.5 w-4 h-4 bg-brand-danger text-white text-[10px] font-extrabold rounded-full flex items-center justify-center animate-pulse shadow-sm">
                                 {{ $unreadCount > 9 ? '9+' : $unreadCount }}
                             </span>
                         @endif
                     </a>
 
-                    <!-- Profile Avatar Pill (Matching SJ / Sarah Johnson style) -->
+                    <!-- Profile Avatar Pill (Refined Sarah Johnson / SJ Style) -->
                     <div class="relative" x-data="{ open: false }" id="userMenuContainer">
-                        <button id="userMenuBtn" class="flex items-center space-x-3 p-1.5 pr-3 bg-brand-bg/70 hover:bg-brand-bg border border-brand-border rounded-full transition-colors">
-                            <div class="w-8 h-8 rounded-full bg-brand-primary text-white font-semibold text-xs flex items-center justify-center uppercase shadow-sm">
-                                {{ substr(auth()->user()->name, 0, 2) }}
+                        <button id="userMenuBtn" class="flex items-center space-x-3 p-1.5 pr-3.5 bg-white hover:bg-brand-bg border border-brand-border rounded-full shadow-soft-sm transition-all hover:shadow-md">
+                            <div class="relative">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-primary to-blue-500 text-white font-bold text-xs flex items-center justify-center uppercase shadow-sm">
+                                    {{ substr(auth()->user()->name, 0, 2) }}
+                                </div>
+                                <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></span>
                             </div>
                             <div class="text-left hidden md:block">
-                                <span class="block text-xs font-semibold text-brand-navy leading-none">{{ auth()->user()->name }}</span>
-                                <span class="block text-[10px] uppercase font-bold text-brand-primary tracking-wider mt-0.5">{{ auth()->user()->role }}</span>
+                                <span class="block text-xs font-bold text-brand-navy leading-none">{{ auth()->user()->name }}</span>
+                                <span class="block text-[10px] uppercase font-extrabold text-brand-primary tracking-wider mt-0.5">{{ auth()->user()->role }}</span>
                             </div>
                             <svg class="w-4 h-4 text-brand-secondary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                         </button>
 
                         <!-- Dropdown Menu -->
-                        <div id="userMenuDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white border border-brand-border rounded-xl shadow-lg py-2 z-50">
+                        <div id="userMenuDropdown" class="hidden absolute right-0 mt-2.5 w-56 bg-white border border-brand-border rounded-2xl shadow-soft-lg py-2.5 z-50 animate-in fade-in zoom-in-95 duration-100">
                             <div class="px-4 py-2 border-b border-brand-border/60">
-                                <p class="text-xs text-brand-secondary font-medium">Signed in as</p>
-                                <p class="text-xs font-semibold text-brand-navy truncate">{{ auth()->user()->email }}</p>
+                                <p class="text-[11px] text-brand-secondary font-medium">Signed in account</p>
+                                <p class="text-xs font-bold text-brand-navy truncate mt-0.5">{{ auth()->user()->email }}</p>
                             </div>
-                            <a href="{{ route('profile') }}" class="block px-4 py-2 text-xs text-brand-navy hover:bg-brand-bg">Your Profile</a>
-                            <a href="{{ route('notifications.index') }}" class="block px-4 py-2 text-xs text-brand-navy hover:bg-brand-bg">Notifications ({{ $unreadCount }})</a>
+                            <a href="{{ route('profile') }}" class="flex items-center px-4 py-2 text-xs font-semibold text-brand-navy hover:bg-brand-bg transition-colors">
+                                <svg class="w-4 h-4 mr-2.5 text-brand-secondary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                User Profile
+                            </a>
+                            <a href="{{ route('notifications.index') }}" class="flex items-center justify-between px-4 py-2 text-xs font-semibold text-brand-navy hover:bg-brand-bg transition-colors">
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-2.5 text-brand-secondary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                                    Notifications
+                                </span>
+                                @if($unreadCount > 0)
+                                <span class="px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-red-100 text-brand-danger">{{ $unreadCount }}</span>
+                                @endif
+                            </a>
                             @if(auth()->user()->isAdmin())
-                            <a href="{{ route('audit_logs.index') }}" class="block px-4 py-2 text-xs text-brand-navy hover:bg-brand-bg">Audit Trails</a>
+                            <a href="{{ route('audit_logs.index') }}" class="flex items-center px-4 py-2 text-xs font-semibold text-brand-navy hover:bg-brand-bg transition-colors">
+                                <svg class="w-4 h-4 mr-2.5 text-brand-secondary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                Audit Trails
+                            </a>
                             @endif
                             <div class="border-t border-brand-border/60 my-1"></div>
                             <form action="{{ route('logout') }}" method="POST">
                                 @csrf
-                                <button type="submit" class="w-full text-left px-4 py-2 text-xs text-brand-danger hover:bg-red-50">Sign Out</button>
+                                <button type="submit" class="w-full text-left flex items-center px-4 py-2 text-xs font-semibold text-brand-danger hover:bg-rose-50 transition-colors">
+                                    <svg class="w-4 h-4 mr-2.5 text-brand-danger" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                                    Sign Out
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -265,32 +325,36 @@
             <main class="flex-1 overflow-y-auto p-8">
                 <!-- Flash Messages -->
                 @if(session('success'))
-                    <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-xl flex items-center justify-between shadow-sm">
+                    <div class="mb-6 p-4 bg-emerald-50/90 border border-emerald-200 text-emerald-900 text-xs font-semibold rounded-2xl flex items-center justify-between shadow-soft-sm">
                         <div class="flex items-center space-x-3">
-                            <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            </div>
                             <span>{{ session('success') }}</span>
                         </div>
-                        <button onclick="this.parentElement.remove()" class="text-emerald-600 hover:text-emerald-800">&times;</button>
+                        <button onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-900 text-lg font-bold">&times;</button>
                     </div>
                 @endif
 
                 @if(session('error'))
-                    <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 text-sm rounded-xl flex items-center justify-between shadow-sm">
+                    <div class="mb-6 p-4 bg-rose-50/90 border border-rose-200 text-rose-900 text-xs font-semibold rounded-2xl flex items-center justify-between shadow-soft-sm">
                         <div class="flex items-center space-x-3">
-                            <svg class="w-5 h-5 text-red-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <div class="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </div>
                             <span>{{ session('error') }}</span>
                         </div>
-                        <button onclick="this.parentElement.remove()" class="text-red-600 hover:text-red-800">&times;</button>
+                        <button onclick="this.parentElement.remove()" class="text-rose-700 hover:text-rose-900 text-lg font-bold">&times;</button>
                     </div>
                 @endif
 
                 @if ($errors->any())
-                    <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 text-sm rounded-xl shadow-sm">
-                        <div class="font-semibold mb-1 flex items-center">
-                            <svg class="w-5 h-5 text-red-600 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <div class="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-900 text-xs rounded-2xl shadow-soft-sm">
+                        <div class="font-bold mb-1.5 flex items-center text-sm">
+                            <svg class="w-4 h-4 text-rose-600 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                             Please correct the following errors:
                         </div>
-                        <ul class="list-disc list-inside text-xs space-y-1">
+                        <ul class="list-disc list-inside space-y-1 text-slate-700">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
@@ -330,4 +394,3 @@
     @stack('scripts')
 </body>
 </html>
-
