@@ -471,19 +471,45 @@
             return Number.isFinite(nLat) && Number.isFinite(nLng) && nLat >= -90 && nLat <= 90 && nLng >= -180 && nLng <= 180;
         }
 
-        // Helper to draw polylines handling antimeridian crossing (e.g. Trans-Pacific routes)
+        // Helper to draw polylines with GIS-grade antimeridian crossing interpolation (e.g. Trans-Pacific routes)
         function drawRouteSegments(targetMap, points, options) {
             if (!points || points.length < 2) return;
             let currentSegment = [points[0]];
             for (let i = 1; i < points.length; i++) {
                 const prev = points[i - 1];
                 const curr = points[i];
-                // If delta longitude exceeds 180, it crosses the antimeridian
-                if (Math.abs(curr[1] - prev[1]) > 180) {
-                    if (currentSegment.length >= 2) {
-                        L.polyline(currentSegment, options).addTo(targetMap);
+                const deltaLng = curr[1] - prev[1];
+
+                if (Math.abs(deltaLng) > 180) {
+                    let latCross;
+                    if (prev[1] > 0 && curr[1] < 0) {
+                        // Moving East across +180/-180 line (e.g. Tokyo to LA)
+                        const totalSpan = (180 - prev[1]) + (curr[1] + 180);
+                        const fraction = totalSpan > 0 ? (180 - prev[1]) / totalSpan : 0.5;
+                        latCross = prev[0] + fraction * (curr[0] - prev[0]);
+
+                        currentSegment.push([latCross, 179.9999]);
+                        if (currentSegment.length >= 2) {
+                            L.polyline(currentSegment, options).addTo(targetMap);
+                        }
+                        currentSegment = [[latCross, -179.9999], curr];
+                    } else if (prev[1] < 0 && curr[1] > 0) {
+                        // Moving West across -180/+180 line (e.g. LA to Tokyo)
+                        const totalSpan = (prev[1] + 180) + (180 - curr[1]);
+                        const fraction = totalSpan > 0 ? (prev[1] + 180) / totalSpan : 0.5;
+                        latCross = prev[0] + fraction * (curr[0] - prev[0]);
+
+                        currentSegment.push([latCross, -179.9999]);
+                        if (currentSegment.length >= 2) {
+                            L.polyline(currentSegment, options).addTo(targetMap);
+                        }
+                        currentSegment = [[latCross, 179.9999], curr];
+                    } else {
+                        if (currentSegment.length >= 2) {
+                            L.polyline(currentSegment, options).addTo(targetMap);
+                        }
+                        currentSegment = [curr];
                     }
-                    currentSegment = [curr];
                 } else {
                     currentSegment.push(curr);
                 }

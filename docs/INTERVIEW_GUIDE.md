@@ -192,3 +192,4 @@ $$\text{CREATED} \longrightarrow \text{BOOKED} \longrightarrow \text{PICKED\_UP}
 #### Q20: "Mengapa proyek ini siap untuk dideploy ke lingkungan produksi?"
 **Jawaban:**
 > "Proyek telah memenuhi standar deployment: environment variable rahasia dipisahkan ke `.env` (dengan `.env.example` yang bersih), seluruh aset dikompilasi, routing dan view dapat di-cache (`php artisan config:cache`, `route:cache`, `view:cache`), database memiliki indeks dan foreign key yang rapi, serta terdapat dokumentasi deployment lengkap di `docs/DEPLOYMENT_GUIDE.md`."
+
