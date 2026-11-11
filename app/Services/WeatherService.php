@@ -10,14 +10,23 @@ class WeatherService
 {
     /**
      * Get live or cached worldwide weather condition for coordinates.
+     *
+     * Academic & System Requirements:
+     * - Real worldwide weather data from Open-Meteo Global Forecasting models.
+     * - Caches successful responses with explicit timestamp.
+     * - Handles HTTP timeouts, network failures, and invalid payloads gracefully.
+     * - If service is offline/unreachable:
+     *   - Serves last known real observation if available (tagged as 'stale' with original timestamp).
+     *   - Otherwise explicitly returns 'unavailable' with null temperature (NO synthetic fake numbers).
      */
     public function getWeather(float $lat, float $lon): array
     {
         $roundedLat = round($lat, 2);
         $roundedLon = round($lon, 2);
         $cacheKey = "weather_{$roundedLat}_{$roundedLon}";
+        $lastKnownKey = "weather_last_known_{$roundedLat}_{$roundedLon}";
 
-        return Cache::remember($cacheKey, now()->addHour(), function () use ($roundedLat, $roundedLon) {
+        return Cache::remember($cacheKey, now()->addMinutes(45), function () use ($roundedLat, $roundedLon, $lastKnownKey) {
             try {
                 $response = Http::timeout(4)->get('https://api.open-meteo.com/v1/forecast', [
                     'latitude' => $roundedLat,
@@ -32,32 +41,51 @@ class WeatherService
 
                     $weatherCode = (int) ($current['weather_code'] ?? 0);
                     $description = $this->interpretWeatherCode($weatherCode);
+                    $observedTime = $current['time'] ?? now()->toIso8601String();
 
-                    return [
+                    $payload = [
                         'status' => 'available',
-                        'temperature' => $current['temperature_2m'] ?? null,
-                        'wind_speed' => $current['wind_speed_10m'] ?? null,
-                        'precipitation' => $current['precipitation'] ?? 0,
+                        'temperature' => isset($current['temperature_2m']) ? (float) $current['temperature_2m'] : null,
+                        'wind_speed' => isset($current['wind_speed_10m']) ? (float) $current['wind_speed_10m'] : null,
+                        'precipitation' => isset($current['precipitation']) ? (float) $current['precipitation'] : 0.0,
                         'condition' => $description,
                         'weather_code' => $weatherCode,
-                        'is_adverse' => $weatherCode >= 51, // Rain, snow, thunderstorm
-                        'notice' => 'Supportive contextual observation (Open-Meteo Global Models).',
+                        'is_adverse' => $weatherCode >= 51, // Drizzle, rain, snow, thunderstorm
+                        'timestamp' => $observedTime,
+                        'is_stale' => false,
+                        'notice' => 'Live observation from Open-Meteo Global Forecasting API.',
                     ];
+
+                    // Store as last-known persistent observation for 7 days
+                    Cache::put($lastKnownKey, $payload, now()->addDays(7));
+
+                    return $payload;
                 }
             } catch (\Throwable $e) {
                 Log::info('WeatherService request unavailable or timed out: ' . $e->getMessage());
             }
 
-            // Fallback default neutral data when network is offline
+            // Check if a last known authentic observation exists in persistent cache
+            $lastKnown = Cache::get($lastKnownKey);
+            if (is_array($lastKnown)) {
+                $lastKnown['status'] = 'stale';
+                $lastKnown['is_stale'] = true;
+                $lastKnown['notice'] = 'Historical observation (stale) recorded at ' . ($lastKnown['timestamp'] ?? 'earlier');
+                return $lastKnown;
+            }
+
+            // Explicit unavailable state - NO fake numbers
             return [
-                'status' => 'offline_fallback',
-                'temperature' => 22.0,
-                'wind_speed' => 12.5,
-                'precipitation' => 0.0,
-                'condition' => 'Clear / Moderate Maritime Condition',
-                'weather_code' => 0,
+                'status' => 'unavailable',
+                'temperature' => null,
+                'wind_speed' => null,
+                'precipitation' => null,
+                'condition' => 'Weather data unavailable',
+                'weather_code' => null,
                 'is_adverse' => false,
-                'notice' => 'Weather API service temporarily offline or rate-limited; fallback baseline active.',
+                'timestamp' => now()->toIso8601String(),
+                'is_stale' => false,
+                'notice' => 'Live weather forecast currently unavailable. External forecast service unreachable or offline.',
             ];
         });
     }
@@ -76,8 +104,7 @@ class WeatherService
             $code >= 71 && $code <= 77 => 'Snowfall / Ice Pellets',
             $code >= 80 && $code <= 82 => 'Rain Showers',
             $code >= 95 => 'Thunderstorm / Severe Weather Alert',
-            default => 'Moderate Logistics Conditions',
+            default => 'Moderate Maritime Conditions',
         };
     }
 }
-

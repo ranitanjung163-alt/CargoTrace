@@ -3,7 +3,7 @@
 [![Laravel Version](https://img.shields.io/badge/Laravel-12.x-red.svg)](https://laravel.com)
 [![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-blue.svg)](https://php.net)
 [![Database](https://img.shields.io/badge/Database-MySQL%20%2F%20MariaDB-orange.svg)](https://mariadb.org)
-[![Testing](https://img.shields.io/badge/Tests-20%20Passed%20(100%25)-brightgreen.svg)](tests/Feature)
+[![Testing](https://img.shields.io/badge/Tests-25%20Passed%20(100%25)-brightgreen.svg)](tests/Feature)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 > **Individual Final Project (UAS) – Web Programming 2**  

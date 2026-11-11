@@ -376,6 +376,46 @@
 
 @push('scripts')
 <script>
+    // Safe escaping utility to prevent XSS in Leaflet popups
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    // Numeric coordinate validator supporting global limits and equator/prime meridian 0,0
+    function isValidCoord(lat, lng) {
+        if (lat === null || lat === undefined || lat === '' || lng === null || lng === undefined || lng === '') return false;
+        const nLat = Number(lat);
+        const nLng = Number(lng);
+        return Number.isFinite(nLat) && Number.isFinite(nLng) && nLat >= -90 && nLat <= 90 && nLng >= -180 && nLng <= 180;
+    }
+
+    // Helper to draw polylines handling antimeridian crossing
+    function drawRouteSegments(targetMap, points, options) {
+        if (!points || points.length < 2) return;
+        let currentSegment = [points[0]];
+        for (let i = 1; i < points.length; i++) {
+            const prev = points[i - 1];
+            const curr = points[i];
+            if (Math.abs(curr[1] - prev[1]) > 180) {
+                if (currentSegment.length >= 2) {
+                    L.polyline(currentSegment, options).addTo(targetMap);
+                }
+                currentSegment = [curr];
+            } else {
+                currentSegment.push(curr);
+            }
+        }
+        if (currentSegment.length >= 2) {
+            L.polyline(currentSegment, options).addTo(targetMap);
+        }
+    }
+
     // -------------------------------------------------------------
     // DATA INITIALIZATION: Loaded from Shipment DB or France Reference Demo
     // -------------------------------------------------------------
@@ -397,18 +437,20 @@
     if (isDemoFrance || !currentShipment) {
         activeWaypoints = franceDemoWaypoints;
     } else {
-        // Construct from database shipment
-        activeWaypoints.push({
-            name: `${currentShipment.origin.city}, ${currentShipment.origin.country}`,
-            lat: parseFloat(currentShipment.origin.latitude),
-            lng: parseFloat(currentShipment.origin.longitude),
-            isOrigin: true
-        });
+        // Construct from database shipment with coordinate validation
+        if (isValidCoord(currentShipment.origin.latitude, currentShipment.origin.longitude)) {
+            activeWaypoints.push({
+                name: `${currentShipment.origin.city}, ${currentShipment.origin.country}`,
+                lat: parseFloat(currentShipment.origin.latitude),
+                lng: parseFloat(currentShipment.origin.longitude),
+                isOrigin: true
+            });
+        }
 
         // Add intermediate tracking events
         if (currentShipment.tracking_events && currentShipment.tracking_events.length > 0) {
             currentShipment.tracking_events.forEach(te => {
-                if (te.latitude && te.longitude) {
+                if (isValidCoord(te.latitude, te.longitude)) {
                     activeWaypoints.push({
                         name: te.location_name || `${te.event_type} Checkpoint`,
                         lat: parseFloat(te.latitude),
@@ -421,13 +463,15 @@
         }
 
         // Add Destination
-        activeWaypoints.push({
-            name: `${currentShipment.destination.city}, ${currentShipment.destination.country}`,
-            label: currentShipment.destination.name,
-            lat: parseFloat(currentShipment.destination.latitude),
-            lng: parseFloat(currentShipment.destination.longitude),
-            isDestination: true
-        });
+        if (isValidCoord(currentShipment.destination.latitude, currentShipment.destination.longitude)) {
+            activeWaypoints.push({
+                name: `${currentShipment.destination.city}, ${currentShipment.destination.country}`,
+                label: currentShipment.destination.name,
+                lat: parseFloat(currentShipment.destination.latitude),
+                lng: parseFloat(currentShipment.destination.longitude),
+                isDestination: true
+            });
+        }
     }
 
     // -------------------------------------------------------------
@@ -513,24 +557,22 @@
 
         const latLngs = activeWaypoints.map(wp => [wp.lat, wp.lng]);
 
-        // 1. Plot the Google Maps Blue Route Line (with dark casing and vibrant blue line)
-        // Background casing
-        L.polyline(latLngs, {
+        // 1. Plot the Google Maps Blue Route Line (with dark casing and antimeridian handling)
+        drawRouteSegments(map, latLngs, {
             color: '#1557b0',
             weight: 8,
             opacity: 0.4,
             lineCap: 'round',
             lineJoin: 'round'
-        }).addTo(map);
+        });
 
-        // Core polyline (Google Directions Signature Blue)
-        routePolyline = L.polyline(latLngs, {
+        drawRouteSegments(map, latLngs, {
             color: '#1a73e8',
             weight: 5.5,
             opacity: 0.95,
             lineCap: 'round',
             lineJoin: 'round'
-        }).addTo(map);
+        });
 
         // 2. Add Waypoint Nodes
         activeWaypoints.forEach((wp, i) => {
@@ -546,7 +588,7 @@
                             <svg class="w-8 h-8 text-red-600 destination-pin drop-shadow-md" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                             </svg>
-                            ${wp.label ? `<span class="absolute left-8 top-1 bg-white px-2 py-0.5 rounded shadow text-[10px] font-extrabold text-blue-700 whitespace-nowrap border border-slate-200">${wp.label}</span>` : ''}
+                            ${wp.label ? `<span class="absolute left-8 top-1 bg-white px-2 py-0.5 rounded shadow text-[10px] font-extrabold text-blue-700 whitespace-nowrap border border-slate-200">${escapeHtml(wp.label)}</span>` : ''}
                         </div>
                     `,
                     iconSize: [24, 24],
@@ -554,8 +596,8 @@
                 });
                 L.marker([wp.lat, wp.lng], { icon: pinIcon }).addTo(map).bindPopup(`
                     <div class="text-xs p-1 font-sans">
-                        <strong class="text-red-600">Destination:</strong> ${wp.name}
-                        ${wp.label ? `<p class="font-bold text-slate-800">${wp.label}</p>` : ''}
+                        <strong class="text-red-600">Destination:</strong> ${escapeHtml(wp.name)}
+                        ${wp.label ? `<p class="font-bold text-slate-800">${escapeHtml(wp.label)}</p>` : ''}
                     </div>
                 `);
             } else {
@@ -571,7 +613,7 @@
                 });
                 L.marker([wp.lat, wp.lng], { icon: stopIcon }).addTo(map).bindPopup(`
                     <div class="text-xs p-1 font-sans">
-                        <strong>${isFirst ? 'Origin' : 'Waypoint'}:</strong> ${wp.name}
+                        <strong>${isFirst ? 'Origin' : 'Waypoint'}:</strong> ${escapeHtml(wp.name)}
                     </div>
                 `);
             }

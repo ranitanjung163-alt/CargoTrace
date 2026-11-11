@@ -286,15 +286,18 @@
                     </span>
                 </div>
 
-                @if($weather)
+                @if($weather && ($weather['status'] ?? '') !== 'unavailable')
                 <div class="flex items-center justify-between">
                     <div>
                         <div class="text-3xl font-black text-brand-navy tracking-tight font-mono">
-                            {{ $weather['temperature'] ?? '--' }}°C
+                            {{ $weather['temperature'] !== null ? $weather['temperature'] . '°C' : '--' }}
                         </div>
                         <p class="text-xs font-bold text-brand-navy mt-0.5 flex items-center space-x-1.5">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span class="w-2 h-2 rounded-full {{ ($weather['is_stale'] ?? false) ? 'bg-amber-500' : 'bg-emerald-500' }}"></span>
                             <span>{{ $weather['condition'] }}</span>
+                            @if($weather['is_stale'] ?? false)
+                                <span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-bold">Stale</span>
+                            @endif
                         </p>
                         <p class="text-[11px] text-brand-secondary mt-1">
                             💨 Wind: <strong class="text-slate-700">{{ $weather['wind_speed'] ?? '--' }} km/h</strong> &bull; 🌧️ Rain: <strong class="text-slate-700">{{ $weather['precipitation'] ?? '0' }} mm</strong>
@@ -310,7 +313,10 @@
                     💡 {{ $weather['notice'] }}
                 </div>
                 @else
-                <p class="text-xs text-brand-secondary">Weather coordinates unavailable.</p>
+                <div class="py-3 px-4 bg-slate-50 rounded-xl border border-slate-200 text-center">
+                    <p class="text-xs font-bold text-slate-700">Weather data unavailable</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">{{ $weather['notice'] ?? 'External weather forecast service offline or unconfigured.' }}</p>
+                </div>
                 @endif
             </div>
 
@@ -494,6 +500,43 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function isValidCoord(lat, lng) {
+            if (lat === null || lat === undefined || lat === '' || lng === null || lng === undefined || lng === '') return false;
+            const nLat = Number(lat);
+            const nLng = Number(lng);
+            return Number.isFinite(nLat) && Number.isFinite(nLng) && nLat >= -90 && nLat <= 90 && nLng >= -180 && nLng <= 180;
+        }
+
+        function drawRouteSegments(targetMap, points, options) {
+            if (!points || points.length < 2) return;
+            let currentSegment = [points[0]];
+            for (let i = 1; i < points.length; i++) {
+                const prev = points[i - 1];
+                const curr = points[i];
+                if (Math.abs(curr[1] - prev[1]) > 180) {
+                    if (currentSegment.length >= 2) {
+                        L.polyline(currentSegment, options).addTo(targetMap);
+                    }
+                    currentSegment = [curr];
+                } else {
+                    currentSegment.push(curr);
+                }
+            }
+            if (currentSegment.length >= 2) {
+                L.polyline(currentSegment, options).addTo(targetMap);
+            }
+        }
+
         const originLat = parseFloat("{{ $shipment->origin->latitude }}");
         const originLng = parseFloat("{{ $shipment->origin->longitude }}");
         const destLat = parseFloat("{{ $shipment->destination->latitude }}");
@@ -512,22 +555,26 @@
             maxZoom: 19
         }).addTo(map);
 
-        const routePoints = [[originLat, originLng]];
-        const bounds = [[originLat, originLng], [destLat, destLng]];
+        const routePoints = [];
+        const bounds = [];
 
-        // Origin Marker (White disc with dark border)
-        const originIcon = L.divIcon({
-            className: 'custom-stop-marker',
-            html: `<div class="w-4 h-4 rounded-full border-2 border-slate-700 bg-white shadow-md flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2"><div class="w-1.5 h-1.5 rounded-full bg-slate-700"></div></div>`,
-            iconSize: [16, 16]
-        });
-        L.marker([originLat, originLng], { icon: originIcon }).addTo(map).bindPopup('<strong>Origin:</strong> {{ $shipment->origin->name }}<br>{{ $shipment->origin->city }}, {{ $shipment->origin->country }}');
+        if (isValidCoord(originLat, originLng)) {
+            routePoints.push([originLat, originLng]);
+            bounds.push([originLat, originLng]);
 
-        // Waypoints from tracking events (Clean JS Loop with no duplicate const declarations)
+            const originIcon = L.divIcon({
+                className: 'custom-stop-marker',
+                html: `<div class="w-4 h-4 rounded-full border-2 border-slate-700 bg-white shadow-md flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2"><div class="w-1.5 h-1.5 rounded-full bg-slate-700"></div></div>`,
+                iconSize: [16, 16]
+            });
+            L.marker([originLat, originLng], { icon: originIcon }).addTo(map).bindPopup(`<strong>Origin:</strong> ${escapeHtml("{{ $shipment->origin->name }}")}<br>${escapeHtml("{{ $shipment->origin->city }}")}, ${escapeHtml("{{ $shipment->origin->country }}")}`);
+        }
+
+        // Waypoints from tracking events
         const eventsData = @json($shipment->trackingEvents);
         if (Array.isArray(eventsData)) {
             eventsData.forEach(function(te) {
-                if (te.latitude && te.longitude) {
+                if (isValidCoord(te.latitude, te.longitude)) {
                     const lat = parseFloat(te.latitude);
                     const lng = parseFloat(te.longitude);
                     routePoints.push([lat, lng]);
@@ -538,45 +585,49 @@
                         html: `<div class="w-3.5 h-3.5 rounded-full border-2 border-slate-700 bg-white shadow flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2"></div>`,
                         iconSize: [14, 14]
                     });
-                    L.marker([lat, lng], { icon: stopIcon }).addTo(map).bindPopup(`<strong>${te.event_type}:</strong> ${te.location_name || ''}<br>${te.event_time}`);
+                    L.marker([lat, lng], { icon: stopIcon }).addTo(map).bindPopup(`<strong>${escapeHtml(te.event_type)}:</strong> ${escapeHtml(te.location_name || '')}<br>${escapeHtml(te.event_time)}`);
                 }
             });
         }
 
         // Destination Marker (Classic Red Google Maps Pin)
-        routePoints.push([destLat, destLng]);
-        const destPin = L.divIcon({
-            className: 'custom-destination-marker',
-            html: `
-                <div class="relative -top-7 -left-3.5">
-                    <svg class="w-8 h-8 text-red-600 drop-shadow-md" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                    </svg>
-                    <span class="absolute left-8 top-1 bg-white px-2 py-0.5 rounded shadow text-[10px] font-extrabold text-blue-700 whitespace-nowrap border border-slate-200">{{ $shipment->destination->city }}</span>
-                </div>
-            `,
-            iconSize: [24, 24],
-            iconAnchor: [12, 24]
-        });
-        L.marker([destLat, destLng], { icon: destPin }).addTo(map).bindPopup('<strong>Destination:</strong> {{ $shipment->destination->name }}<br>{{ $shipment->destination->city }}, {{ $shipment->destination->country }}');
+        if (isValidCoord(destLat, destLng)) {
+            routePoints.push([destLat, destLng]);
+            bounds.push([destLat, destLng]);
 
-        // Polyline Route (Google Maps Directions Signature Blue)
-        L.polyline(routePoints, {
+            const destPin = L.divIcon({
+                className: 'custom-destination-marker',
+                html: `
+                    <div class="relative -top-7 -left-3.5">
+                        <svg class="w-8 h-8 text-red-600 drop-shadow-md" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                        <span class="absolute left-8 top-1 bg-white px-2 py-0.5 rounded shadow text-[10px] font-extrabold text-blue-700 whitespace-nowrap border border-slate-200">${escapeHtml("{{ $shipment->destination->city }}")}</span>
+                    </div>
+                `,
+                iconSize: [24, 24],
+                iconAnchor: [12, 24]
+            });
+            L.marker([destLat, destLng], { icon: destPin }).addTo(map).bindPopup(`<strong>Destination:</strong> ${escapeHtml("{{ $shipment->destination->name }}")}<br>${escapeHtml("{{ $shipment->destination->city }}")}, ${escapeHtml("{{ $shipment->destination->country }}")}`);
+        }
+
+        // Polyline Route with casing and antimeridian handling
+        drawRouteSegments(map, routePoints, {
             color: '#1557b0',
             weight: 7,
             opacity: 0.35,
             lineCap: 'round',
             lineJoin: 'round'
-        }).addTo(map);
+        });
 
-        L.polyline(routePoints, {
+        drawRouteSegments(map, routePoints, {
             color: '{{ $shipment->is_delayed ? "#DC6262" : "#1a73e8" }}',
             weight: 5,
             opacity: 0.95,
             dashArray: '{{ $shipment->is_delayed ? "6, 6" : "" }}',
             lineCap: 'round',
             lineJoin: 'round'
-        }).addTo(map);
+        });
 
         // Add Floating ETA Bubble
         if (routePoints.length >= 2) {

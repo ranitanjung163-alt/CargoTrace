@@ -27,8 +27,8 @@
         <div class="flex flex-wrap items-center gap-3">
             <div class="px-3.5 py-1.5 bg-white border border-brand-border rounded-xl shadow-xs flex items-center space-x-2 text-xs">
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span class="text-brand-secondary font-medium">SLA Target:</span>
-                <span class="font-bold text-brand-navy">99.2% On-Time</span>
+                <span class="text-brand-secondary font-medium">On-Time Rate:</span>
+                <span class="font-bold text-brand-navy">{{ $onTimeDeliveryRate !== null ? $onTimeDeliveryRate . '% On-Time' : 'N/A' }}</span>
             </div>
             <a href="{{ route('tracking.index') }}" class="inline-flex items-center px-4 py-2 bg-brand-primary hover:bg-brand-primary-hover text-white rounded-xl text-xs font-semibold shadow-soft-sm shadow-brand-primary/25 transition-all hover:scale-[1.02]">
                 <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -205,7 +205,10 @@
                     <canvas id="carrierDonutChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                         <span class="text-xl font-extrabold text-brand-navy leading-none">{{ $overallDelayRate }}%</span>
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-brand-secondary mt-1">Avg Delay</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-brand-secondary mt-1">Overall Delay Rate</span>
+                        @if($avgDelayHours > 0)
+                            <span class="text-[9px] font-semibold text-slate-500 mt-0.5">Avg: {{ $avgDelayHours }}h</span>
+                        @endif
                     </div>
                 </div>
 
@@ -449,29 +452,69 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Safe escaping utility to prevent XSS in Leaflet popups
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Numeric coordinate validator supporting global limits and equator/prime meridian 0,0
+        function isValidCoord(lat, lng) {
+            if (lat === null || lat === undefined || lat === '' || lng === null || lng === undefined || lng === '') return false;
+            const nLat = Number(lat);
+            const nLng = Number(lng);
+            return Number.isFinite(nLat) && Number.isFinite(nLng) && nLat >= -90 && nLat <= 90 && nLng >= -180 && nLng <= 180;
+        }
+
+        // Helper to draw polylines handling antimeridian crossing (e.g. Trans-Pacific routes)
+        function drawRouteSegments(targetMap, points, options) {
+            if (!points || points.length < 2) return;
+            let currentSegment = [points[0]];
+            for (let i = 1; i < points.length; i++) {
+                const prev = points[i - 1];
+                const curr = points[i];
+                // If delta longitude exceeds 180, it crosses the antimeridian
+                if (Math.abs(curr[1] - prev[1]) > 180) {
+                    if (currentSegment.length >= 2) {
+                        L.polyline(currentSegment, options).addTo(targetMap);
+                    }
+                    currentSegment = [curr];
+                } else {
+                    currentSegment.push(curr);
+                }
+            }
+            if (currentSegment.length >= 2) {
+                L.polyline(currentSegment, options).addTo(targetMap);
+            }
+        }
+
         // ----------------------------------------------------
-        // 1. SHIPMENTS BY STATUS (CREATIVE BAR CHART WITH GRADIENT)
+        // 1. SHIPMENTS BY STATUS (5 LIFECYCLE PHASES)
         // ----------------------------------------------------
         const canvasStatus = document.getElementById('statusChart');
         const ctxStatus = canvasStatus.getContext('2d');
         const statusData = @json($statusCounts);
 
-        // Creative vertical linear gradient for primary bars
-        const gradientBlue = ctxStatus.createLinearGradient(0, 0, 0, 220);
-        gradientBlue.addColorStop(0, '#3182CE');
-        gradientBlue.addColorStop(1, '#60A5FA');
+        // Creative gradients for 5 lifecycle statuses
+        const gradSlate = ctxStatus.createLinearGradient(0, 0, 0, 220);
+        gradSlate.addColorStop(0, '#64748B'); gradSlate.addColorStop(1, '#94A3B8');
 
-        const gradientGreen = ctxStatus.createLinearGradient(0, 0, 0, 220);
-        gradientGreen.addColorStop(0, '#16A36A');
-        gradientGreen.addColorStop(1, '#34D399');
+        const gradAmber = ctxStatus.createLinearGradient(0, 0, 0, 220);
+        gradAmber.addColorStop(0, '#D97706'); gradAmber.addColorStop(1, '#FBBF24');
 
-        const gradientOrange = ctxStatus.createLinearGradient(0, 0, 0, 220);
-        gradientOrange.addColorStop(0, '#E59A32');
-        gradientOrange.addColorStop(1, '#FBBF24');
+        const gradIndigo = ctxStatus.createLinearGradient(0, 0, 0, 220);
+        gradIndigo.addColorStop(0, '#6366F1'); gradIndigo.addColorStop(1, '#818CF8');
 
-        const gradientRed = ctxStatus.createLinearGradient(0, 0, 0, 220);
-        gradientRed.addColorStop(0, '#DC6262');
-        gradientRed.addColorStop(1, '#F87171');
+        const gradBlue = ctxStatus.createLinearGradient(0, 0, 0, 220);
+        gradBlue.addColorStop(0, '#2563EB'); gradBlue.addColorStop(1, '#60A5FA');
+
+        const gradGreen = ctxStatus.createLinearGradient(0, 0, 0, 220);
+        gradGreen.addColorStop(0, '#16A36A'); gradGreen.addColorStop(1, '#34D399');
 
         new Chart(ctxStatus, {
             type: 'bar',
@@ -480,15 +523,10 @@
                 datasets: [{
                     label: 'Consignments',
                     data: Object.values(statusData),
-                    backgroundColor: [
-                        gradientBlue,   // In Transit
-                        gradientGreen,  // Delivered
-                        gradientOrange, // Delayed
-                        gradientRed     // Open Exceptions
-                    ],
-                    borderRadius: 10,
+                    backgroundColor: [gradSlate, gradAmber, gradIndigo, gradBlue, gradGreen],
+                    borderRadius: 8,
                     borderSkipped: false,
-                    barThickness: 32,
+                    barThickness: 26,
                 }]
             },
             options: {
@@ -509,7 +547,7 @@
                     y: {
                         beginAtZero: true,
                         grid: { color: '#E4EAF2', drawBorder: false },
-                        ticks: { font: { size: 10, family: 'Plus Jakarta Sans' }, color: '#64748B' }
+                        ticks: { font: { size: 10, family: 'Plus Jakarta Sans' }, color: '#64748B', precision: 0 }
                     },
                     x: {
                         grid: { display: false },
@@ -593,6 +631,10 @@
             const destLat = s.destination.lat;
             const destLng = s.destination.lng;
 
+            if (!isValidCoord(originLat, originLng) || !isValidCoord(destLat, destLng)) {
+                return;
+            }
+
             const routePoints = [[originLat, originLng]];
 
             // Custom Origin Marker (Blue)
@@ -607,10 +649,10 @@
 
             originMarker.bindPopup(`
                 <div class="p-1 font-sans text-xs">
-                    <p class="font-extrabold text-[#183653]">${s.number}</p>
-                    <p class="text-slate-600 font-semibold">Origin: ${s.origin.name}</p>
-                    <p class="text-slate-500">${s.origin.city}, ${s.origin.country}</p>
-                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700">Status: ${s.status}</span>
+                    <p class="font-extrabold text-[#183653]">${escapeHtml(s.number)}</p>
+                    <p class="text-slate-600 font-semibold">Origin: ${escapeHtml(s.origin.name)}</p>
+                    <p class="text-slate-500">${escapeHtml(s.origin.city)}, ${escapeHtml(s.origin.country)}</p>
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700">Status: ${escapeHtml(s.status)}</span>
                 </div>
             `);
             bounds.push([originLat, originLng]);
@@ -618,7 +660,7 @@
             // Waypoints
             if (s.tracking_points && s.tracking_points.length) {
                 s.tracking_points.forEach(tp => {
-                    if (tp.lat && tp.lng) {
+                    if (isValidCoord(tp.lat, tp.lng)) {
                         routePoints.push([tp.lat, tp.lng]);
                         bounds.push([tp.lat, tp.lng]);
                     }
@@ -637,16 +679,16 @@
 
             destMarker.bindPopup(`
                 <div class="p-1 font-sans text-xs">
-                    <p class="font-extrabold text-[#183653]">${s.number}</p>
-                    <p class="text-slate-600 font-semibold">Destination: ${s.destination.name}</p>
-                    <p class="text-slate-500">${s.destination.city}, ${s.destination.country}</p>
+                    <p class="font-extrabold text-[#183653]">${escapeHtml(s.number)}</p>
+                    <p class="text-slate-600 font-semibold">Destination: ${escapeHtml(s.destination.name)}</p>
+                    <p class="text-slate-500">${escapeHtml(s.destination.city)}, ${escapeHtml(s.destination.country)}</p>
                 </div>
             `);
             bounds.push([destLat, destLng]);
             routePoints.push([destLat, destLng]);
 
             // Current location marker if in transit
-            if (s.current && s.current.lat && s.current.lng) {
+            if (s.current && isValidCoord(s.current.lat, s.current.lng)) {
                 const currentMarker = L.circleMarker([s.current.lat, s.current.lng], {
                     radius: 8,
                     fillColor: s.is_delayed ? '#DC6262' : '#E59A32',
@@ -658,22 +700,22 @@
 
                 currentMarker.bindPopup(`
                     <div class="p-1 font-sans text-xs">
-                        <p class="font-extrabold text-[#183653]">${s.number} (Current Position)</p>
-                        <p class="text-slate-600 font-medium">${s.current.name}</p>
+                        <p class="font-extrabold text-[#183653]">${escapeHtml(s.number)} (Current Position)</p>
+                        <p class="text-slate-600 font-medium">${escapeHtml(s.current.name)}</p>
                         <p class="text-[10px] ${s.is_delayed ? 'text-red-600' : 'text-amber-600'} font-extrabold mt-1">
-                            ${s.is_delayed ? '⚠️ WEATHER DELAY ACTIVE' : '⚡ Moving En Route'}
+                            ${s.is_delayed ? '⚠️ DELAY ALERT' : '⚡ Moving En Route'}
                         </p>
                     </div>
                 `);
             }
 
-            // Route Polyline
-            L.polyline(routePoints, {
+            // Route Polyline with antimeridian handling
+            drawRouteSegments(map, routePoints, {
                 color: s.is_delayed ? '#DC6262' : '#3182CE',
                 weight: 3,
                 opacity: 0.8,
                 dashArray: s.is_delayed ? '6, 6' : null
-            }).addTo(map);
+            });
         });
 
         if (bounds.length > 0) {

@@ -266,8 +266,27 @@
             attribution: '&copy; OpenStreetMap'
         }).addTo(map);
 
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function isValidCoord(lat, lng) {
+            if (lat === null || lat === undefined || lat === '' || lng === null || lng === undefined || lng === '') return false;
+            const nLat = Number(lat);
+            const nLng = Number(lng);
+            return Number.isFinite(nLat) && Number.isFinite(nLng) && nLat >= -90 && nLat <= 90 && nLng >= -180 && nLng <= 180;
+        }
+
         const bounds = [];
         mapLocations.forEach(loc => {
+            if (!isValidCoord(loc.lat, loc.lng)) return;
+
             const marker = L.circleMarker([loc.lat, loc.lng], {
                 radius: 7,
                 fillColor: '#3182CE',
@@ -279,10 +298,10 @@
 
             marker.bindPopup(`
                 <div class="text-xs p-1 font-sans">
-                    <p class="font-extrabold text-[#183653]">${loc.name}</p>
-                    <p class="text-slate-600">${loc.city}, ${loc.country}</p>
-                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] bg-blue-50 text-blue-700 font-bold border border-blue-200">${loc.type}</span>
-                    <p class="text-[10px] text-slate-500 font-mono font-bold mt-1">${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}</p>
+                    <p class="font-extrabold text-[#183653]">${escapeHtml(loc.name)}</p>
+                    <p class="text-slate-600">${escapeHtml(loc.city)}, ${escapeHtml(loc.country)}</p>
+                    <span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] bg-blue-50 text-blue-700 font-bold border border-blue-200">${escapeHtml(loc.type)}</span>
+                    <p class="text-[10px] text-slate-500 font-mono font-bold mt-1">${Number(loc.lat).toFixed(4)}, ${Number(loc.lng).toFixed(4)}</p>
                 </div>
             `);
             bounds.push([loc.lat, loc.lng]);

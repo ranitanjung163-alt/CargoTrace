@@ -35,9 +35,10 @@ class ReportController extends Controller
         $onTimeShipments = (clone $query)->where('is_delayed', false)->where('current_status', Shipment::STATUS_DELIVERED)->count();
 
         // 1. On-Time Delivery Rate (%)
+        // Formula: (on_time_delivered / total_delivered) * 100
         $onTimeRate = $deliveredShipments > 0
             ? round(($onTimeShipments / $deliveredShipments) * 100, 1)
-            : ($totalShipments > 0 ? round((($totalShipments - $delayedShipments) / $totalShipments) * 100, 1) : 100);
+            : null;
 
         // 2. Average Delay Duration (hours)
         $avgDelayMinutes = (clone $query)->where('is_delayed', true)->avg('delay_duration_minutes') ?? 0;
@@ -68,6 +69,7 @@ class ReportController extends Controller
             $cTotal = (clone $cQuery)->count();
             $cDelayed = (clone $cQuery)->where('is_delayed', true)->count();
             $cDelivered = (clone $cQuery)->where('current_status', Shipment::STATUS_DELIVERED)->count();
+            $cDeliveredOnTime = (clone $cQuery)->where('current_status', Shipment::STATUS_DELIVERED)->where('is_delayed', false)->count();
 
             if ($cTotal > 0) {
                 $carrierPerformance[] = [
@@ -77,7 +79,7 @@ class ReportController extends Controller
                     'total' => $cTotal,
                     'delayed' => $cDelayed,
                     'delivered' => $cDelivered,
-                    'on_time_rate' => $cTotal > 0 ? round((($cTotal - $cDelayed) / $cTotal) * 100, 1) : 100,
+                    'on_time_rate' => $cDelivered > 0 ? round(($cDeliveredOnTime / $cDelivered) * 100, 1) : null,
                 ];
             }
         }

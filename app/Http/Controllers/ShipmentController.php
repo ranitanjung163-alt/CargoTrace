@@ -29,6 +29,23 @@ class ShipmentController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
+        $query = $this->buildShipmentsQuery($request, $user);
+
+        $shipments = $query->paginate(12)->withQueryString();
+        $carriers = Carrier::where('is_active', true)->get();
+
+        return view('shipments.index', [
+            'shipments' => $shipments,
+            'carriers' => $carriers,
+            'statuses' => Shipment::STATUSES,
+        ]);
+    }
+
+    /**
+     * Build unified query for index and export with customer isolation and comprehensive filtering.
+     */
+    public function buildShipmentsQuery(Request $request, User $user)
+    {
         $query = Shipment::with(['customer', 'carrier', 'origin', 'destination', 'currentLocation']);
 
         // Customer can only view their own shipments
@@ -36,7 +53,7 @@ class ShipmentController extends Controller
             $query->where('customer_id', $user->id);
         }
 
-        // Search
+        // Search across shipment number, cargo type, customer name, carrier, and cities
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -64,6 +81,14 @@ class ShipmentController extends Controller
             $query->where('is_delayed', $request->boolean('delayed'));
         }
 
+        // Filter by Date Range
+        if ($request->filled('start_date')) {
+            $query->whereDate('created_at', '>=', $request->input('start_date'));
+        }
+        if ($request->filled('end_date')) {
+            $query->whereDate('created_at', '<=', $request->input('end_date'));
+        }
+
         // Sorting
         $sortField = $request->input('sort', 'created_at');
         $sortDirection = $request->input('direction', 'desc');
@@ -74,14 +99,7 @@ class ShipmentController extends Controller
             $query->latest();
         }
 
-        $shipments = $query->paginate(12)->withQueryString();
-        $carriers = Carrier::where('is_active', true)->get();
-
-        return view('shipments.index', [
-            'shipments' => $shipments,
-            'carriers' => $carriers,
-            'statuses' => Shipment::STATUSES,
-        ]);
+        return $query;
     }
 
     public function create(): View
@@ -221,22 +239,30 @@ class ShipmentController extends Controller
     }
 
     /**
-     * Export shipments to CSV.
+     * Export filtered shipments to CSV with anti-formula injection protection.
      */
     public function export(Request $request): StreamedResponse
     {
         /** @var User $user */
         $user = Auth::user();
 
-        $query = Shipment::with(['customer', 'carrier', 'origin', 'destination']);
-        if ($user->isCustomer()) {
-            $query->where('customer_id', $user->id);
-        }
+        $query = $this->buildShipmentsQuery($request, $user);
 
         $fileName = 'cargotrace_shipments_' . date('Y-m-d_His') . '.csv';
 
         return response()->streamDownload(function () use ($query) {
             $handle = fopen('php://output', 'w');
+
+            // Sanitize against CSV formula injection (OWASP guideline: prefix =, +, -, @ with ')
+            $sanitizeCsv = function ($val) {
+                if ($val === null) return '';
+                $str = (string) $val;
+                if (preg_match('/^[=\+\-\@\t\r]/', $str)) {
+                    return "'" . $str;
+                }
+                return $str;
+            };
+
             fputcsv($handle, [
                 'Shipment Number',
                 'Customer',
@@ -252,17 +278,17 @@ class ShipmentController extends Controller
                 'Volume (cbm)',
             ]);
 
-            $query->chunk(100, function ($shipments) use ($handle) {
+            $query->chunk(100, function ($shipments) use ($handle, $sanitizeCsv) {
                 foreach ($shipments as $s) {
                     fputcsv($handle, [
-                        $s->shipment_number,
-                        $s->customer->name ?? 'N/A',
-                        $s->carrier->name ?? 'N/A',
-                        $s->origin->display_name ?? 'N/A',
-                        $s->destination->display_name ?? 'N/A',
-                        $s->current_status,
+                        $sanitizeCsv($s->shipment_number),
+                        $sanitizeCsv($s->customer->name ?? 'N/A'),
+                        $sanitizeCsv($s->carrier->name ?? 'N/A'),
+                        $sanitizeCsv($s->origin->display_name ?? 'N/A'),
+                        $sanitizeCsv($s->destination->display_name ?? 'N/A'),
+                        $sanitizeCsv($s->current_status),
                         $s->is_delayed ? 'YES' : 'NO',
-                        $s->delay_reason ?? '',
+                        $sanitizeCsv($s->delay_reason ?? ''),
                         $s->expected_arrival?->format('Y-m-d H:i') ?? '',
                         $s->estimated_arrival?->format('Y-m-d H:i') ?? '',
                         $s->weight,
@@ -274,6 +300,7 @@ class ShipmentController extends Controller
             fclose($handle);
         }, $fileName, [
             'Content-Type' => 'text/csv',
+            'X-Content-Type-Options' => 'nosniff',
         ]);
     }
 }

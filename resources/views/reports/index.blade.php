@@ -32,7 +32,7 @@
             <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-400 to-teal-500"></div>
             <span class="text-[11px] font-bold uppercase tracking-wider text-brand-secondary">On-Time Delivery Rate</span>
             <div class="flex items-baseline space-x-2 mt-2">
-                <span class="text-3xl font-black text-brand-navy tracking-tight font-mono">{{ $onTimeRate }}%</span>
+                <span class="text-3xl font-black text-brand-navy tracking-tight font-mono">{{ $onTimeRate !== null ? $onTimeRate . '%' : 'N/A' }}</span>
                 <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">Target &gt;90%</span>
             </div>
             <p class="text-[11px] text-slate-500 mt-2.5 pt-2 border-t border-brand-border/60">Delivered on-time vs total completed deliveries</p>
@@ -108,9 +108,9 @@
                         <td class="py-4 px-6">
                             <div class="flex items-center space-x-3">
                                 <div class="w-32 bg-slate-100 rounded-full h-2 overflow-hidden">
-                                    <div class="bg-brand-primary h-2 rounded-full transition-all duration-500" style="width: {{ $cp['on_time_rate'] }}%"></div>
+                                    <div class="bg-brand-primary h-2 rounded-full transition-all duration-500" style="width: {{ $cp['on_time_rate'] ?? 0 }}%"></div>
                                 </div>
-                                <span class="font-extrabold font-mono text-brand-navy">{{ $cp['on_time_rate'] }}%</span>
+                                <span class="font-extrabold font-mono text-brand-navy">{{ $cp['on_time_rate'] !== null ? $cp['on_time_rate'] . '%' : 'N/A' }}</span>
                             </div>
                         </td>
                     </tr>

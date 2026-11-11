@@ -14,14 +14,14 @@ use Illuminate\View\View;
 class DashboardController extends Controller
 {
     /**
-     * Display the main CargoTrace dashboard.
+     * Display the main CargoTrace dashboard adhering to lecturer reference specifications.
      */
     public function index(Request $request): View
     {
         /** @var User $user */
         $user = Auth::user();
 
-        // Base query with role-based scoping
+        // Base query with role-based scoping (Customer data isolation)
         $shipmentsQuery = Shipment::query();
 
         if ($user->isCustomer()) {
@@ -30,6 +30,9 @@ class DashboardController extends Controller
 
         // 1. KPI STATISTIC CARDS (Calculated dynamically from database)
         $totalShipments = (clone $shipmentsQuery)->count();
+        $created = (clone $shipmentsQuery)->where('current_status', Shipment::STATUS_CREATED)->count();
+        $booked = (clone $shipmentsQuery)->where('current_status', Shipment::STATUS_BOOKED)->count();
+        $pickedUp = (clone $shipmentsQuery)->where('current_status', Shipment::STATUS_PICKED_UP)->count();
         $inTransit = (clone $shipmentsQuery)->where('current_status', Shipment::STATUS_IN_TRANSIT)->count();
         $delivered = (clone $shipmentsQuery)->where('current_status', Shipment::STATUS_DELIVERED)->count();
         $delayed = (clone $shipmentsQuery)->where('is_delayed', true)->count();
@@ -42,12 +45,25 @@ class DashboardController extends Controller
         }
         $openExceptions = $exceptionsQuery->count();
 
-        // 2. CHART: SHIPMENTS BY STATUS (Bar Chart)
+        // On-Time Delivery Rate: (on_time_delivered / total_delivered) * 100
+        $onTimeDelivered = (clone $shipmentsQuery)
+            ->where('current_status', Shipment::STATUS_DELIVERED)
+            ->where('is_delayed', false)
+            ->count();
+
+        $onTimeDeliveryRate = $delivered > 0 ? round(($onTimeDelivered / $delivered) * 100, 1) : null;
+
+        // Average Delay Duration in hours across delayed shipments
+        $avgDelayMinutes = (clone $shipmentsQuery)->where('is_delayed', true)->avg('delay_duration_minutes') ?? 0;
+        $avgDelayHours = round($avgDelayMinutes / 60, 1);
+
+        // 2. CHART: SHIPMENTS BY STATUS (5 Primary Lifecycle Phases)
         $statusCounts = [
+            'Created' => $created,
+            'Booked' => $booked,
+            'Picked Up' => $pickedUp,
             'In Transit' => $inTransit,
             'Delivered' => $delivered,
-            'Delayed' => $delayed,
-            'Open Exceptions' => $openExceptions,
         ];
 
         // 3. CHART: DELAY RATE BY CARRIER (Donut Chart)
@@ -76,20 +92,20 @@ class DashboardController extends Controller
             }
         }
 
-        $overallDelayRate = $totalShipments > 0 ? round(($delayed / $totalShipments) * 100, 1) : 0;
+        $overallDelayRate = $totalShipments > 0 ? round(($delayed / $totalShipments) * 100, 1) : 0.0;
 
         // 4. MAP DATA: Worldwide Active Shipments with Origin, Destination, Waypoints
         $mapShipments = (clone $shipmentsQuery)
             ->with(['origin', 'destination', 'currentLocation', 'carrier', 'trackingEvents'])
             ->latest()
-            ->take(15)
+            ->take(20)
             ->get()
             ->map(function ($s) {
                 return [
                     'id' => $s->id,
                     'number' => $s->shipment_number,
                     'status' => $s->current_status,
-                    'is_delayed' => $s->is_delayed,
+                    'is_delayed' => (bool) $s->is_delayed,
                     'carrier' => $s->carrier->name ?? 'Unknown',
                     'origin' => [
                         'name' => $s->origin->name,
@@ -117,7 +133,7 @@ class DashboardController extends Controller
                             'name' => $te->location_name,
                             'lat' => (float) $te->latitude,
                             'lng' => (float) $te->longitude,
-                            'is_exception' => $te->is_exception,
+                            'is_exception' => (bool) $te->is_exception,
                             'desc' => $te->description,
                         ];
                     }),
@@ -139,6 +155,8 @@ class DashboardController extends Controller
                 'delayed' => $delayed,
                 'open_exceptions' => $openExceptions,
             ],
+            'onTimeDeliveryRate' => $onTimeDeliveryRate,
+            'avgDelayHours' => $avgDelayHours,
             'statusCounts' => $statusCounts,
             'carrierStats' => $carrierStats,
             'overallDelayRate' => $overallDelayRate,
@@ -147,4 +165,3 @@ class DashboardController extends Controller
         ]);
     }
 }
-

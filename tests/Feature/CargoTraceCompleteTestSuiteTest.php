@@ -13,8 +13,10 @@ use App\Services\ExceptionService;
 use App\Services\GeocodingService;
 use App\Services\ShipmentService;
 use App\Services\TrackingService;
+use App\Services\WeatherService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use InvalidArgumentException;
@@ -560,5 +562,231 @@ class CargoTraceCompleteTestSuiteTest extends TestCase
         $this->assertEquals(51.924420, $result['lat']);
         $this->assertEquals(4.477733, $result['lon']);
         $this->assertEquals('fallback_database', $result['source']);
+    }
+
+    /**
+     * TEST 19: ETA Threshold (12h) rules and edge cases (0h, 6h, 11h, exact 12h, 12h 1m, 24h, >24h)
+     */
+    public function test_19_eta_threshold_12_hours_and_edge_cases(): void
+    {
+        $etaService = app(EtaService::class);
+        $this->assertEquals(12.0, $etaService->getDelayThresholdHours());
+
+        $baseShipment = function(int $addedMinutes) {
+            return Shipment::create([
+                'shipment_number' => 'SHP-THR-' . $addedMinutes . '-' . uniqid(),
+                'customer_id' => $this->customer1->id,
+                'carrier_id' => $this->carrier->id,
+                'origin_location_id' => $this->origin->id,
+                'destination_location_id' => $this->destination->id,
+                'cargo_type' => 'Cargo',
+                'weight' => 50,
+                'volume' => 1,
+                'expected_departure' => now(),
+                'expected_arrival' => Carbon::now()->addHours(24),
+                'estimated_arrival' => Carbon::now()->addHours(24)->addMinutes($addedMinutes),
+                'current_status' => Shipment::STATUS_IN_TRANSIT,
+            ]);
+        };
+
+        // 1. Condition: 0 hours delay
+        $eval0 = $etaService->evaluateDelay($baseShipment(0));
+        $this->assertFalse($eval0['is_delayed']);
+        $this->assertEquals(Shipment::SEVERITY_NONE, $eval0['delay_severity']);
+
+        // 2. Condition: 6 hours delay (<= 12h threshold)
+        $eval6 = $etaService->evaluateDelay($baseShipment(6 * 60));
+        $this->assertFalse($eval6['is_delayed']); // within SLA buffer
+        $this->assertEquals(Shipment::SEVERITY_LOW, $eval6['delay_severity']);
+
+        // 3. Condition: 11 hours delay (<= 12h threshold)
+        $eval11 = $etaService->evaluateDelay($baseShipment(11 * 60));
+        $this->assertFalse($eval11['is_delayed']);
+        $this->assertEquals(Shipment::SEVERITY_MEDIUM, $eval11['delay_severity']);
+
+        // 4. Condition: Exact 12 hours (boundary: <= 12h threshold)
+        $eval12 = $etaService->evaluateDelay($baseShipment(12 * 60));
+        $this->assertFalse($eval12['is_delayed']); // exactly at threshold limit, not breached
+        $this->assertEquals(Shipment::SEVERITY_MEDIUM, $eval12['delay_severity']);
+
+        // 5. Condition: 12 hours 1 minute (strictly > 12h threshold)
+        $eval12_1 = $etaService->evaluateDelay($baseShipment(12 * 60 + 1));
+        $this->assertTrue($eval12_1['is_delayed']); // SLA breach triggered!
+        $this->assertEquals(Shipment::SEVERITY_MEDIUM, $eval12_1['delay_severity']);
+
+        // 6. Condition: 24 hours delay
+        $eval24 = $etaService->evaluateDelay($baseShipment(24 * 60));
+        $this->assertTrue($eval24['is_delayed']);
+        $this->assertEquals(Shipment::SEVERITY_MEDIUM, $eval24['delay_severity']);
+
+        // 7. Condition: More than 24 hours (e.g. 30 hours)
+        $eval30 = $etaService->evaluateDelay($baseShipment(30 * 60));
+        $this->assertTrue($eval30['is_delayed']);
+        $this->assertEquals(Shipment::SEVERITY_HIGH, $eval30['delay_severity']);
+    }
+
+    /**
+     * TEST 20: On-Time Delivery Rate formula: (on_time_delivered / total_delivered) * 100
+     */
+    public function test_20_on_time_delivery_rate_calculation(): void
+    {
+        // Create 2 on-time delivered shipments
+        Shipment::create([
+            'shipment_number' => 'SHP-ONTIME-1',
+            'customer_id' => $this->customer1->id,
+            'carrier_id' => $this->carrier->id,
+            'origin_location_id' => $this->origin->id,
+            'destination_location_id' => $this->destination->id,
+            'cargo_type' => 'Standard',
+            'weight' => 10,
+            'volume' => 1,
+            'expected_departure' => now()->subDays(5),
+            'expected_arrival' => now()->subDays(2),
+            'estimated_arrival' => now()->subDays(2),
+            'actual_delivered_at' => now()->subDays(2),
+            'current_status' => Shipment::STATUS_DELIVERED,
+            'is_delayed' => false,
+        ]);
+
+        Shipment::create([
+            'shipment_number' => 'SHP-ONTIME-2',
+            'customer_id' => $this->customer1->id,
+            'carrier_id' => $this->carrier->id,
+            'origin_location_id' => $this->origin->id,
+            'destination_location_id' => $this->destination->id,
+            'cargo_type' => 'Standard',
+            'weight' => 10,
+            'volume' => 1,
+            'expected_departure' => now()->subDays(4),
+            'expected_arrival' => now()->subDays(1),
+            'estimated_arrival' => now()->subDays(1),
+            'actual_delivered_at' => now()->subDays(1),
+            'current_status' => Shipment::STATUS_DELIVERED,
+            'is_delayed' => false,
+        ]);
+
+        // Create 1 delayed delivered shipment
+        Shipment::create([
+            'shipment_number' => 'SHP-LATE-DELIVERED',
+            'customer_id' => $this->customer1->id,
+            'carrier_id' => $this->carrier->id,
+            'origin_location_id' => $this->origin->id,
+            'destination_location_id' => $this->destination->id,
+            'cargo_type' => 'Standard',
+            'weight' => 10,
+            'volume' => 1,
+            'expected_departure' => now()->subDays(6),
+            'expected_arrival' => now()->subDays(3),
+            'estimated_arrival' => now()->subDays(1),
+            'actual_delivered_at' => now()->subDays(1),
+            'current_status' => Shipment::STATUS_DELIVERED,
+            'is_delayed' => true,
+            'delay_duration_minutes' => 2880,
+            'delay_severity' => Shipment::SEVERITY_HIGH,
+        ]);
+
+        // Create 2 in-transit shipments (must NOT be in the delivered denominator!)
+        Shipment::create([
+            'shipment_number' => 'SHP-TRANSIT-ACTIVE',
+            'customer_id' => $this->customer1->id,
+            'carrier_id' => $this->carrier->id,
+            'origin_location_id' => $this->origin->id,
+            'destination_location_id' => $this->destination->id,
+            'cargo_type' => 'Standard',
+            'weight' => 10,
+            'volume' => 1,
+            'expected_departure' => now(),
+            'expected_arrival' => now()->addDays(3),
+            'estimated_arrival' => now()->addDays(3),
+            'current_status' => Shipment::STATUS_IN_TRANSIT,
+            'is_delayed' => false,
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('dashboard'));
+        $response->assertStatus(200);
+
+        // 2 on-time out of 3 delivered = (2 / 3) * 100 = 66.7%
+        $response->assertViewHas('onTimeDeliveryRate', 66.7);
+    }
+
+    /**
+     * TEST 21: Global coordinate limits: Prime Meridian (0,0), negative coords, and boundaries
+     */
+    public function test_21_coordinate_edge_cases_zero_negative_and_limits(): void
+    {
+        $geocodingService = app(GeocodingService::class);
+
+        // 1. Coordinates 0.0, 0.0 (Gulf of Guinea / Prime Meridian & Equator) must be valid
+        $this->assertTrue($geocodingService->isValidCoordinates(0.0, 0.0));
+
+        // 2. Maximum limits (-90..90, -180..180)
+        $this->assertTrue($geocodingService->isValidCoordinates(90.0, 180.0));
+        $this->assertTrue($geocodingService->isValidCoordinates(-90.0, -180.0));
+
+        // 3. International hubs
+        $this->assertTrue($geocodingService->isValidCoordinates(-6.2088, 106.8456)); // Jakarta
+        $this->assertTrue($geocodingService->isValidCoordinates(35.6762, 139.6503));  // Tokyo
+        $this->assertTrue($geocodingService->isValidCoordinates(-33.9249, 18.4241));  // Cape Town
+    }
+
+    /**
+     * TEST 22: Weather API failure handling & unavailable state without fake 22°C
+     */
+    public function test_22_weather_service_failure_and_unavailable_state(): void
+    {
+        Cache::flush();
+
+        // Simulate external API outage (e.g. 503 Service Unavailable)
+        Http::fake([
+            'https://api.open-meteo.com/*' => Http::response(null, 503),
+        ]);
+
+        $weatherService = app(WeatherService::class);
+        $result = $weatherService->getWeather(37.77, -122.42);
+
+        $this->assertEquals('unavailable', $result['status']);
+        $this->assertNull($result['temperature']);
+        $this->assertEquals('Weather data unavailable', $result['condition']);
+        $this->assertFalse($result['is_adverse']);
+    }
+
+    /**
+     * TEST 23: CSV export filter application and formula injection prevention
+     */
+    public function test_23_csv_export_filters_and_formula_injection_prevention(): void
+    {
+        // Create shipment with potentially hazardous formula injection string in number
+        Shipment::create([
+            'shipment_number' => '=1+1', // Classic spreadsheet formula injection
+            'customer_id' => $this->customer1->id,
+            'carrier_id' => $this->carrier->id,
+            'origin_location_id' => $this->origin->id,
+            'destination_location_id' => $this->destination->id,
+            'cargo_type' => 'Tech Consignment',
+            'weight' => 25,
+            'volume' => 1,
+            'expected_departure' => now(),
+            'expected_arrival' => now()->addDays(2),
+            'estimated_arrival' => now()->addDays(2),
+            'current_status' => Shipment::STATUS_IN_TRANSIT,
+            'is_delayed' => false,
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('shipments.export', [
+            'status' => Shipment::STATUS_IN_TRANSIT,
+            'carrier_id' => $this->carrier->id,
+        ]));
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('text/csv', $response->headers->get('Content-Type'));
+
+        // Retrieve streamed content
+        $content = $response->streamedContent();
+
+        // Verify CSV header
+        $this->assertStringContainsString('Shipment Number', $content);
+
+        // Verify sanitization: leading '=' must be safely prefixed with single quote "'"
+        $this->assertStringContainsString("'=1+1", $content);
     }
 }

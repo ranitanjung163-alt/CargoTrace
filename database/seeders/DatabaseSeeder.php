@@ -601,28 +601,30 @@ class DatabaseSeeder extends Seeder
         }
 
         // 6. INITIAL AUDIT LOGS
-        AuditLog::create([
-            'user_id' => $admin->id,
-            'action' => 'SYSTEM_INITIALIZATION',
-            'entity_type' => 'System',
-            'entity_id' => null,
-            'old_values' => null,
-            'new_values' => ['version' => '1.0.0', 'environment' => 'production_ready'],
-            'ip_address' => '127.0.0.1',
-            'user_agent' => 'CargoTrace-System/1.0',
-            'created_at' => now()->subDays(7),
-        ]);
+        AuditLog::firstOrCreate(
+            ['action' => 'SYSTEM_INITIALIZATION', 'user_id' => $admin->id],
+            [
+                'entity_type' => 'System',
+                'entity_id' => null,
+                'old_values' => null,
+                'new_values' => ['version' => '1.0.0', 'environment' => 'production_ready'],
+                'ip_address' => '127.0.0.1',
+                'user_agent' => 'CargoTrace-System/1.0',
+                'created_at' => now()->subDays(7),
+            ]
+        );
 
-        AuditLog::create([
-            'user_id' => $operator->id,
-            'action' => 'SHIPMENT_DISPATCH_AUTHORIZED',
-            'entity_type' => 'Shipment',
-            'entity_id' => $delayedShipment->id ?? 1,
-            'old_values' => ['status' => 'BOOKED'],
-            'new_values' => ['status' => 'IN_TRANSIT'],
-            'ip_address' => '127.0.0.1',
-            'user_agent' => 'CargoTrace-System/1.0',
-            'created_at' => now()->subDays(2),
-        ]);
+        AuditLog::firstOrCreate(
+            ['action' => 'SHIPMENT_DISPATCH_AUTHORIZED', 'user_id' => $operator->id],
+            [
+                'entity_type' => 'Shipment',
+                'entity_id' => $delayedShipment->id ?? 1,
+                'old_values' => ['status' => 'BOOKED'],
+                'new_values' => ['status' => 'IN_TRANSIT'],
+                'ip_address' => '127.0.0.1',
+                'user_agent' => 'CargoTrace-System/1.0',
+                'created_at' => now()->subDays(2),
+            ]
+        );
     }
 }
