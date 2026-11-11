@@ -506,22 +506,20 @@
             worldCopyJump: true
         }).setView([originLat, originLng], 4);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
         }).addTo(map);
 
         const routePoints = [[originLat, originLng]];
         const bounds = [[originLat, originLng], [destLat, destLng]];
 
-        // Origin Marker (Blue)
-        L.circleMarker([originLat, originLng], {
-            radius: 8,
-            fillColor: '#3182CE',
-            color: '#FFFFFF',
-            weight: 3,
-            opacity: 1,
-            fillOpacity: 1
-        }).addTo(map).bindPopup('<strong>Origin:</strong> {{ $shipment->origin->name }}<br>{{ $shipment->origin->city }}, {{ $shipment->origin->country }}');
+        // Origin Marker (White disc with dark border)
+        const originIcon = L.divIcon({
+            className: 'custom-stop-marker',
+            html: `<div class="w-4 h-4 rounded-full border-2 border-slate-700 bg-white shadow-md flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2"><div class="w-1.5 h-1.5 rounded-full bg-slate-700"></div></div>`,
+            iconSize: [16, 16]
+        });
+        L.marker([originLat, originLng], { icon: originIcon }).addTo(map).bindPopup('<strong>Origin:</strong> {{ $shipment->origin->name }}<br>{{ $shipment->origin->city }}, {{ $shipment->origin->country }}');
 
         // Waypoints from tracking events
         @foreach($shipment->trackingEvents as $te)
@@ -529,37 +527,71 @@
                 routePoints.push([{{ $te->latitude }}, {{ $te->longitude }}]);
                 bounds.push([{{ $te->latitude }}, {{ $te->longitude }}]);
 
-                L.circleMarker([{{ $te->latitude }}, {{ $te->longitude }}], {
-                    radius: {{ $te->is_exception ? 8 : 6 }},
-                    fillColor: '{{ $te->is_exception ? "#DC6262" : "#E59A32" }}',
-                    color: '#FFFFFF',
-                    weight: 2.5,
-                    opacity: 1,
-                    fillOpacity: 0.95
-                }).addTo(map).bindPopup('<strong>{{ $te->event_type }}:</strong> {{ $te->location_name }}<br>{{ $te->event_time->format("Y-m-d H:i") }}');
+                const wpIcon = L.divIcon({
+                    className: 'custom-stop-marker',
+                    html: `<div class="w-3.5 h-3.5 rounded-full border-2 border-slate-700 bg-white shadow flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2"></div>`,
+                    iconSize: [14, 14]
+                });
+                L.marker([{{ $te->latitude }}, {{ $te->longitude }}], { icon: wpIcon }).addTo(map).bindPopup('<strong>{{ $te->event_type }}:</strong> {{ $te->location_name }}<br>{{ $te->event_time->format("Y-m-d H:i") }}');
             @endif
         @endforeach
 
-        // Destination Marker (Green)
+        // Destination Marker (Classic Red Google Maps Pin)
         routePoints.push([destLat, destLng]);
-        L.circleMarker([destLat, destLng], {
-            radius: 8,
-            fillColor: '#16A36A',
-            color: '#FFFFFF',
-            weight: 3,
-            opacity: 1,
-            fillOpacity: 1
-        }).addTo(map).bindPopup('<strong>Destination:</strong> {{ $shipment->destination->name }}<br>{{ $shipment->destination->city }}, {{ $shipment->destination->country }}');
+        const destPin = L.divIcon({
+            className: 'custom-destination-marker',
+            html: `
+                <div class="relative -top-7 -left-3.5">
+                    <svg class="w-8 h-8 text-red-600 drop-shadow-md" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                    <span class="absolute left-8 top-1 bg-white px-2 py-0.5 rounded shadow text-[10px] font-extrabold text-blue-700 whitespace-nowrap border border-slate-200">{{ $shipment->destination->city }}</span>
+                </div>
+            `,
+            iconSize: [24, 24],
+            iconAnchor: [12, 24]
+        });
+        L.marker([destLat, destLng], { icon: destPin }).addTo(map).bindPopup('<strong>Destination:</strong> {{ $shipment->destination->name }}<br>{{ $shipment->destination->city }}, {{ $shipment->destination->country }}');
 
-        // Polyline Route
+        // Polyline Route (Google Maps Directions Signature Blue)
         L.polyline(routePoints, {
-            color: '{{ $shipment->is_delayed ? "#DC6262" : "#3182CE" }}',
-            weight: 3.5,
-            opacity: 0.85,
-            dashArray: '{{ $shipment->is_delayed ? "6, 6" : "" }}'
+            color: '#1557b0',
+            weight: 7,
+            opacity: 0.35,
+            lineCap: 'round',
+            lineJoin: 'round'
         }).addTo(map);
 
-        map.fitBounds(bounds, { padding: [35, 35], maxZoom: 6 });
+        L.polyline(routePoints, {
+            color: '{{ $shipment->is_delayed ? "#DC6262" : "#1a73e8" }}',
+            weight: 5,
+            opacity: 0.95,
+            dashArray: '{{ $shipment->is_delayed ? "6, 6" : "" }}',
+            lineCap: 'round',
+            lineJoin: 'round'
+        }).addTo(map);
+
+        // Add Floating ETA Bubble
+        if (routePoints.length >= 2) {
+            const midIdx = Math.floor(routePoints.length / 2);
+            const midPt = [
+                (routePoints[midIdx][0] + routePoints[midIdx - 1][0]) / 2,
+                (routePoints[midIdx][1] + routePoints[midIdx - 1][1]) / 2
+            ];
+            const etaBubble = L.divIcon({
+                className: 'custom-eta-bubble-container',
+                html: `
+                    <div style="background:#fff;border:1px solid #c7cdd6;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,0.2);padding:4px 10px;white-space:nowrap;font-size:11px;font-weight:bold;color:#183653;transform:translate(-50%,-100%);">
+                        🚗 {{ $shipment->is_delayed ? 'Weather Delay Active' : 'Optimal Route' }}
+                    </div>
+                `,
+                iconSize: [90, 30],
+                iconAnchor: [45, 15]
+            });
+            L.marker(midPt, { icon: etaBubble, zIndexOffset: 1000 }).addTo(map);
+        }
+
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 8 });
     });
 </script>
 @endpush

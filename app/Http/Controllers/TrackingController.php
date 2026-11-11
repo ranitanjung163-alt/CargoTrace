@@ -29,28 +29,39 @@ class TrackingController extends Controller
         $shipment = null;
         $weather = null;
 
+        $baseQuery = Shipment::with([
+            'customer',
+            'carrier',
+            'origin',
+            'destination',
+            'currentLocation',
+            'trackingEvents.creator',
+            'exceptions',
+        ]);
+
+        if ($user->isCustomer()) {
+            $baseQuery->where('customer_id', $user->id);
+        }
+
         if ($search) {
-            $query = Shipment::with([
-                'customer',
-                'carrier',
-                'origin',
-                'destination',
-                'currentLocation',
-                'trackingEvents.creator',
-                'exceptions',
-            ]);
-
-            if ($user->isCustomer()) {
-                $query->where('customer_id', $user->id);
-            }
-
-            $shipment = $query->where('shipment_number', trim($search))->first();
+            $shipment = (clone $baseQuery)->where('shipment_number', trim($search))->first();
+        } else {
+            // Default to an active or latest shipment when accessed so the Google Maps directions view immediately renders
+            $shipment = (clone $baseQuery)->whereIn('current_status', [
+                Shipment::STATUS_IN_TRANSIT,
+                Shipment::STATUS_PICKED_UP,
+                Shipment::STATUS_BOOKED,
+            ])->latest()->first() ?? (clone $baseQuery)->latest()->first();
 
             if ($shipment) {
-                $targetLoc = $shipment->currentLocation ?? $shipment->destination;
-                if ($targetLoc) {
-                    $weather = $this->weatherService->getWeather($targetLoc->latitude, $targetLoc->longitude);
-                }
+                $search = $shipment->shipment_number;
+            }
+        }
+
+        if ($shipment) {
+            $targetLoc = $shipment->currentLocation ?? $shipment->destination;
+            if ($targetLoc) {
+                $weather = $this->weatherService->getWeather($targetLoc->latitude, $targetLoc->longitude);
             }
         }
 
