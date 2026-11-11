@@ -494,10 +494,10 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const originLat = {{ $shipment->origin->latitude }};
-        const originLng = {{ $shipment->origin->longitude }};
-        const destLat = {{ $shipment->destination->latitude }};
-        const destLng = {{ $shipment->destination->longitude }};
+        const originLat = parseFloat("{{ $shipment->origin->latitude }}");
+        const originLng = parseFloat("{{ $shipment->origin->longitude }}");
+        const destLat = parseFloat("{{ $shipment->destination->latitude }}");
+        const destLng = parseFloat("{{ $shipment->destination->longitude }}");
 
         const map = L.map('shipmentMap', {
             zoomControl: true,
@@ -506,8 +506,10 @@
             worldCopyJump: true
         }).setView([originLat, originLng], 4);
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+        // OpenStreetMap Standard Tiles (Fast & 100% Guaranteed Available)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
         }).addTo(map);
 
         const routePoints = [[originLat, originLng]];
@@ -521,20 +523,25 @@
         });
         L.marker([originLat, originLng], { icon: originIcon }).addTo(map).bindPopup('<strong>Origin:</strong> {{ $shipment->origin->name }}<br>{{ $shipment->origin->city }}, {{ $shipment->origin->country }}');
 
-        // Waypoints from tracking events
-        @foreach($shipment->trackingEvents as $te)
-            @if($te->latitude && $te->longitude)
-                routePoints.push([{{ $te->latitude }}, {{ $te->longitude }}]);
-                bounds.push([{{ $te->latitude }}, {{ $te->longitude }}]);
+        // Waypoints from tracking events (Clean JS Loop with no duplicate const declarations)
+        const eventsData = @json($shipment->trackingEvents);
+        if (Array.isArray(eventsData)) {
+            eventsData.forEach(function(te) {
+                if (te.latitude && te.longitude) {
+                    const lat = parseFloat(te.latitude);
+                    const lng = parseFloat(te.longitude);
+                    routePoints.push([lat, lng]);
+                    bounds.push([lat, lng]);
 
-                const wpIcon = L.divIcon({
-                    className: 'custom-stop-marker',
-                    html: `<div class="w-3.5 h-3.5 rounded-full border-2 border-slate-700 bg-white shadow flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2"></div>`,
-                    iconSize: [14, 14]
-                });
-                L.marker([{{ $te->latitude }}, {{ $te->longitude }}], { icon: wpIcon }).addTo(map).bindPopup('<strong>{{ $te->event_type }}:</strong> {{ $te->location_name }}<br>{{ $te->event_time->format("Y-m-d H:i") }}');
-            @endif
-        @endforeach
+                    const stopIcon = L.divIcon({
+                        className: 'custom-stop-marker',
+                        html: `<div class="w-3.5 h-3.5 rounded-full border-2 border-slate-700 bg-white shadow flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2"></div>`,
+                        iconSize: [14, 14]
+                    });
+                    L.marker([lat, lng], { icon: stopIcon }).addTo(map).bindPopup(`<strong>${te.event_type}:</strong> ${te.location_name || ''}<br>${te.event_time}`);
+                }
+            });
+        }
 
         // Destination Marker (Classic Red Google Maps Pin)
         routePoints.push([destLat, destLng]);
@@ -591,7 +598,14 @@
             L.marker(midPt, { icon: etaBubble, zIndexOffset: 1000 }).addTo(map);
         }
 
-        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 8 });
+        if (bounds.length > 0) {
+            map.fitBounds(bounds, { padding: [40, 40], maxZoom: 8 });
+        }
+
+        // Force Leaflet recalculation after render
+        setTimeout(function() {
+            map.invalidateSize();
+        }, 200);
     });
 </script>
 @endpush
