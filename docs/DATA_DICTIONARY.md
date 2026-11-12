@@ -1,7 +1,7 @@
-# CargoTrace – Database Data Dictionary
-## Global Shipment Visibility & Tracking Platform (MySQL / MariaDB)
+# WorldCargo 360 – Database Data Dictionary
+## Global Logistics & Shipment Tracking System (MySQL / MariaDB)
 
-This document provides a comprehensive technical reference for the nine core database tables, column specifications, data types, constraints, default values, and relational integrity rules implemented in **CargoTrace**.
+This document provides a comprehensive technical reference for the nine core database tables, column specifications, data types, constraints, default values, and relational integrity rules implemented in **WorldCargo 360**.
 
 ---
 
@@ -198,3 +198,4 @@ Immutable compliance and security trail recording critical data mutations.
 5. **`tracking_events` $\to$ `shipments` (`shipment_id`):** `onDelete('cascade')` cleans up chronological scans upon shipment cancellation.
 6. **`shipment_exceptions` $\to$ `shipments` (`shipment_id`):** `onDelete('cascade')` links exception lifecycles to parent orders.
 7. **`audit_logs` $\to$ `users` (`user_id`):** `onDelete('set null')` permanently preserves forensic audit records even if an operator account is purged.
+

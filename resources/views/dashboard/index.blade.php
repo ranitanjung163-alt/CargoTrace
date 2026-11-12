@@ -1,4 +1,4 @@
-@extends('layouts.app', ['title' => 'Dashboard'])
+@extends('layouts.app', ['title' => 'WorldCargo 360 Dashboard'])
 
 @section('content')
 <div class="space-y-6">
@@ -19,7 +19,7 @@
                     </span>
                 </div>
                 <p class="text-xs text-brand-secondary mt-0.5">
-                    CargoTrace International Fleet Operations &bull; Real-time Worldwide Visibility Network
+                    WorldCargo 360 &bull; Track Beyond Borders. &bull; Global Logistics &amp; Shipment Tracking System
                 </p>
             </div>
         </div>

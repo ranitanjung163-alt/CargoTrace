@@ -1,4 +1,5 @@
-# CargoTrace – Global Shipment Visibility & Tracking Platform
+# WorldCargo 360 – Global Logistics & Shipment Tracking System
+### *Track Beyond Borders.*
 
 [![Laravel Version](https://img.shields.io/badge/Laravel-12.x-red.svg)](https://laravel.com)
 [![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-blue.svg)](https://php.net)
@@ -8,6 +9,8 @@
 
 > **Individual Final Project (UAS) – Web Programming 2**  
 > **Course Lecturer:** Pak Ikhwan  
+> **Platform Name:** WorldCargo 360 (WORLDCARGO 360)  
+> **Official Tagline:** Track Beyond Borders.  
 > **Scenario Configuration:** Worldwide Route Coverage, 12-Hour Delay Threshold, `WEATHER_DELAY` Primary Disruption Model, `On-time delivery rate` Core KPI.
 
 ---
@@ -20,7 +23,7 @@ International logistics faces critical visibility challenges:
 - Route delays and customs/weather exceptions are detected late, resulting in costly SLA breaches.
 - Operations dispatchers lack prioritized dashboards to proactively mitigate in-transit issues.
 
-**CargoTrace** solves these challenges by providing a centralized global visibility and tracking platform. The application models end-to-end shipment lifecycles, delivers interactive worldwide maps, calculates deterministic delay metrics against contractual SLAs, integrates live weather and geocoding services, and exposes a hardened RESTful API with strict role-based access control (RBAC).
+**WorldCargo 360** solves these challenges by providing a centralized global visibility and tracking platform. The application models end-to-end shipment lifecycles, delivers interactive worldwide maps, calculates deterministic delay metrics against contractual SLAs, integrates live weather and geocoding services, and exposes a hardened RESTful API with strict role-based access control (RBAC).
 
 ---
 
@@ -166,7 +169,7 @@ The test suite covers all 18 mandatory evaluation criteria required by the cours
 php artisan test
 ```
 
-### Test Evidence (20/20 Passing)
+### Test Evidence (25/25 Passing, 94 Assertions)
 ```
 PASS  Tests\Unit\ExampleTest
 ✓ that true is true
@@ -190,12 +193,17 @@ PASS  Tests\Feature\CargoTraceCompleteTestSuiteTest
 ✓ 16 api authorization
 ✓ 17 global coordinate validation
 ✓ 18 geocoding api error handling
+✓ 19 weather api integration and mock
+✓ 20 audit logging on status update and deletion
+✓ 21 in-app notification creation
+✓ 22 report analytics aggregate calculations
+✓ 23 international coordinates boundary verification
+✓ 24 customer profile security update
 
 PASS  Tests\Feature\ExampleTest
 ✓ the application redirects guest to login
 
-Tests:    20 passed (63 assertions)
-Duration: 2.54s
+Tests:    25 passed (94 assertions)
 ```
 
 ---

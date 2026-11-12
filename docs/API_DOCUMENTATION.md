@@ -1,6 +1,7 @@
-# CargoTrace – REST API Documentation
+# WorldCargo 360 – REST API Documentation
+### *Track Beyond Borders.*
 
-CargoTrace provides a complete RESTful API built on Laravel 12 and authenticated with **Laravel Sanctum**.
+**WorldCargo 360** provides a complete RESTful API built on Laravel 12 and authenticated with **Laravel Sanctum**.
 
 All requests and responses use standard JSON formatting:
 - Content-Type: `application/json`
@@ -186,7 +187,7 @@ All requests and responses use standard JSON formatting:
           "location_name": "Los Angeles Port Hub",
           "latitude": 34.052235,
           "longitude": -118.243683,
-          "description": "Shipment booking generated and processed in CargoTrace."
+          "description": "Shipment booking generated and processed in WorldCargo 360."
         }
       ]
     }

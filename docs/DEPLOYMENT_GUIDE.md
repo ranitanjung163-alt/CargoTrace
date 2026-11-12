@@ -1,6 +1,7 @@
-# CargoTrace – Deployment & Production Guide
+# WorldCargo 360 – Deployment & Production Guide
+### *Track Beyond Borders.*
 
-This guide describes how to deploy the CargoTrace Global Shipment Visibility Platform to a production VPS, cloud server (AWS, DigitalOcean, Hetzner, etc.), or shared hosting environment.
+This guide describes how to deploy the **WorldCargo 360 – Global Logistics & Shipment Tracking System** to a production VPS, cloud server (AWS, DigitalOcean, Hetzner, etc.), or shared hosting environment.
 
 ---
 
@@ -19,7 +20,7 @@ This guide describes how to deploy the CargoTrace Global Shipment Visibility Pla
 Create a production `.env` file on the server:
 
 ```env
-APP_NAME=CargoTrace
+APP_NAME="WorldCargo 360"
 APP_ENV=production
 APP_KEY=base64:YOUR_GENERATED_APP_KEY
 APP_DEBUG=false
@@ -42,7 +43,7 @@ QUEUE_CONNECTION=database
 CARGOTRACE_DELAY_THRESHOLD_HOURS=12
 CARGOTRACE_MAIN_EXCEPTION=WEATHER_DELAY
 CARGOTRACE_MAIN_KPI=on_time_delivery_rate
-CARGOTRACE_NOMINATIM_USER_AGENT="CargoTrace-GlobalTracking/1.0 (production-deployment)"
+CARGOTRACE_NOMINATIM_USER_AGENT="WorldCargo360-GlobalTracking/1.0 (production-deployment)"
 WEATHER_API_URL=https://api.open-meteo.com/v1/forecast
 WEATHER_API_KEY=
 ```

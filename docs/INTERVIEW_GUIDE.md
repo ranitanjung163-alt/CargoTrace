@@ -1,7 +1,8 @@
 # Panduan Presentasi & Tanya Jawab Penguasaan Kode (Code Ownership)
-## Proyek UAS Pemrograman Web: CargoTrace – Global Shipment Visibility & Tracking Platform
+## Proyek UAS Pemrograman Web: WorldCargo 360 – Global Logistics & Shipment Tracking System
+### *Tagline Resmi: Track Beyond Borders.*
 
-Dokumentasi ini disusun khusus untuk membantu mahasiswa dalam memahami seluruh alur arsitektur, *business logic*, dan implementasi kode pada proyek individu **CargoTrace**, serta siap menghadapi sesi wawancara / tanya jawab (*code ownership interview*) di hadapan dosen penguji.
+Dokumentasi ini disusun khusus untuk membantu mahasiswa dalam memahami seluruh alur arsitektur, *business logic*, dan implementasi kode pada proyek individu **WorldCargo 360**, serta siap menghadapi sesi wawancara / tanya jawab (*code ownership interview*) di hadapan dosen penguji.
 
 ---
 

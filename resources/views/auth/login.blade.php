@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In – CargoTrace Global Visibility</title>
+    <title>Sign In – WorldCargo 360 &bull; Track Beyond Borders.</title>
+    <meta name="description" content="WorldCargo 360 – Global Logistics & Shipment Tracking System. Track Beyond Borders.">
+    <!-- SVG Favicon with Globe & Cargo Box -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563EB' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9.5' stroke='%232563EB' stroke-width='1.5' stroke-opacity='0.4'/%3E%3Cellipse cx='12' cy='12' rx='9.5' ry='3.5' transform='rotate(-25 12 12)' stroke='%230EA5E9' stroke-width='1.5' stroke-dasharray='2 1'/%3E%3Cpath d='M12 6.5L17 9.2V14.8L12 17.5L7 14.8V9.2L12 6.5Z' fill='%232563EB' fill-opacity='0.25' stroke='%231D4ED8' stroke-width='1.8' stroke-linejoin='round'/%3E%3Cpath d='M12 6.5V17.5' stroke='%231D4ED8' stroke-width='1.8'/%3E%3Cpath d='M7 9.2L12 12L17 9.2' stroke='%231D4ED8' stroke-width='1.8' stroke-linejoin='round'/%3E%3C/svg%3E">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -51,15 +54,23 @@
         <!-- Subtle Top Brand Gradient Bar -->
         <div class="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-blue-600 via-brand-primary to-sky-400"></div>
 
-        <!-- Logo & Header -->
+        <!-- Logo & Header: WorldCargo 360 -->
         <div class="text-center mb-8">
-            <div class="inline-flex w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 via-brand-primary to-sky-400 items-center justify-center text-white mb-3 shadow-glow-primary transform hover:scale-105 transition-transform duration-200">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            <div class="inline-flex w-16 h-16 rounded-3xl bg-gradient-to-tr from-blue-700 via-brand-primary to-sky-400 items-center justify-center text-white mb-3.5 shadow-glow-primary transform hover:scale-105 transition-transform duration-200">
+                <svg class="w-9 h-9 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.4" stroke-opacity="0.45" />
+                    <ellipse cx="12" cy="12" rx="9.5" ry="3.5" transform="rotate(-25 12 12)" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2 1" stroke-opacity="0.85" />
+                    <path d="M12 6.5L17 9.2V14.8L12 17.5L7 14.8V9.2L12 6.5Z" fill="white" fill-opacity="0.2" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                    <path d="M12 6.5V17.5" stroke="currentColor" stroke-width="1.6" />
+                    <path d="M7 9.2L12 12L17 9.2" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
                 </svg>
             </div>
-            <h1 class="text-2xl font-extrabold text-brand-navy tracking-tight">Cargo<span class="text-brand-primary">Trace</span></h1>
-            <p class="text-xs text-brand-secondary font-medium mt-1">Global Shipment Visibility & Tracking Platform</p>
+            <h1 class="text-2xl font-black text-brand-navy tracking-tight flex items-center justify-center">
+                World<span class="text-brand-primary">Cargo</span>
+                <span class="ml-1.5 px-2 py-0.5 text-xs font-black bg-gradient-to-r from-blue-600 to-sky-500 text-white rounded-md tracking-wider">360</span>
+            </h1>
+            <p class="text-xs font-bold text-brand-primary tracking-wide mt-1">Track Beyond Borders.</p>
+            <p class="text-[11px] text-brand-secondary font-medium mt-0.5">Global Logistics &amp; Shipment Tracking System</p>
         </div>
 
         @if(session('success'))

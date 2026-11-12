@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Dashboard' }} – CargoTrace Global Visibility</title>
+    <title>{{ isset($title) ? $title . ' – WorldCargo 360' : 'WorldCargo 360 – Global Logistics & Shipment Tracking System' }}</title>
+    <meta name="description" content="WorldCargo 360 – Global Logistics & Shipment Tracking System. Track Beyond Borders with real-time worldwide cargo visibility.">
+    <meta name="application-name" content="WorldCargo 360">
+
+    <!-- SVG Favicon with Globe & Cargo Box -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563EB' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9.5' stroke='%232563EB' stroke-width='1.5' stroke-opacity='0.4'/%3E%3Cellipse cx='12' cy='12' rx='9.5' ry='3.5' transform='rotate(-25 12 12)' stroke='%230EA5E9' stroke-width='1.5' stroke-dasharray='2 1'/%3E%3Cpath d='M12 6.5L17 9.2V14.8L12 17.5L7 14.8V9.2L12 6.5Z' fill='%232563EB' fill-opacity='0.25' stroke='%231D4ED8' stroke-width='1.8' stroke-linejoin='round'/%3E%3Cpath d='M12 6.5V17.5' stroke='%231D4ED8' stroke-width='1.8'/%3E%3Cpath d='M7 9.2L12 12L17 9.2' stroke='%231D4ED8' stroke-width='1.8' stroke-linejoin='round'/%3E%3C/svg%3E">
 
     <!-- Tailwind CSS CDN with Enhanced Light Theme Config -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -92,19 +97,25 @@
         <!-- ================= SIDEBAR ================= -->
         <aside id="sidebar" class="w-64 bg-white border-r border-brand-border flex flex-col justify-between transition-all duration-300 z-30 shrink-0 shadow-soft-sm">
             <div>
-                <!-- Brand Logo (Creative High-End Identity) -->
+                <!-- Brand Logo: WorldCargo 360 -->
                 <div class="h-20 flex items-center px-6 border-b border-brand-border/80">
                     <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 group">
-                        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-brand-primary to-sky-400 flex items-center justify-center text-white shadow-glow-primary transform group-hover:scale-105 transition-transform duration-200">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                        <!-- Custom Globe + Cargo Package SVG Logo -->
+                        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-700 via-brand-primary to-sky-400 flex items-center justify-center text-white shadow-glow-primary transform group-hover:scale-105 transition-transform duration-200 relative overflow-hidden shrink-0">
+                            <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.4" stroke-opacity="0.45" />
+                                <ellipse cx="12" cy="12" rx="9.5" ry="3.5" transform="rotate(-25 12 12)" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2 1" stroke-opacity="0.85" />
+                                <path d="M12 6.5L17 9.2V14.8L12 17.5L7 14.8V9.2L12 6.5Z" fill="white" fill-opacity="0.2" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                                <path d="M12 6.5V17.5" stroke="currentColor" stroke-width="1.6" />
+                                <path d="M7 9.2L12 12L17 9.2" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
                             </svg>
                         </div>
-                        <div>
-                            <span class="text-xl font-extrabold tracking-tight text-brand-navy flex items-center">
-                                Cargo<span class="text-brand-primary">Trace</span>
+                        <div class="leading-tight">
+                            <span class="text-lg font-black tracking-tight text-brand-navy flex items-center">
+                                World<span class="text-brand-primary">Cargo</span>
+                                <span class="ml-1.5 px-1.5 py-0.5 text-[9px] font-black bg-gradient-to-r from-blue-600 to-sky-500 text-white rounded-md tracking-wider">360</span>
                             </span>
-                            <span class="block text-[10px] uppercase font-bold tracking-widest text-brand-secondary/80">Global Visibility</span>
+                            <span class="block text-[8px] uppercase font-black tracking-widest text-brand-secondary/90 mt-0.5">Global Logistics System</span>
                         </div>
                     </a>
                 </div>
@@ -364,6 +375,18 @@
 
                 <!-- Yield Page Content -->
                 @yield('content')
+
+                <!-- Global Brand Footer: WorldCargo 360 -->
+                <footer class="mt-12 py-6 border-t border-brand-border/80 text-center text-xs text-brand-secondary flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="flex items-center space-x-2">
+                        <span class="font-black text-brand-navy">WorldCargo 360</span>
+                        <span>&bull;</span>
+                        <span class="font-bold text-brand-primary">Track Beyond Borders.</span>
+                    </div>
+                    <div class="text-[11px] text-slate-400">
+                        Global Logistics &amp; Shipment Tracking System &bull; UAS Web Programming 2
+                    </div>
+                </footer>
             </main>
         </div>
     </div>

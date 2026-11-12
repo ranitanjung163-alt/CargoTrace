@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'role' => User::ROLE_ADMIN,
                 'phone' => '+1-555-0100',
-                'company_name' => 'CargoTrace Global HQ',
+                'company_name' => 'WorldCargo 360 Global HQ',
                 'avatar_url' => 'https://ui-avatars.com/api/?name=Admin+HQ&background=3182CE&color=fff',
             ]
         );
@@ -447,7 +447,7 @@ class DatabaseSeeder extends Seeder
                     'latitude' => $shipment->origin->latitude,
                     'longitude' => $shipment->origin->longitude,
                     'status_after_event' => 'CREATED',
-                    'description' => 'Shipment booking generated and processed in CargoTrace.',
+                    'description' => 'Shipment booking generated and processed in WorldCargo 360.',
                     'is_exception' => false,
                     'created_by' => $operator->id,
                 ]
@@ -609,7 +609,7 @@ class DatabaseSeeder extends Seeder
                 'old_values' => null,
                 'new_values' => ['version' => '1.0.0', 'environment' => 'production_ready'],
                 'ip_address' => '127.0.0.1',
-                'user_agent' => 'CargoTrace-System/1.0',
+                'user_agent' => 'WorldCargo360-System/1.0',
                 'created_at' => now()->subDays(7),
             ]
         );
@@ -622,7 +622,7 @@ class DatabaseSeeder extends Seeder
                 'old_values' => ['status' => 'BOOKED'],
                 'new_values' => ['status' => 'IN_TRANSIT'],
                 'ip_address' => '127.0.0.1',
-                'user_agent' => 'CargoTrace-System/1.0',
+                'user_agent' => 'WorldCargo360-System/1.0',
                 'created_at' => now()->subDays(2),
             ]
         );

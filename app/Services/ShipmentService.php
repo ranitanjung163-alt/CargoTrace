@@ -81,7 +81,7 @@ class ShipmentService
                 'latitude' => $shipment->origin->latitude ?? null,
                 'longitude' => $shipment->origin->longitude ?? null,
                 'status_after_event' => Shipment::STATUS_CREATED,
-                'description' => 'Shipment order created and registered in CargoTrace system.',
+                'description' => 'Shipment order created and registered in WorldCargo 360 system.',
                 'is_exception' => false,
                 'created_by' => $userId,
             ]);

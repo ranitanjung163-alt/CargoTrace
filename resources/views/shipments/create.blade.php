@@ -11,7 +11,7 @@
                     Registration
                 </span>
             </div>
-            <p class="text-xs text-brand-secondary mt-0.5">Register an international freight consignment into the CargoTrace visibility network</p>
+            <p class="text-xs text-brand-secondary mt-0.5">Register an international freight consignment into the WorldCargo 360 global tracking network</p>
         </div>
         <a href="{{ route('shipments.index') }}" class="inline-flex items-center px-4 py-2 bg-brand-bg hover:bg-slate-200/60 border border-brand-border rounded-xl text-xs font-bold text-brand-navy transition-all shadow-xs">
             &larr; Back to Fleet

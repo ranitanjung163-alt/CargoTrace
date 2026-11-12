@@ -248,7 +248,7 @@ class ShipmentController extends Controller
 
         $query = $this->buildShipmentsQuery($request, $user);
 
-        $fileName = 'cargotrace_shipments_' . date('Y-m-d_His') . '.csv';
+        $fileName = 'worldcargo360_shipments_' . date('Y-m-d_His') . '.csv';
 
         return response()->streamDownload(function () use ($query) {
             $handle = fopen('php://output', 'w');

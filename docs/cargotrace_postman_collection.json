@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "cargotrace-uas-collection-2026",
-    "name": "CargoTrace REST API - Complete UAS Collection",
-    "description": "Comprehensive Postman Collection for CargoTrace Global Shipment Visibility & Tracking Platform (Laravel 12+ Sanctum API).",
+    "name": "WorldCargo 360 REST API - Complete UAS Collection",
+    "description": "Comprehensive Postman Collection for WorldCargo 360 Global Logistics & Shipment Tracking System (Laravel 12+ Sanctum API).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
