@@ -14,7 +14,7 @@ use Illuminate\View\View;
 class DashboardController extends Controller
 {
     /**
-     * Display the main CargoTrace dashboard adhering to lecturer reference specifications.
+     * Display the main WorldCargo 360 dashboard adhering to lecturer reference specifications.
      */
     public function index(Request $request): View
     {

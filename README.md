@@ -193,17 +193,17 @@ PASS  Tests\Feature\CargoTraceCompleteTestSuiteTest
 ✓ 16 api authorization
 ✓ 17 global coordinate validation
 ✓ 18 geocoding api error handling
-✓ 19 weather api integration and mock
-✓ 20 audit logging on status update and deletion
-✓ 21 in-app notification creation
-✓ 22 report analytics aggregate calculations
-✓ 23 international coordinates boundary verification
-✓ 24 customer profile security update
+✓ 19 eta threshold 12 hours and edge cases
+✓ 20 on time delivery rate calculation
+✓ 21 coordinate edge cases zero negative and limits
+✓ 22 weather service failure and unavailable state
+✓ 23 csv export filters and formula injection prevention
 
 PASS  Tests\Feature\ExampleTest
 ✓ the application redirects guest to login
 
-Tests:    25 passed (94 assertions)
+Tests:    25 passed, 0 failed, 0 skipped (94 assertions)
+Duration: 3.48s
 ```
 
 ---

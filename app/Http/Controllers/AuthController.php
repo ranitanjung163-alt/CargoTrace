@@ -96,7 +96,7 @@ class AuthController extends Controller
         );
 
         return redirect()->route('dashboard')
-            ->with('success', 'Registration successful! Welcome to CargoTrace.');
+            ->with('success', 'Registration successful! Welcome to WorldCargo 360.');
     }
 
     public function logout(Request $request): RedirectResponse

@@ -46,7 +46,7 @@ class GeocodingService
         $cacheKey = 'geocode_' . md5($normalizedQuery);
 
         return Cache::remember($cacheKey, now()->addDays(30), function () use ($normalizedQuery, $query) {
-            $userAgent = config('cargotrace.nominatim_user_agent', 'CargoTrace-GlobalTracking/1.0');
+            $userAgent = config('cargotrace.nominatim_user_agent', 'WorldCargo360-GlobalTracking/1.0');
 
             try {
                 $response = Http::withHeaders([

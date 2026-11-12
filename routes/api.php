@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| CargoTrace REST API Routes (Laravel Sanctum)
+| WorldCargo 360 REST API Routes (Laravel Sanctum)
 |--------------------------------------------------------------------------
 */
 

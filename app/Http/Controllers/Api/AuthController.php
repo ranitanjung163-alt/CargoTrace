@@ -40,7 +40,7 @@ class AuthController extends Controller
             'avatar_url' => 'https://ui-avatars.com/api/?name=' . urlencode($request->name) . '&background=3182CE&color=fff',
         ]);
 
-        $token = $user->createToken('cargotrace_api_token')->plainTextToken;
+        $token = $user->createToken('worldcargo360_api_token')->plainTextToken;
 
         AuditLog::record('API_REGISTER', 'User', $user->id, null, ['email' => $user->email], $user->id);
 
@@ -84,7 +84,7 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $token = $user->createToken('cargotrace_api_token')->plainTextToken;
+        $token = $user->createToken('worldcargo360_api_token')->plainTextToken;
 
         AuditLog::record('API_LOGIN', 'User', $user->id, null, ['email' => $user->email], $user->id);
 
