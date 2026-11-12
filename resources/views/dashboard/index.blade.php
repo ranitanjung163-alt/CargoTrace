@@ -190,7 +190,7 @@
         </div>
 
         <!-- Center: Delay Rate by Carrier (Donut Chart) -->
-        <div class="lg:col-span-4 bg-white p-6 rounded-2xl border border-brand-border shadow-soft-sm flex flex-col justify-between">
+        <div class="lg:col-span-4 bg-white p-5 sm:p-6 rounded-2xl border border-brand-border shadow-soft-sm flex flex-col justify-between overflow-hidden">
             <div>
                 <div class="flex items-center justify-between mb-1">
                     <h2 class="text-base font-bold text-brand-navy">Delay Rate by Carrier</h2>
@@ -199,29 +199,29 @@
                 <p class="text-xs text-brand-secondary mb-4">SLA reliability metrics across contracted logistics carriers</p>
             </div>
 
-            <div class="flex items-center justify-between gap-4 my-auto">
+            <div class="flex items-center justify-between gap-3 sm:gap-4 my-auto min-w-0">
                 <!-- Donut Canvas with Center Text Overlay -->
-                <div class="w-40 h-40 relative shrink-0">
+                <div class="w-28 h-28 sm:w-32 sm:h-32 relative shrink-0">
                     <canvas id="carrierDonutChart"></canvas>
-                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span class="text-xl font-extrabold text-brand-navy leading-none">{{ $overallDelayRate }}%</span>
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-brand-secondary mt-1">Overall Delay Rate</span>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-1">
+                        <span class="text-base sm:text-lg font-black text-brand-navy leading-none">{{ $overallDelayRate }}%</span>
+                        <span class="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-brand-secondary mt-1 leading-tight">Overall Delay</span>
                         @if($avgDelayHours > 0)
-                            <span class="text-[9px] font-semibold text-slate-500 mt-0.5">Avg: {{ $avgDelayHours }}h</span>
+                            <span class="text-[8px] font-semibold text-slate-500 mt-0.5 leading-tight">Avg: {{ $avgDelayHours }}h</span>
                         @endif
                     </div>
                 </div>
 
                 <!-- Carrier Progress Breakdown (Matching Lecturer Photo: FastShip, CargoPro, Logistics Partners) -->
-                <div class="flex-1 space-y-3">
+                <div class="flex-1 min-w-0 space-y-2.5 sm:space-y-3">
                     @forelse($carrierStats as $cStat)
-                    <div>
-                        <div class="flex items-center justify-between text-xs mb-1">
-                            <div class="flex items-center space-x-2 truncate">
-                                <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: {{ ['#3182CE', '#E59A32', '#16A36A', '#DC6262', '#8B5CF6'][$loop->index % 5] }};"></span>
-                                <span class="font-bold text-brand-navy truncate">{{ $cStat['name'] }}</span>
+                    <div class="min-w-0">
+                        <div class="flex items-center justify-between text-xs mb-1 gap-1.5">
+                            <div class="flex items-center space-x-1.5 min-w-0 truncate">
+                                <span class="w-2 h-2 rounded-full shrink-0" style="background-color: {{ ['#3182CE', '#E59A32', '#16A36A', '#DC6262', '#8B5CF6'][$loop->index % 5] }};"></span>
+                                <span class="font-bold text-brand-navy truncate text-xs" title="{{ $cStat['name'] }}">{{ $cStat['name'] }}</span>
                             </div>
-                            <span class="font-mono font-extrabold text-brand-navy pl-1">{{ $cStat['rate'] }}%</span>
+                            <span class="font-mono font-extrabold text-brand-navy shrink-0 text-xs pl-1">{{ $cStat['rate'] }}%</span>
                         </div>
                         <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
                             <div class="h-1.5 rounded-full transition-all duration-500"
@@ -234,9 +234,9 @@
                 </div>
             </div>
 
-            <div class="mt-4 pt-3 border-t border-brand-border text-[11px] text-brand-secondary flex items-center justify-between">
-                <span>Formula: <code class="bg-slate-100 px-1 py-0.5 rounded text-[10px] font-bold text-slate-700">(Delayed / Total) * 100</code></span>
-                <span class="font-bold text-brand-navy">Active Fleet</span>
+            <div class="mt-4 pt-3 border-t border-brand-border text-[11px] text-brand-secondary flex items-center justify-between min-w-0">
+                <span class="truncate pr-2">Formula: <code class="bg-slate-100 px-1 py-0.5 rounded text-[10px] font-bold text-slate-700">(Delayed / Total) * 100</code></span>
+                <span class="font-bold text-brand-navy shrink-0">Active Fleet</span>
             </div>
         </div>
 
@@ -600,15 +600,15 @@
                 datasets: [{
                     data: carrierRates.length ? carrierRates : [100],
                     backgroundColor: palette.slice(0, Math.max(carrierLabels.length, 1)),
-                    borderWidth: 3,
+                    borderWidth: 2,
                     borderColor: '#FFFFFF',
-                    hoverOffset: 6
+                    hoverOffset: 4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '74%',
+                cutout: '70%',
                 plugins: {
                     legend: { display: false },
                     tooltip: {
