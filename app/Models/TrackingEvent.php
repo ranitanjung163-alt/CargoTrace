@@ -52,8 +52,9 @@ class TrackingEvent extends Model
     /**
      * Validate tracking event attributes against system business rules.
      */
-    public static function validateEventPayload(array $data): void
+    public static function validateEventPayload(array $data, ?Shipment $shipment = null): void
     {
+        // 1. Coordinates validation (-90..90, -180..180)
         if (isset($data['latitude']) && $data['latitude'] !== null && $data['latitude'] !== '') {
             $lat = (float) $data['latitude'];
             if ($lat < -90.0 || $lat > 90.0) {
@@ -68,12 +69,33 @@ class TrackingEvent extends Model
             }
         }
 
+        // 2. Status after event validation
         if (isset($data['status_after_event']) && ! empty($data['status_after_event'])) {
             $isException = ! empty($data['is_exception']);
             if (! $isException && ! in_array($data['status_after_event'], Shipment::STATUSES, true)) {
                 throw new \InvalidArgumentException("Status after event [{$data['status_after_event']}] is invalid.");
             }
         }
+
+        // 3. Location foreign key validation
+        if (isset($data['location_id']) && ! empty($data['location_id'])) {
+            $locId = (int) $data['location_id'];
+            if (! Location::where('id', $locId)->exists()) {
+                throw new \InvalidArgumentException("Referenced location ID [{$locId}] does not exist.");
+            }
+        }
+
+        // 4. Location Name validation
+        if (array_key_exists('location_name', $data) && empty(trim($data['location_name'] ?? ''))) {
+            throw new \InvalidArgumentException("Location name is required for tracking events.");
+        }
+
+        // 5. Creator user foreign key validation
+        if (isset($data['created_by']) && ! empty($data['created_by'])) {
+            $userId = (int) $data['created_by'];
+            if (! User::where('id', $userId)->exists()) {
+                throw new \InvalidArgumentException("Tracking event creator with user ID [{$userId}] does not exist.");
+            }
+        }
     }
 }
-

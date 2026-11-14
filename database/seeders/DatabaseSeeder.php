@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database with realistic international logistics data.
-     * All entities use idempotent updateOrCreate with stable composite keys.
+     * All entities use idempotent updateOrCreate with stable canonical signatures.
      * Tracking events are generated in strict chronological progression:
      * CREATED -> BOOKED -> PICKED_UP -> IN_TRANSIT -> [EXCEPTIONS] -> DELIVERED.
      */
@@ -450,21 +450,11 @@ class DatabaseSeeder extends Seeder
             // 5. DELIVERED: Occurs at actual delivered timestamp (strictly after in_transit)
             $deliveredTime = $actualDelivered ? $actualDelivered->copy() : Carbon::parse($sData['expected_arrival'] ?? now());
 
-            // Prepare shipment payload with synchronized created_at
-            $sDataWithTimestamp = array_merge($sData, ['created_at' => $createdTime]);
-
+            // Update or create shipment without mutating historical created_at on existing records
             $shipment = Shipment::updateOrCreate(
                 ['shipment_number' => $shipmentNumber],
-                $sDataWithTimestamp
+                $sData
             );
-
-            // Ensure shipment created_at does not post-date the booking in the database
-            if ($shipment->created_at > $createdTime) {
-                $shipment->timestamps = false;
-                $shipment->created_at = $createdTime;
-                $shipment->save();
-                $shipment->timestamps = true;
-            }
 
             // Create items (idempotent via updateOrCreate)
             ShipmentItem::updateOrCreate(
@@ -478,9 +468,13 @@ class DatabaseSeeder extends Seeder
                 ]
             );
 
-            // EVENT 1: CREATED (Initial order creation)
+            // EVENT 1: CREATED (Initial order creation milestone)
             TrackingEvent::updateOrCreate(
-                ['shipment_id' => $shipment->id, 'event_type' => 'CREATED'],
+                [
+                    'shipment_id' => $shipment->id,
+                    'event_type' => 'CREATED',
+                    'description' => 'Shipment booking generated and processed in WorldCargo 360.',
+                ],
                 [
                     'event_time' => $createdTime,
                     'location_id' => $shipment->origin_location_id,
@@ -488,16 +482,19 @@ class DatabaseSeeder extends Seeder
                     'latitude' => $shipment->origin->latitude,
                     'longitude' => $shipment->origin->longitude,
                     'status_after_event' => 'CREATED',
-                    'description' => 'Shipment booking generated and processed in WorldCargo 360.',
                     'is_exception' => false,
                     'created_by' => $operator->id,
                 ]
             );
 
-            // EVENT 2: BOOKED (Carrier slot confirmed)
+            // EVENT 2: BOOKED (Carrier slot confirmed milestone)
             if ($shipment->current_status !== Shipment::STATUS_CREATED) {
                 TrackingEvent::updateOrCreate(
-                    ['shipment_id' => $shipment->id, 'event_type' => 'BOOKED'],
+                    [
+                        'shipment_id' => $shipment->id,
+                        'event_type' => 'BOOKED',
+                        'description' => 'Carrier booking slot confirmed. Awaiting terminal pickup.',
+                    ],
                     [
                         'event_time' => $bookedTime,
                         'location_id' => $shipment->origin_location_id,
@@ -505,21 +502,20 @@ class DatabaseSeeder extends Seeder
                         'latitude' => $shipment->origin->latitude,
                         'longitude' => $shipment->origin->longitude,
                         'status_after_event' => 'BOOKED',
-                        'description' => 'Carrier booking slot confirmed. Awaiting terminal pickup.',
                         'is_exception' => false,
                         'created_by' => $operator->id,
                     ]
                 );
-            } else {
-                TrackingEvent::where('shipment_id', $shipment->id)
-                    ->where('event_type', 'BOOKED')
-                    ->delete();
             }
 
-            // EVENT 3: PICKED_UP (Consignment picked up and loaded)
+            // EVENT 3: PICKED_UP (Consignment picked up and loaded milestone)
             if (in_array($shipment->current_status, [Shipment::STATUS_PICKED_UP, Shipment::STATUS_IN_TRANSIT, Shipment::STATUS_DELIVERED], true)) {
                 TrackingEvent::updateOrCreate(
-                    ['shipment_id' => $shipment->id, 'event_type' => 'PICKED_UP'],
+                    [
+                        'shipment_id' => $shipment->id,
+                        'event_type' => 'PICKED_UP',
+                        'description' => 'Consignment picked up and loaded by carrier dispatch.',
+                    ],
                     [
                         'event_time' => $pickedUpTime,
                         'location_id' => $shipment->origin_location_id,
@@ -527,21 +523,20 @@ class DatabaseSeeder extends Seeder
                         'latitude' => $shipment->origin->latitude,
                         'longitude' => $shipment->origin->longitude,
                         'status_after_event' => 'PICKED_UP',
-                        'description' => 'Consignment picked up and loaded by carrier dispatch.',
                         'is_exception' => false,
                         'created_by' => $operator->id,
                     ]
                 );
-            } else {
-                TrackingEvent::where('shipment_id', $shipment->id)
-                    ->where('event_type', 'PICKED_UP')
-                    ->delete();
             }
 
-            // EVENT 4: IN_TRANSIT (En route via primary corridor)
+            // EVENT 4: IN_TRANSIT (En route via primary corridor milestone)
             if (in_array($shipment->current_status, [Shipment::STATUS_IN_TRANSIT, Shipment::STATUS_DELIVERED], true)) {
                 TrackingEvent::updateOrCreate(
-                    ['shipment_id' => $shipment->id, 'event_type' => 'IN_TRANSIT'],
+                    [
+                        'shipment_id' => $shipment->id,
+                        'event_type' => 'IN_TRANSIT',
+                        'description' => 'Shipment is en route through scheduled international transit corridor.',
+                    ],
                     [
                         'event_time' => $inTransitTime,
                         'location_id' => $shipment->current_location_id,
@@ -549,21 +544,20 @@ class DatabaseSeeder extends Seeder
                         'latitude' => $shipment->currentLocation->latitude ?? 35.0,
                         'longitude' => $shipment->currentLocation->longitude ?? -100.0,
                         'status_after_event' => 'IN_TRANSIT',
-                        'description' => 'Shipment is en route through scheduled international transit corridor.',
                         'is_exception' => false,
                         'created_by' => $operator->id,
                     ]
                 );
-            } else {
-                TrackingEvent::where('shipment_id', $shipment->id)
-                    ->where('event_type', 'IN_TRANSIT')
-                    ->delete();
             }
 
-            // EVENT 5: DELIVERED (Final delivery confirmed)
+            // EVENT 5: DELIVERED (Final delivery confirmed milestone)
             if ($shipment->current_status === Shipment::STATUS_DELIVERED) {
                 TrackingEvent::updateOrCreate(
-                    ['shipment_id' => $shipment->id, 'event_type' => 'DELIVERED'],
+                    [
+                        'shipment_id' => $shipment->id,
+                        'event_type' => 'DELIVERED',
+                        'description' => 'Package successfully delivered and signed by consignee.',
+                    ],
                     [
                         'event_time' => $deliveredTime,
                         'location_id' => $shipment->destination_location_id,
@@ -571,15 +565,10 @@ class DatabaseSeeder extends Seeder
                         'latitude' => $shipment->destination->latitude,
                         'longitude' => $shipment->destination->longitude,
                         'status_after_event' => 'DELIVERED',
-                        'description' => 'Package successfully delivered and signed by consignee.',
                         'is_exception' => false,
                         'created_by' => $operator->id,
                     ]
                 );
-            } else {
-                TrackingEvent::where('shipment_id', $shipment->id)
-                    ->where('event_type', 'DELIVERED')
-                    ->delete();
             }
         }
 
@@ -588,12 +577,21 @@ class DatabaseSeeder extends Seeder
         if ($delayedShipment) {
             $inTransitEvt = TrackingEvent::where('shipment_id', $delayedShipment->id)
                 ->where('event_type', 'IN_TRANSIT')
+                ->where('description', 'Shipment is en route through scheduled international transit corridor.')
                 ->first();
 
-            // Weather delay occurred mid-transit (strictly after IN_TRANSIT)
-            $weatherDetectedAt = Carbon::now()->subHours(14);
-            if ($inTransitEvt && $weatherDetectedAt->lte($inTransitEvt->event_time)) {
-                $weatherDetectedAt = Carbon::parse($inTransitEvt->event_time)->addHours(12);
+            // Weather delay occurred mid-transit (strictly AFTER in_transit)
+            $inTransitTime = $inTransitEvt ? Carbon::parse($inTransitEvt->event_time) : Carbon::parse($delayedShipment->expected_departure)->addHours(6);
+            $weatherDetectedAt = $inTransitTime->copy()->addHours(24);
+
+            // If shipment is delivered, ensure exception is strictly before delivery
+            if ($delayedShipment->isDelivered() && $delayedShipment->actual_delivered_at) {
+                $deliveredTime = Carbon::parse($delayedShipment->actual_delivered_at);
+                if ($weatherDetectedAt->gte($deliveredTime)) {
+                    $weatherDetectedAt = $inTransitTime->copy()->addMinutes(
+                        (int) ($deliveredTime->diffInMinutes($inTransitTime) / 2)
+                    );
+                }
             }
 
             $exception = ShipmentException::updateOrCreate(
@@ -607,9 +605,13 @@ class DatabaseSeeder extends Seeder
                 ]
             );
 
-            // Exception Tracking Event (idempotent updateOrCreate)
+            // Exception Tracking Event (idempotent updateOrCreate matching exact canonical description)
             TrackingEvent::updateOrCreate(
-                ['shipment_id' => $delayedShipment->id, 'event_type' => 'WEATHER_DELAY'],
+                [
+                    'shipment_id' => $delayedShipment->id,
+                    'event_type' => 'WEATHER_DELAY',
+                    'description' => 'EXCEPTION [WEATHER_DELAY]: Blizzard alert hold in Denver corridor. ETA rescheduled +18 hours.',
+                ],
                 [
                     'event_time' => $weatherDetectedAt,
                     'location_id' => $locModels['DEN']->id,
@@ -617,7 +619,6 @@ class DatabaseSeeder extends Seeder
                     'latitude' => 39.739236,
                     'longitude' => -104.990251,
                     'status_after_event' => 'IN_TRANSIT',
-                    'description' => 'EXCEPTION [WEATHER_DELAY]: Blizzard alert hold in Denver corridor. ETA rescheduled +18 hours.',
                     'is_exception' => true,
                     'created_by' => $operator->id,
                 ]
@@ -640,12 +641,11 @@ class DatabaseSeeder extends Seeder
         if ($shp2010) {
             $inTransit2010 = TrackingEvent::where('shipment_id', $shp2010->id)
                 ->where('event_type', 'IN_TRANSIT')
+                ->where('description', 'Shipment is en route through scheduled international transit corridor.')
                 ->first();
 
-            $portCongestionDetectedAt = Carbon::now()->subHours(24);
-            if ($inTransit2010 && $portCongestionDetectedAt->lte($inTransit2010->event_time)) {
-                $portCongestionDetectedAt = Carbon::parse($inTransit2010->event_time)->addHours(24);
-            }
+            $inTransit2010Time = $inTransit2010 ? Carbon::parse($inTransit2010->event_time) : Carbon::parse($shp2010->expected_departure)->addHours(6);
+            $portCongestionDetectedAt = $inTransit2010Time->copy()->addDays(3);
 
             ShipmentException::updateOrCreate(
                 ['shipment_id' => $shp2010->id, 'exception_type' => ShipmentException::TYPE_PORT_CONGESTION],
@@ -663,12 +663,11 @@ class DatabaseSeeder extends Seeder
         if ($shp2011) {
             $inTransit2011 = TrackingEvent::where('shipment_id', $shp2011->id)
                 ->where('event_type', 'IN_TRANSIT')
+                ->where('description', 'Shipment is en route through scheduled international transit corridor.')
                 ->first();
 
-            $customsDetectedAt = Carbon::now()->subDays(3);
-            if ($inTransit2011 && $customsDetectedAt->lte($inTransit2011->event_time)) {
-                $customsDetectedAt = Carbon::parse($inTransit2011->event_time)->addHours(12);
-            }
+            $inTransit2011Time = $inTransit2011 ? Carbon::parse($inTransit2011->event_time) : Carbon::parse($shp2011->expected_departure)->addHours(6);
+            $customsDetectedAt = $inTransit2011Time->copy()->addHours(24);
             $customsResolvedAt = $customsDetectedAt->copy()->addHours(18);
 
             ShipmentException::updateOrCreate(
