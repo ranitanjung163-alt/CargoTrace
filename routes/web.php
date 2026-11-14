@@ -13,12 +13,13 @@ use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-// Guest Routes
-Route::middleware('guest')->group(function () {
-    Route::get('/', function () {
-        return redirect()->route('login');
-    });
+// Public Landing Page (Accessible by both guests and authenticated users)
+Route::get('/', function () {
+    return view('welcome');
+})->name('home');
 
+// Guest Routes (Authentication)
+Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 

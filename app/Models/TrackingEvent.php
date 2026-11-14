@@ -48,5 +48,32 @@ class TrackingEvent extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    /**
+     * Validate tracking event attributes against system business rules.
+     */
+    public static function validateEventPayload(array $data): void
+    {
+        if (isset($data['latitude']) && $data['latitude'] !== null && $data['latitude'] !== '') {
+            $lat = (float) $data['latitude'];
+            if ($lat < -90.0 || $lat > 90.0) {
+                throw new \InvalidArgumentException("Latitude [{$lat}] must be between -90.0 and 90.0 degrees.");
+            }
+        }
+
+        if (isset($data['longitude']) && $data['longitude'] !== null && $data['longitude'] !== '') {
+            $lon = (float) $data['longitude'];
+            if ($lon < -180.0 || $lon > 180.0) {
+                throw new \InvalidArgumentException("Longitude [{$lon}] must be between -180.0 and 180.0 degrees.");
+            }
+        }
+
+        if (isset($data['status_after_event']) && ! empty($data['status_after_event'])) {
+            $isException = ! empty($data['is_exception']);
+            if (! $isException && ! in_array($data['status_after_event'], Shipment::STATUSES, true)) {
+                throw new \InvalidArgumentException("Status after event [{$data['status_after_event']}] is invalid.");
+            }
+        }
+    }
 }
 

@@ -200,10 +200,9 @@ PASS  Tests\Feature\CargoTraceCompleteTestSuiteTest
 ✓ 23 csv export filters and formula injection prevention
 
 PASS  Tests\Feature\ExampleTest
-✓ the application redirects guest to login
+✓ the application returns a successful response
 
-Tests:    25 passed, 0 failed, 0 skipped (94 assertions)
-Duration: 3.48s
+Tests:    25 passed, 0 failed, 0 skipped (93 assertions)
 ```
 
 ---

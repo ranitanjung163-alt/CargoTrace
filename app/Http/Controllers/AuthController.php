@@ -118,7 +118,12 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login')->with('success', 'You have been safely logged out.');
+        $action = $request->input('action');
+        $message = ($action === 'switch')
+            ? 'Account session closed. You may now sign in with another account.'
+            : 'You have been safely logged out.';
+
+        return redirect()->route('home')->with('success', $message);
     }
 
     public function profile(): View
