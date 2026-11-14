@@ -19,14 +19,14 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database with realistic international logistics data.
-     * All entities use idempotent updateOrCreate with stable canonical signatures.
+     * All entities use idempotent firstOrCreate to protect operational data from being overwritten.
      * Tracking events are generated in strict chronological progression:
      * CREATED -> BOOKED -> PICKED_UP -> IN_TRANSIT -> [EXCEPTIONS] -> DELIVERED.
      */
     public function run(): void
     {
-        // 1. DEMO USERS (Admin, Operator, Customer)
-        $admin = User::updateOrCreate(
+        // 1. DEMO USERS (Admin, Operator, Customer - created only if not present, never overwritten)
+        $admin = User::firstOrCreate(
             ['email' => 'admin@cargotrace.com'],
             [
                 'name' => 'System Administrator',
@@ -38,7 +38,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $operator = User::updateOrCreate(
+        $operator = User::firstOrCreate(
             ['email' => 'operator@cargotrace.com'],
             [
                 'name' => 'Logistics Dispatcher',
@@ -50,7 +50,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $customer1 = User::updateOrCreate(
+        $customer1 = User::firstOrCreate(
             ['email' => 'customer@cargotrace.com'],
             [
                 'name' => 'Global Industries Ltd',
@@ -62,7 +62,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $customer2 = User::updateOrCreate(
+        $customer2 = User::firstOrCreate(
             ['email' => 'tech@cargotrace.com'],
             [
                 'name' => 'Tech Solutions Corp',
@@ -74,7 +74,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $customer3 = User::updateOrCreate(
+        $customer3 = User::firstOrCreate(
             ['email' => 'retail@cargotrace.com'],
             [
                 'name' => 'Retail Hub International',
@@ -86,7 +86,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $customer4 = User::updateOrCreate(
+        $customer4 = User::firstOrCreate(
             ['email' => 'alpha@cargotrace.com'],
             [
                 'name' => 'Alpha Manufacturing',
@@ -98,7 +98,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $customer5 = User::updateOrCreate(
+        $customer5 = User::firstOrCreate(
             ['email' => 'omega@cargotrace.com'],
             [
                 'name' => 'Omega Retail Group',
@@ -110,8 +110,8 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 2. CARRIERS (Matching lecturer reference: FastShip, CargoPro, Logistics Partners, etc.)
-        $fastShip = Carrier::updateOrCreate(
+        // 2. CARRIERS (Created only if code does not exist; master updates by admin preserved)
+        $fastShip = Carrier::firstOrCreate(
             ['code' => 'FST'],
             [
                 'name' => 'FastShip Express',
@@ -122,7 +122,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $cargoPro = Carrier::updateOrCreate(
+        $cargoPro = Carrier::firstOrCreate(
             ['code' => 'CGP'],
             [
                 'name' => 'CargoPro Global',
@@ -133,7 +133,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $logisticsPartners = Carrier::updateOrCreate(
+        $logisticsPartners = Carrier::firstOrCreate(
             ['code' => 'LGP'],
             [
                 'name' => 'Logistics Partners Worldwide',
@@ -144,7 +144,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $dhl = Carrier::updateOrCreate(
+        $dhl = Carrier::firstOrCreate(
             ['code' => 'DHL'],
             [
                 'name' => 'DHL Global Forwarding',
@@ -155,7 +155,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $maersk = Carrier::updateOrCreate(
+        $maersk = Carrier::firstOrCreate(
             ['code' => 'MSK'],
             [
                 'name' => 'Maersk Line',
@@ -166,7 +166,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 3. LOCATIONS (Worldwide coverage across all continents)
+        // 3. LOCATIONS (Worldwide coverage across all continents - created only if code missing)
         $locations = [
             'LAX' => ['code' => 'US-LAX', 'name' => 'Los Angeles Port Hub', 'city' => 'Los Angeles', 'state_province' => 'CA', 'country' => 'United States', 'country_code' => 'US', 'latitude' => 34.052235, 'longitude' => -118.243683, 'type' => 'PORT'],
             'CHI' => ['code' => 'US-CHI', 'name' => 'Chicago Intermodal Terminal', 'city' => 'Chicago', 'state_province' => 'IL', 'country' => 'United States', 'country_code' => 'US', 'latitude' => 41.878113, 'longitude' => -87.629799, 'type' => 'DISTRIBUTION_CENTER'],
@@ -193,7 +193,7 @@ class DatabaseSeeder extends Seeder
 
         $locModels = [];
         foreach ($locations as $key => $loc) {
-            $locModels[$key] = Location::updateOrCreate(['code' => $loc['code']], $loc);
+            $locModels[$key] = Location::firstOrCreate(['code' => $loc['code']], $loc);
         }
 
         // 4. SHIPMENTS (Exact matches to lecturer reference table + worldwide shipments)
@@ -450,14 +450,14 @@ class DatabaseSeeder extends Seeder
             // 5. DELIVERED: Occurs at actual delivered timestamp (strictly after in_transit)
             $deliveredTime = $actualDelivered ? $actualDelivered->copy() : Carbon::parse($sData['expected_arrival'] ?? now());
 
-            // Update or create shipment without mutating historical created_at on existing records
-            $shipment = Shipment::updateOrCreate(
+            // Create shipment only if it does not already exist, preserving all operational data on existing records
+            $shipment = Shipment::firstOrCreate(
                 ['shipment_number' => $shipmentNumber],
                 $sData
             );
 
-            // Create items (idempotent via updateOrCreate)
-            ShipmentItem::updateOrCreate(
+            // Create items only if not already present, preserving operational edits
+            ShipmentItem::firstOrCreate(
                 ['shipment_id' => $shipment->id, 'item_name' => $shipment->cargo_type . ' Unit Pack'],
                 [
                     'quantity' => 10,
@@ -469,7 +469,7 @@ class DatabaseSeeder extends Seeder
             );
 
             // EVENT 1: CREATED (Initial order creation milestone)
-            TrackingEvent::updateOrCreate(
+            TrackingEvent::firstOrCreate(
                 [
                     'shipment_id' => $shipment->id,
                     'event_type' => 'CREATED',
@@ -489,7 +489,7 @@ class DatabaseSeeder extends Seeder
 
             // EVENT 2: BOOKED (Carrier slot confirmed milestone)
             if ($shipment->current_status !== Shipment::STATUS_CREATED) {
-                TrackingEvent::updateOrCreate(
+                TrackingEvent::firstOrCreate(
                     [
                         'shipment_id' => $shipment->id,
                         'event_type' => 'BOOKED',
@@ -510,7 +510,7 @@ class DatabaseSeeder extends Seeder
 
             // EVENT 3: PICKED_UP (Consignment picked up and loaded milestone)
             if (in_array($shipment->current_status, [Shipment::STATUS_PICKED_UP, Shipment::STATUS_IN_TRANSIT, Shipment::STATUS_DELIVERED], true)) {
-                TrackingEvent::updateOrCreate(
+                TrackingEvent::firstOrCreate(
                     [
                         'shipment_id' => $shipment->id,
                         'event_type' => 'PICKED_UP',
@@ -531,7 +531,7 @@ class DatabaseSeeder extends Seeder
 
             // EVENT 4: IN_TRANSIT (En route via primary corridor milestone)
             if (in_array($shipment->current_status, [Shipment::STATUS_IN_TRANSIT, Shipment::STATUS_DELIVERED], true)) {
-                TrackingEvent::updateOrCreate(
+                TrackingEvent::firstOrCreate(
                     [
                         'shipment_id' => $shipment->id,
                         'event_type' => 'IN_TRANSIT',
@@ -552,7 +552,7 @@ class DatabaseSeeder extends Seeder
 
             // EVENT 5: DELIVERED (Final delivery confirmed milestone)
             if ($shipment->current_status === Shipment::STATUS_DELIVERED) {
-                TrackingEvent::updateOrCreate(
+                TrackingEvent::firstOrCreate(
                     [
                         'shipment_id' => $shipment->id,
                         'event_type' => 'DELIVERED',
@@ -594,7 +594,7 @@ class DatabaseSeeder extends Seeder
                 }
             }
 
-            $exception = ShipmentException::updateOrCreate(
+            $exception = ShipmentException::firstOrCreate(
                 ['shipment_id' => $delayedShipment->id, 'exception_type' => ShipmentException::TYPE_WEATHER_DELAY],
                 [
                     'severity' => 'MEDIUM',
@@ -605,8 +605,8 @@ class DatabaseSeeder extends Seeder
                 ]
             );
 
-            // Exception Tracking Event (idempotent updateOrCreate matching exact canonical description)
-            TrackingEvent::updateOrCreate(
+            // Exception Tracking Event (idempotent firstOrCreate matching exact canonical description)
+            TrackingEvent::firstOrCreate(
                 [
                     'shipment_id' => $delayedShipment->id,
                     'event_type' => 'WEATHER_DELAY',
@@ -624,8 +624,8 @@ class DatabaseSeeder extends Seeder
                 ]
             );
 
-            // Notification
-            Notification::updateOrCreate(
+            // Notification (created only if missing, preserving customer is_read state)
+            Notification::firstOrCreate(
                 ['shipment_id' => $delayedShipment->id, 'title' => 'Severe Weather Delay Alert'],
                 [
                     'user_id' => $delayedShipment->customer_id,
@@ -647,7 +647,7 @@ class DatabaseSeeder extends Seeder
             $inTransit2010Time = $inTransit2010 ? Carbon::parse($inTransit2010->event_time) : Carbon::parse($shp2010->expected_departure)->addHours(6);
             $portCongestionDetectedAt = $inTransit2010Time->copy()->addDays(3);
 
-            ShipmentException::updateOrCreate(
+            ShipmentException::firstOrCreate(
                 ['shipment_id' => $shp2010->id, 'exception_type' => ShipmentException::TYPE_PORT_CONGESTION],
                 [
                     'severity' => 'LOW',
@@ -670,7 +670,7 @@ class DatabaseSeeder extends Seeder
             $customsDetectedAt = $inTransit2011Time->copy()->addHours(24);
             $customsResolvedAt = $customsDetectedAt->copy()->addHours(18);
 
-            ShipmentException::updateOrCreate(
+            ShipmentException::firstOrCreate(
                 ['shipment_id' => $shp2011->id, 'exception_type' => ShipmentException::TYPE_CUSTOMS_HOLD],
                 [
                     'severity' => 'LOW',
@@ -685,8 +685,8 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // 6. INITIAL AUDIT LOGS
-        AuditLog::updateOrCreate(
+        // 6. INITIAL AUDIT LOGS (Immutable append-only records)
+        AuditLog::firstOrCreate(
             ['action' => 'SYSTEM_INITIALIZATION', 'user_id' => $admin->id],
             [
                 'entity_type' => 'System',
@@ -699,7 +699,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        AuditLog::updateOrCreate(
+        AuditLog::firstOrCreate(
             ['action' => 'SHIPMENT_DISPATCH_AUTHORIZED', 'user_id' => $operator->id],
             [
                 'entity_type' => 'Shipment',

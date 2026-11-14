@@ -69,11 +69,47 @@ class TrackingEvent extends Model
             }
         }
 
-        // 2. Status after event validation
+        // 2. Status after event validation & Lifecycle Transition rules
         if (isset($data['status_after_event']) && ! empty($data['status_after_event'])) {
+            $statusAfter = $data['status_after_event'];
             $isException = ! empty($data['is_exception']);
-            if (! $isException && ! in_array($data['status_after_event'], Shipment::STATUSES, true)) {
-                throw new \InvalidArgumentException("Status after event [{$data['status_after_event']}] is invalid.");
+
+            if (! $isException && ! in_array($statusAfter, Shipment::STATUSES, true)) {
+                throw new \InvalidArgumentException("Status after event [{$statusAfter}] is invalid.");
+            }
+
+            if ($shipment !== null && $shipment->exists) {
+                // If attempting to alter status
+                if ($statusAfter !== $shipment->current_status) {
+                    if ($shipment->isTerminal()) {
+                        throw new \InvalidArgumentException(
+                            "Shipment {$shipment->shipment_number} has reached terminal status '{$shipment->current_status}' and cannot receive further status transitions."
+                        );
+                    }
+
+                    if ($isException) {
+                        throw new \InvalidArgumentException(
+                            "Exception event cannot alter shipment status from '{$shipment->current_status}' to '{$statusAfter}'."
+                        );
+                    }
+
+                    if (! $shipment->canTransitionTo($statusAfter)) {
+                        $allowed = implode(', ', Shipment::ALLOWED_TRANSITIONS[$shipment->current_status] ?? []);
+                        $allowedStr = empty($allowed) ? 'none' : $allowed;
+                        throw new \InvalidArgumentException(
+                            "Invalid status transition from '{$shipment->current_status}' to '{$statusAfter}'. Allowed transition(s): [{$allowedStr}]."
+                        );
+                    }
+                }
+            }
+        }
+
+        // Terminal shipment protection: terminal shipments cannot receive exception events
+        if ($shipment !== null && $shipment->exists && $shipment->isTerminal()) {
+            if (! empty($data['is_exception'])) {
+                throw new \InvalidArgumentException(
+                    "Shipment {$shipment->shipment_number} has reached terminal status '{$shipment->current_status}' and cannot receive exception events."
+                );
             }
         }
 

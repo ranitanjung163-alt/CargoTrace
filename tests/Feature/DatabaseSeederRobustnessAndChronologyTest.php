@@ -2,16 +2,20 @@
 
 namespace Tests\Feature;
 
+use App\Models\AuditLog;
 use App\Models\Carrier;
 use App\Models\Location;
+use App\Models\Notification;
 use App\Models\Shipment;
 use App\Models\ShipmentException;
+use App\Models\ShipmentItem;
 use App\Models\TrackingEvent;
 use App\Models\User;
 use App\Services\TrackingService;
 use Carbon\Carbon;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use InvalidArgumentException;
 use Tests\TestCase;
 
@@ -416,6 +420,283 @@ class DatabaseSeederRobustnessAndChronologyTest extends TestCase
             $this->fail('Expected InvalidArgumentException for non-existent location ID was not thrown.');
         } catch (InvalidArgumentException $e) {
             $this->assertStringContainsStringIgnoringCase('location ID', $e->getMessage());
+        }
+    }
+
+    /**
+     * Requirement 10.1, 10.2, 10.3: Shipment modified by operator (status, DELIVERED, ETA, location) is not overwritten.
+     */
+    public function test_12_operational_shipment_modifications_are_preserved_on_seeder_rerun(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $shipment = Shipment::where('shipment_number', 'SHP-2024-001284')->firstOrFail();
+        $chicagoLocation = Location::where('code', 'US-CHI')->firstOrFail();
+
+        // Operator delivers the shipment and updates ETA and delay status
+        $deliveredTimestamp = Carbon::now()->subHour();
+        $updatedEta = Carbon::now()->addDays(5);
+
+        $shipment->update([
+            'current_status' => Shipment::STATUS_DELIVERED,
+            'actual_delivered_at' => $deliveredTimestamp,
+            'estimated_arrival' => $updatedEta,
+            'current_location_id' => $chicagoLocation->id,
+            'is_delayed' => false,
+            'delay_duration_minutes' => 0,
+            'delay_severity' => Shipment::SEVERITY_NONE,
+            'delay_reason' => null,
+        ]);
+
+        // Re-run seeder
+        $this->seed(DatabaseSeeder::class);
+
+        $fresh = $shipment->fresh();
+        $this->assertEquals(Shipment::STATUS_DELIVERED, $fresh->current_status, 'Shipment status must remain DELIVERED.');
+        $this->assertEquals($deliveredTimestamp->toDateTimeString(), $fresh->actual_delivered_at->toDateTimeString(), 'Delivered timestamp must remain intact.');
+        $this->assertEquals($updatedEta->toDateTimeString(), $fresh->estimated_arrival->toDateTimeString(), 'Estimated arrival must not be overwritten.');
+        $this->assertEquals($chicagoLocation->id, $fresh->current_location_id, 'Current location must not be reset.');
+        $this->assertFalse($fresh->is_delayed, 'Delay flag must not be reset to true.');
+        $this->assertEquals(0, $fresh->delay_duration_minutes);
+        $this->assertEquals(Shipment::SEVERITY_NONE, $fresh->delay_severity);
+        $this->assertNull($fresh->delay_reason);
+    }
+
+    /**
+     * Requirement 10.4: Shipment items edited by operator are preserved.
+     */
+    public function test_13_shipment_items_edited_by_operator_are_preserved(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $shipment = Shipment::where('shipment_number', 'SHP-2024-001284')->firstOrFail();
+        $existingItem = $shipment->items()->firstOrFail();
+
+        // Operator modifies quantity and weight
+        $existingItem->update([
+            'quantity' => 77,
+            'weight' => 8888.50,
+            'hs_code' => '9999.00.00',
+        ]);
+
+        // Operator adds a custom extra item
+        $customItem = ShipmentItem::create([
+            'shipment_id' => $shipment->id,
+            'item_name' => 'Custom Hydraulic Spare Component',
+            'quantity' => 5,
+            'unit' => 'crates',
+            'weight' => 250.0,
+            'hs_code' => '8412.21.00',
+            'description' => 'Field operator added replacement kit.',
+        ]);
+
+        // Re-run seeder
+        $this->seed(DatabaseSeeder::class);
+
+        $freshExisting = $existingItem->fresh();
+        $this->assertEquals(77, $freshExisting->quantity, 'Item quantity must not be reverted to demo 10.');
+        $this->assertEquals(8888.50, $freshExisting->weight);
+        $this->assertEquals('9999.00.00', $freshExisting->hs_code);
+
+        $this->assertNotNull(ShipmentItem::find($customItem->id), 'Custom operator item must not be deleted.');
+    }
+
+    /**
+     * Requirement 10.5: Exception RESOLVED does not revert to OPEN.
+     */
+    public function test_14_resolved_exceptions_are_not_reopened_to_open(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $delayedShipment = Shipment::where('shipment_number', 'SHP-2024-001284')->firstOrFail();
+        $weatherEx = ShipmentException::where('shipment_id', $delayedShipment->id)
+            ->where('exception_type', ShipmentException::TYPE_WEATHER_DELAY)
+            ->firstOrFail();
+
+        // Operator resolves the weather exception
+        $weatherEx->update([
+            'status' => ShipmentException::STATUS_RESOLVED,
+            'resolved_at' => Carbon::now(),
+            'resolution_notes' => 'Highway 80 snow cleared by state DOT. Escort convoy departed.',
+        ]);
+
+        // Re-run seeder
+        $this->seed(DatabaseSeeder::class);
+
+        $freshEx = $weatherEx->fresh();
+        $this->assertEquals(ShipmentException::STATUS_RESOLVED, $freshEx->status, 'Resolved exception must remain RESOLVED.');
+        $this->assertNotNull($freshEx->resolved_at);
+        $this->assertEquals('Highway 80 snow cleared by state DOT. Escort convoy departed.', $freshEx->resolution_notes);
+    }
+
+    /**
+     * Requirement 10.6: Notification is_read = true remains true.
+     */
+    public function test_15_read_notifications_remain_read(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $delayedShipment = Shipment::where('shipment_number', 'SHP-2024-001284')->firstOrFail();
+        $notif = Notification::where('shipment_id', $delayedShipment->id)->firstOrFail();
+
+        // Customer reads the notification
+        $notif->update(['is_read' => true]);
+
+        // Re-run seeder
+        $this->seed(DatabaseSeeder::class);
+
+        $this->assertTrue($notif->fresh()->is_read, 'Notification read state must not be reset to unread.');
+    }
+
+    /**
+     * Requirement 10.7: Existing audit logs are immutable and unchanged.
+     */
+    public function test_16_audit_logs_are_immutable_and_append_only(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $initialLog = AuditLog::where('action', 'SYSTEM_INITIALIZATION')->firstOrFail();
+        $initialCreatedAt = $initialLog->created_at->toDateTimeString();
+
+        // Re-run seeder
+        $this->seed(DatabaseSeeder::class);
+
+        $freshLog = $initialLog->fresh();
+        $this->assertEquals($initialCreatedAt, $freshLog->created_at->toDateTimeString(), 'Audit log creation timestamp must not be mutated.');
+    }
+
+    /**
+     * Requirement 10.8: User password and profile are not reset.
+     */
+    public function test_17_user_passwords_and_profiles_are_not_reset(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = User::where('email', 'admin@cargotrace.com')->firstOrFail();
+
+        // Administrator changes password, phone, and company
+        $admin->update([
+            'password' => Hash::make('CustomSecurePass2026!'),
+            'phone' => '+62-812-9988-7766',
+            'company_name' => 'WorldCargo 360 Executive Board',
+        ]);
+
+        // Re-run seeder
+        $this->seed(DatabaseSeeder::class);
+
+        $freshAdmin = $admin->fresh();
+        $this->assertTrue(Hash::check('CustomSecurePass2026!', $freshAdmin->password), 'Custom password must not be overwritten.');
+        $this->assertEquals('+62-812-9988-7766', $freshAdmin->phone, 'User phone must not be overwritten.');
+        $this->assertEquals('WorldCargo 360 Executive Board', $freshAdmin->company_name);
+    }
+
+    /**
+     * Requirement 10.9 & 10.10: Carrier and location master data edits are preserved.
+     */
+    public function test_18_carrier_and_location_master_data_edits_are_preserved(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        // Edit carrier FST
+        $carrier = Carrier::where('code', 'FST')->firstOrFail();
+        $carrier->update([
+            'is_active' => false,
+            'contact_phone' => '+1-800-999-9999',
+            'contact_email' => 'custom-ops@fastship.com',
+        ]);
+
+        // Edit location US-LAX coordinates and name
+        $location = Location::where('code', 'US-LAX')->firstOrFail();
+        $location->update([
+            'latitude' => 33.942500,
+            'longitude' => -118.408056,
+            'name' => 'Los Angeles International Gateway Facility',
+        ]);
+
+        // Re-run seeder
+        $this->seed(DatabaseSeeder::class);
+
+        $freshCarrier = $carrier->fresh();
+        $this->assertFalse($freshCarrier->is_active, 'Carrier deactivated state must not be reset to true.');
+        $this->assertEquals('+1-800-999-9999', $freshCarrier->contact_phone);
+        $this->assertEquals('custom-ops@fastship.com', $freshCarrier->contact_email);
+
+        $freshLoc = $location->fresh();
+        $this->assertEquals(33.942500, $freshLoc->latitude, 'Corrected latitude must not be overwritten.');
+        $this->assertEquals(-118.408056, $freshLoc->longitude, 'Corrected longitude must not be overwritten.');
+        $this->assertEquals('Los Angeles International Gateway Facility', $freshLoc->name);
+    }
+
+    /**
+     * Requirement 10.13: Illegal status transitions are rejected before event creation.
+     */
+    public function test_19_illegal_status_transitions_are_rejected_before_event_creation(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $trackingService = app(TrackingService::class);
+        $operator = User::where('role', User::ROLE_OPERATOR)->firstOrFail();
+
+        // 1. Illegal jump: CREATED directly to DELIVERED
+        $createdShipment = Shipment::where('current_status', Shipment::STATUS_CREATED)->firstOrFail();
+        try {
+            $trackingService->addEvent($createdShipment, [
+                'event_type' => 'DELIVERED',
+                'event_time' => Carbon::now()->addHour(),
+                'location_name' => 'Destination Hub',
+                'status_after_event' => Shipment::STATUS_DELIVERED,
+            ], $operator->id);
+            $this->fail('Direct transition from CREATED to DELIVERED must throw InvalidArgumentException.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('Invalid status transition', $e->getMessage());
+        }
+
+        // Verify no TrackingEvent was created for this illegal attempt
+        $this->assertDatabaseMissing('tracking_events', [
+            'shipment_id' => $createdShipment->id,
+            'status_after_event' => Shipment::STATUS_DELIVERED,
+        ]);
+
+        // 2. Illegal status regression: IN_TRANSIT back to BOOKED
+        $inTransitShipment = Shipment::where('current_status', Shipment::STATUS_IN_TRANSIT)->firstOrFail();
+        try {
+            $trackingService->addEvent($inTransitShipment, [
+                'event_type' => 'BOOKED',
+                'event_time' => Carbon::now()->addHour(),
+                'location_name' => 'Origin Hub',
+                'status_after_event' => Shipment::STATUS_BOOKED,
+            ], $operator->id);
+            $this->fail('Status regression from IN_TRANSIT to BOOKED must throw InvalidArgumentException.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('Invalid status transition', $e->getMessage());
+        }
+
+        // 3. Status change attempted on already terminal DELIVERED shipment
+        $deliveredShipment = Shipment::where('current_status', Shipment::STATUS_DELIVERED)->firstOrFail();
+        try {
+            $trackingService->addEvent($deliveredShipment, [
+                'event_type' => 'IN_TRANSIT',
+                'event_time' => Carbon::now()->addHour(),
+                'location_name' => 'Transit Hub',
+                'status_after_event' => Shipment::STATUS_IN_TRANSIT,
+            ], $operator->id);
+            $this->fail('Transition attempted on terminal DELIVERED shipment must throw InvalidArgumentException.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('terminal status', $e->getMessage());
+        }
+
+        // 4. Exception event attempting illegal status transition
+        try {
+            $trackingService->addEvent($inTransitShipment, [
+                'event_type' => 'CUSTOMS_HOLD',
+                'event_time' => Carbon::now()->addHour(),
+                'location_name' => 'Customs Terminal',
+                'status_after_event' => Shipment::STATUS_BOOKED,
+                'is_exception' => true,
+            ], $operator->id);
+            $this->fail('Exception event with illegal status change must throw InvalidArgumentException.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('Exception event cannot alter shipment status', $e->getMessage());
         }
     }
 }
