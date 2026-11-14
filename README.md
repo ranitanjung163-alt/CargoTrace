@@ -2,10 +2,10 @@
 ### *Track Beyond Borders.*
 
 [![Laravel Version](https://img.shields.io/badge/Laravel-12.x-red.svg)](https://laravel.com)
-[![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-blue.svg)](https://php.net)
+[![PHP Version](https://img.shields.io/badge/PHP-8.3%2B%20Target%20%7C%208.2.12%20Tested-blue.svg)](https://php.net)
 [![Database](https://img.shields.io/badge/Database-MySQL%20%2F%20MariaDB-orange.svg)](https://mariadb.org)
 [![Testing](https://img.shields.io/badge/Tests-60%20Passed%20(100%25)-brightgreen.svg)](tests/Feature)
-[![License](https://img.shields.io/badge/License-Academic%20Permissive-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Academic%20Evaluation-blue.svg)](LICENSE)
 
 > **Individual Final Project (UAS) – Web Programming 2**  
 > **Course Lecturer:** Pak Ikhwan  
@@ -88,13 +88,13 @@ International logistics faces critical visibility challenges:
 ## 4. Technology Stack
 
 - **Backend Framework:** Laravel 12.12.2 (Framework 12.71.0)
-- **Language:** PHP 8.2.12
+- **PHP Runtime (Target PPT Dosen):** PHP 8.3+ *(Composer constraints set to `"php": "^8.2"`, allowing PHP 8.2 through 8.3+. Local development & automated testing executed on PHP 8.2.12 CLI via XAMPP. Runtime verification on PHP 8.3 recommended for target server environment).*
 - **Database:** MySQL 8.0+ / MariaDB 10.4.32 (XAMPP compatible)
 - **API Security:** Laravel Sanctum (Bearer Token Authentication)
 - **HTTP Client:** Guzzle 7 via Laravel HTTP Client
 - **Frontend:** Blade Templates, Tailwind CSS (Custom Light Theme), Vanilla JavaScript (Fetch API)
 - **Mapping & Charts:** Leaflet.js v1.9.4 + OpenStreetMap tiles, Chart.js v4.4.1
-- **Testing:** PHPUnit 11.5 with In-Memory SQLite test database
+- **Testing:** PHPUnit 11.5 with In-Memory SQLite test database (60 passed, 295 assertions, 0 failures, 0 skipped)
 
 ---
 
@@ -170,7 +170,7 @@ The test suite covers all 18 mandatory evaluation criteria required by the cours
 php artisan test
 ```
 
-### Test Evidence (60/60 Passing, 295 Assertions, 0 Failures)
+### Test Evidence (60/60 Passing, 295 Assertions, 0 Failures, 0 Skipped)
 ```text
 PASS  Tests\Unit\ExampleTest (1 test)
 PASS  Tests\Feature\ExampleTest (1 test)
@@ -187,14 +187,15 @@ PASS  Tests\Feature\DatabaseSeederRobustnessAndChronologyTest (28 tests)
   - Operational Mutation Preservation & Anti-Duplication Controls
 
 Tests:    60 passed (295 assertions)
-Duration: ~7.65s (Executed on isolated in-memory SQLite database)
+Status:   0 failed, 0 skipped
+Duration: ~7.77s (Executed on isolated in-memory SQLite database)
 ```
 
 ---
 
 ## 8. REST API & Postman Collection
 
-A complete Postman Collection v2.1 is located at [`docs/cargotrace_postman_collection.json`](docs/cargotrace_postman_collection.json).
+A complete Postman Collection v2.1 is located at [`docs/worldcargo360_postman_collection.json`](docs/worldcargo360_postman_collection.json).
 
 ### Key Endpoints:
 - `POST /api/register` – Register customer account
@@ -236,3 +237,11 @@ A complete Postman Collection v2.1 is located at [`docs/cargotrace_postman_colle
 - [Chart.js](https://www.chartjs.org) (Chart.js contributors, MIT License)
 - [Open-Meteo](https://open-meteo.com) (Free Open-Source Weather API)
 - [Tailwind CSS](https://tailwindcss.com) (Tailwind Labs Inc., MIT License)
+
+---
+
+## 12. License & Academic Evaluation Notice
+
+This project is prepared and submitted exclusively for academic evaluation purposes (Final Semester Examination / UAS Web Programming 2).
+- Complete academic evaluation terms and third-party upstream licensing disclosures are specified in [`LICENSE`](LICENSE).
+- As an individual student academic submission without formal public copyright registration, this software is not licensed under a standard public open-source distribution model. Future public distribution requires explicit attribution and standard licensing agreements.

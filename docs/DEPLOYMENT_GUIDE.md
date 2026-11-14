@@ -7,7 +7,7 @@ This guide describes how to deploy the **WorldCargo 360 – Global Logistics & S
 
 ## 1. System Requirements
 
-- **PHP:** 8.2+ (PHP 8.2.12 or newer tested)
+- **PHP Runtime (Target PPT Dosen):** PHP 8.3+ *(Composer constraints configure `"php": "^8.2"`, allowing PHP 8.2 through 8.3+. Local testing was conducted on PHP 8.2.12 CLI via XAMPP; runtime verification on PHP 8.3 is recommended for the production server environment).*
 - **PHP Extensions:** `pdo_mysql`, `curl`, `mbstring`, `openssl`, `zip`, `fileinfo`, `bcmath`, `tokenizer`, `xml`
 - **Database:** MySQL 8.0+ or MariaDB 10.4+
 - **Web Server:** Nginx or Apache with `mod_rewrite` enabled
@@ -116,7 +116,7 @@ server {
     location = /robots.txt  { access_log off; log_not_found off; }
 
     location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock; # Or php8.2-fpm.sock depending on host PHP runtime
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
     }
@@ -133,7 +133,8 @@ server {
 
 - [x] `APP_DEBUG=false` in production.
 - [x] Database password and API tokens not committed to GitHub.
-- [x] All 20 automated tests passing (`php artisan test`).
+- [x] Target PHP 8.3+ documented (automated tests passing locally on PHP 8.2.12).
+- [x] All 60 automated tests passing (`php artisan test`: 60 passed, 295 assertions, 0 failures, 0 skipped).
 - [x] CSRF protection enabled on all web forms.
 - [x] Server-side authorization active across all controllers and API routes.
 - [x] Rate limiting active on authentication and API endpoints.

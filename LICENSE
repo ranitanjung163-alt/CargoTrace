@@ -1,13 +1,32 @@
-Academic Permissive Software License
+ACADEMIC PROJECT NOTICE & EVALUATION TERMS
 
-WorldCargo 360 – Global Logistics & Shipment Tracking System
-UAS Web Programming 2 Project
+Project: WorldCargo 360 - Global Logistics & Shipment Tracking System
+Context: Final Semester Examination (UAS) - Web Programming 2
 
-Copyright (c) 2026 WorldCargo 360 Authors & Academic Contributors.
+1. ACADEMIC EVALUATION USE:
+This software application and accompanying documentation are developed and submitted
+strictly for academic evaluation, demonstration, and grading purposes.
+Course instructors, examiners, and academic evaluators are granted full permission to
+inspect, install, execute, test, and evaluate the application codebase.
 
-Permission is hereby granted to inspect, run, evaluate, and test this software
-system for educational, coursework, and academic review purposes.
+2. THIRD-PARTY COMPONENTS & OPEN-SOURCE LICENSES:
+This project incorporates open-source software packages and frameworks, each governed
+by its respective upstream open-source license:
+- Laravel Framework: MIT License (Taylor Otwell)
+- Leaflet.js: BSD 2-Clause License (Vladimir Agafonkin)
+- OpenStreetMap: Open Data Commons Open Database License (ODbL)
+- Chart.js: MIT License (Chart.js Contributors)
+- Tailwind CSS: MIT License (Tailwind Labs, Inc.)
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+3. INTELLECTUAL PROPERTY & DISTRIBUTION NOTICE:
+This codebase is an individual academic coursework project. Formal public open-source
+licensing (e.g. standard MIT, Apache 2.0, or BSD) requires verified author attribution
+and institutional copyright assignment. In the absence of formal public copyright
+registration, this project is not published under a standard open-source license.
+Any future public dissemination or commercial use requires establishing verified
+copyright ownership and executing an appropriate formal licensing agreement.
+
+4. DISCLAIMER:
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT.

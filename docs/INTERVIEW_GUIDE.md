@@ -86,7 +86,7 @@ $$\text{CREATED} \longrightarrow \text{BOOKED} \longrightarrow \text{PICKED\_UP}
 * Seluruh endpoint operasional dilindungi oleh middleware `auth:sanctum`.
 * Respon dikembalikan dalam format standar JSON:
   `{"success": true, "data": [...], "message": "...", "meta": {...}}`
-* Dilengkapi Postman Collection v2.1 di [`docs/cargotrace_postman_collection.json`](file:///d:/cargo_trace/docs/cargotrace_postman_collection.json).
+* Dilengkapi Postman Collection v2.1 di [`docs/worldcargo360_postman_collection.json`](file:///d:/WorldCargo_360/docs/worldcargo360_postman_collection.json).
 
 ### 13. Cara Kerja Dashboard & Chart.js
 * Controller [`DashboardController.php`](file:///d:/cargo_trace/app/Http/Controllers/DashboardController.php) mengumpulkan 5 kartu KPI langsung dari query database: Total, In Transit, Delivered, Delayed, Open Exceptions.
@@ -100,13 +100,13 @@ $$\text{CREATED} \longrightarrow \text{BOOKED} \longrightarrow \text{PICKED\_UP}
 * Query database menerapkan *scoping*: jika user bertindak sebagai Customer, query otomatis menambahkan filter `where('customer_id', $user->id)`. Ini menjamin keamanan mutlak meskipun ada manipulasi ID pada URL browser.
 
 ### 15. Cara Menjalankan Automated Testing
-* Proyek dilengkapi 25 skenario automated tests pada [`tests/Feature/CargoTraceCompleteTestSuiteTest.php`](file:///d:/cargo_trace/tests/Feature/CargoTraceCompleteTestSuiteTest.php).
-* Menggunakan basis data SQLite in-memory yang terisolasi dari database utama development.
+* Proyek dilengkapi 60 automated tests (30 skenario fitur utama, 28 skenario seeder & concurrency robustness, serta 2 skenario integritas framework) pada [`tests/Feature/CargoTraceCompleteTestSuiteTest.php`](file:///d:/WorldCargo_360/tests/Feature/CargoTraceCompleteTestSuiteTest.php) dan [`tests/Feature/DatabaseSeederRobustnessAndChronologyTest.php`](file:///d:/WorldCargo_360/tests/Feature/DatabaseSeederRobustnessAndChronologyTest.php).
+* Menggunakan basis data SQLite in-memory yang terisolasi dari database utama MySQL development.
 * Perintah untuk mengeksekusi pengujian:
   ```powershell
   php artisan test
   ```
-  *Hasil: 25 Passed (94 assertions, 100% lulus).*
+  *Hasil: 60 Passed (295 assertions, 0 failures, 0 skipped, 100% lulus).*
 
 ---
 
@@ -184,7 +184,7 @@ $$\text{CREATED} \longrightarrow \text{BOOKED} \longrightarrow \text{PICKED\_UP}
 
 #### Q18: "Berapa banyak automated test yang kamu buat dan apa saja yang diuji?"
 **Jawaban:**
-> "Terdapat 25 metode pengujian dengan total 94 assertions yang semuanya lulus 100%. Pengujian mencakup alur login, hak akses RBAC ketiga role, CRUD shipment, isolasi data customer, validasi siklus status, kronologi tracking, batas threshold 12 jam, severity delay, perhitungan on-time rate, validasi koordinat global, penanganan error API eksternal, hingga pencegahan formula injection pada export CSV."
+> "Terdapat 60 skenario pengujian dengan total 295 assertions yang semuanya lulus 100% (0 failures, 0 skipped). Pengujian mencakup autentikasi dan otorisasi RBAC ketiga role, CRUD shipment lengkap, isolasi data customer, 9 kombinasi filter shipment & export CSV, siklus status ketat (OPEN -> INVESTIGATING -> RESOLVED), kronologi tracking waypoints, ambang batas SLA 12 jam, severity level keterlambatan, kalkulasi on-time delivery rate, validasi koordinat global dan edge case, resilience Weather API dengan payload validation & stale fallback, autentikasi Bearer Token Sanctum pada REST API, serta 28 uji idempotensi, concurrency lock fail-closed, dan perlindungan mutasi data operasional pada DatabaseSeeder."
 
 #### Q19: "Bagaimana jika ada shipment yang mengalami kendala cuaca buruk di tengah laut?"
 **Jawaban:**
