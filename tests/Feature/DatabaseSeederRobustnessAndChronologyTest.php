@@ -699,4 +699,169 @@ class DatabaseSeederRobustnessAndChronologyTest extends TestCase
             $this->assertStringContainsString('Exception event cannot alter shipment status', $e->getMessage());
         }
     }
+
+    /**
+     * Requirement 5.1 & 5.2: Existing custom DELIVERED event prevents duplicate demo DELIVERED event and preserves timestamp.
+     */
+    public function test_20_custom_delivered_event_prevents_duplicate_demo_delivered_event(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $shipment = Shipment::where('shipment_number', 'SHP-2024-001284')->firstOrFail();
+        $operator = User::where('role', User::ROLE_OPERATOR)->firstOrFail();
+        $trackingService = app(TrackingService::class);
+
+        // Operator logs custom delivery event in the past
+        $customDeliveredTime = Carbon::now()->subHours(3);
+        $trackingService->addEvent($shipment, [
+            'event_type' => Shipment::STATUS_DELIVERED,
+            'event_time' => $customDeliveredTime,
+            'location_name' => 'Chicago Receiving Bay 4',
+            'status_after_event' => Shipment::STATUS_DELIVERED,
+            'description' => 'Consignment signed for by Receiving Manager J. Doe',
+        ], $operator->id);
+
+        $this->assertEquals(1, TrackingEvent::where('shipment_id', $shipment->id)->where('event_type', Shipment::STATUS_DELIVERED)->count());
+
+        // Re-run the seeder
+        $this->seed(DatabaseSeeder::class);
+
+        // Verify still exactly 1 DELIVERED event, and it is the operator's custom event
+        $deliveredEvents = TrackingEvent::where('shipment_id', $shipment->id)
+            ->where('event_type', Shipment::STATUS_DELIVERED)
+            ->get();
+
+        $this->assertCount(1, $deliveredEvents, 'There must NEVER be duplicate DELIVERED events on a delivered shipment.');
+        $this->assertEquals('Consignment signed for by Receiving Manager J. Doe', $deliveredEvents->first()->description);
+        $this->assertEquals($customDeliveredTime->toDateTimeString(), $deliveredEvents->first()->event_time->toDateTimeString());
+    }
+
+    /**
+     * Requirement 5.3: No future delivery timestamp is inserted for an already delivered shipment.
+     */
+    public function test_21_no_future_delivery_timestamp_is_inserted_for_delivered_shipment(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $deliveredShipments = Shipment::where('current_status', Shipment::STATUS_DELIVERED)->get();
+        $this->assertNotEmpty($deliveredShipments);
+
+        foreach ($deliveredShipments as $shipment) {
+            $deliveredEvent = TrackingEvent::where('shipment_id', $shipment->id)
+                ->where('event_type', Shipment::STATUS_DELIVERED)
+                ->firstOrFail();
+
+            $this->assertFalse(
+                $deliveredEvent->event_time->isFuture(),
+                "Delivered event on {$shipment->shipment_number} must not be in the future (was: {$deliveredEvent->event_time})."
+            );
+        }
+    }
+
+    /**
+     * Requirement 5.4: Operationally modified shipments do not receive irrelevant Denver weather exceptions.
+     */
+    public function test_22_operationally_modified_shipment_does_not_receive_irrelevant_weather_exception(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $shipment = Shipment::where('shipment_number', 'SHP-2024-001284')->firstOrFail();
+
+        // Operator marks delay as cleared and changes route away from Denver
+        $shipment->update([
+            'is_delayed' => false,
+            'delay_duration_minutes' => 0,
+            'delay_severity' => Shipment::SEVERITY_NONE,
+            'delay_reason' => null,
+            'current_status' => Shipment::STATUS_DELIVERED,
+            'actual_delivered_at' => Carbon::now()->subHours(2),
+        ]);
+
+        // Remove any existing weather exception to test if seeder erroneously re-imposes it
+        ShipmentException::where('shipment_id', $shipment->id)->delete();
+        TrackingEvent::where('shipment_id', $shipment->id)->where('event_type', 'WEATHER_DELAY')->delete();
+        Notification::where('shipment_id', $shipment->id)->where('type', 'SHIPMENT_DELAYED')->delete();
+
+        // Re-run seeder
+        $this->seed(DatabaseSeeder::class);
+
+        // Verify seeder did NOT inject Denver weather exception, event, or notification
+        $this->assertDatabaseMissing('shipment_exceptions', [
+            'shipment_id' => $shipment->id,
+            'exception_type' => ShipmentException::TYPE_WEATHER_DELAY,
+        ]);
+
+        $this->assertDatabaseMissing('tracking_events', [
+            'shipment_id' => $shipment->id,
+            'event_type' => 'WEATHER_DELAY',
+        ]);
+
+        $this->assertDatabaseMissing('notifications', [
+            'shipment_id' => $shipment->id,
+            'type' => 'SHIPMENT_DELAYED',
+        ]);
+    }
+
+    /**
+     * Requirement 5.9: Repeated legitimate exception incidents can coexist.
+     */
+    public function test_23_repeated_legitimate_exception_incidents_are_supported(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $shipment = Shipment::where('shipment_number', 'SHP-2024-001223')->firstOrFail();
+        $operator = User::where('role', User::ROLE_OPERATOR)->firstOrFail();
+
+        // Operator logs incident 1: CUSTOMS_HOLD
+        $ex1 = ShipmentException::create([
+            'shipment_id' => $shipment->id,
+            'exception_type' => ShipmentException::TYPE_CUSTOMS_HOLD,
+            'severity' => 'LOW',
+            'status' => ShipmentException::STATUS_RESOLVED,
+            'description' => 'Border check passed.',
+            'detected_at' => Carbon::now()->subDays(2),
+            'resolved_at' => Carbon::now()->subDays(1),
+            'created_by' => $operator->id,
+        ]);
+
+        // Operator logs incident 2: PORT_CONGESTION
+        $ex2 = ShipmentException::create([
+            'shipment_id' => $shipment->id,
+            'exception_type' => ShipmentException::TYPE_PORT_CONGESTION,
+            'severity' => 'MEDIUM',
+            'status' => ShipmentException::STATUS_INVESTIGATING,
+            'description' => 'Container yard backlog.',
+            'detected_at' => Carbon::now()->subHours(12),
+            'created_by' => $operator->id,
+        ]);
+
+        // Re-run seeder
+        $this->seed(DatabaseSeeder::class);
+
+        // Both exceptions still exist
+        $this->assertNotNull(ShipmentException::find($ex1->id));
+        $this->assertNotNull(ShipmentException::find($ex2->id));
+        $this->assertEquals(2, ShipmentException::where('shipment_id', $shipment->id)->count());
+    }
+
+    /**
+     * Requirement 5.12: Operational audit logs remain append-only and are never overwritten.
+     */
+    public function test_24_operational_audit_logs_remain_append_only(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $operator = User::where('role', User::ROLE_OPERATOR)->firstOrFail();
+
+        $log1 = AuditLog::record('DISPATCH_CHECK', 'Shipment', 1, null, ['status' => 'OK'], $operator->id);
+        $log2 = AuditLog::record('DISPATCH_CHECK', 'Shipment', 1, null, ['status' => 'OK_CONFIRMED'], $operator->id);
+
+        $this->assertNotEquals($log1->id, $log2->id, 'Repeated operational actions must generate distinct append-only records.');
+
+        // Re-run seeder
+        $this->seed(DatabaseSeeder::class);
+
+        $this->assertNotNull(AuditLog::find($log1->id));
+        $this->assertNotNull(AuditLog::find($log2->id));
+    }
 }

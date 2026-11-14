@@ -13,6 +13,7 @@ use App\Models\TrackingEvent;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
@@ -25,7 +26,23 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. DEMO USERS (Admin, Operator, Customer - created only if not present, never overwritten)
+        // Concurrency Guard: Enforce single-process execution strategy using an atomic cache lock.
+        // This prevents race conditions on child tables (tracking_events, shipment_items, exceptions, notifications)
+        // which legitimately permit multiple operational records and therefore do not have DB-level composite unique keys.
+        try {
+            $seederLock = Cache::lock('worldcargo360_database_seeder_mutex', 60);
+            $hasLock = $seederLock->get();
+        } catch (\Throwable $e) {
+            $seederLock = null;
+            $hasLock = true;
+        }
+
+        if (! $hasLock) {
+            return;
+        }
+
+        try {
+            // 1. DEMO USERS (Admin, Operator, Customer - created only if not present, never overwritten)
         $admin = User::firstOrCreate(
             ['email' => 'admin@cargotrace.com'],
             [
@@ -551,20 +568,34 @@ class DatabaseSeeder extends Seeder
             }
 
             // EVENT 5: DELIVERED (Final delivery confirmed milestone)
-            if ($shipment->current_status === Shipment::STATUS_DELIVERED) {
+            // Strict check: if shipment already has ANY tracking event with event_type = DELIVERED, never create duplicate
+            $hasDeliveredEvent = TrackingEvent::where('shipment_id', $shipment->id)
+                ->where('event_type', Shipment::STATUS_DELIVERED)
+                ->exists();
+
+            if ($shipment->current_status === Shipment::STATUS_DELIVERED && ! $hasDeliveredEvent) {
+                // Ensure deliveredTime is strictly chronological and never in the future
+                $validDeliveredTime = $shipment->actual_delivered_at
+                    ? Carbon::parse($shipment->actual_delivered_at)
+                    : ($actualDelivered ? $actualDelivered->copy() : Carbon::parse($sData['expected_arrival'] ?? now()));
+
+                if ($validDeliveredTime->isFuture()) {
+                    $validDeliveredTime = Carbon::now();
+                }
+
                 TrackingEvent::firstOrCreate(
                     [
                         'shipment_id' => $shipment->id,
-                        'event_type' => 'DELIVERED',
+                        'event_type' => Shipment::STATUS_DELIVERED,
                         'description' => 'Package successfully delivered and signed by consignee.',
                     ],
                     [
-                        'event_time' => $deliveredTime,
+                        'event_time' => $validDeliveredTime,
                         'location_id' => $shipment->destination_location_id,
                         'location_name' => $shipment->destination->name,
                         'latitude' => $shipment->destination->latitude,
                         'longitude' => $shipment->destination->longitude,
-                        'status_after_event' => 'DELIVERED',
+                        'status_after_event' => Shipment::STATUS_DELIVERED,
                         'is_exception' => false,
                         'created_by' => $operator->id,
                     ]
@@ -575,104 +606,130 @@ class DatabaseSeeder extends Seeder
         // 5. EXCEPTIONS & NOTIFICATIONS FOR THE DELAYED SHIPMENT (SHP-2024-001284)
         $delayedShipment = Shipment::where('shipment_number', 'SHP-2024-001284')->first();
         if ($delayedShipment) {
-            $inTransitEvt = TrackingEvent::where('shipment_id', $delayedShipment->id)
-                ->where('event_type', 'IN_TRANSIT')
-                ->where('description', 'Shipment is en route through scheduled international transit corridor.')
-                ->first();
+            // Verify shipment is still demonstrably in its original demo delayed state:
+            // 1. Must still be IN_TRANSIT (not DELIVERED or cancelled)
+            // 2. Must still have is_delayed = true
+            // 3. Must still have weather delay specified in delay_reason
+            $isDemoWeatherDelayState = $delayedShipment->current_status === Shipment::STATUS_IN_TRANSIT
+                && (bool) $delayedShipment->is_delayed === true
+                && (
+                    empty($delayedShipment->delay_reason) ||
+                    str_contains(strtolower($delayedShipment->delay_reason), 'weather') ||
+                    str_contains(strtolower($delayedShipment->delay_reason), 'blizzard')
+                );
 
-            // Weather delay occurred mid-transit (strictly AFTER in_transit)
-            $inTransitTime = $inTransitEvt ? Carbon::parse($inTransitEvt->event_time) : Carbon::parse($delayedShipment->expected_departure)->addHours(6);
-            $weatherDetectedAt = $inTransitTime->copy()->addHours(24);
+            if ($isDemoWeatherDelayState) {
+                // Check if an exception of type WEATHER_DELAY already exists
+                $existingWeatherException = ShipmentException::where('shipment_id', $delayedShipment->id)
+                    ->where('exception_type', ShipmentException::TYPE_WEATHER_DELAY)
+                    ->first();
 
-            // If shipment is delivered, ensure exception is strictly before delivery
-            if ($delayedShipment->isDelivered() && $delayedShipment->actual_delivered_at) {
-                $deliveredTime = Carbon::parse($delayedShipment->actual_delivered_at);
-                if ($weatherDetectedAt->gte($deliveredTime)) {
-                    $weatherDetectedAt = $inTransitTime->copy()->addMinutes(
-                        (int) ($deliveredTime->diffInMinutes($inTransitTime) / 2)
-                    );
+                $inTransitEvt = TrackingEvent::where('shipment_id', $delayedShipment->id)
+                    ->where('event_type', 'IN_TRANSIT')
+                    ->first();
+
+                $inTransitTime = $inTransitEvt ? Carbon::parse($inTransitEvt->event_time) : Carbon::parse($delayedShipment->expected_departure)->addHours(6);
+                $weatherDetectedAt = $inTransitTime->copy()->addHours(24);
+
+                // Create exception only if not already present; never reopen resolved exceptions
+                if (! $existingWeatherException) {
+                    ShipmentException::create([
+                        'shipment_id' => $delayedShipment->id,
+                        'exception_type' => ShipmentException::TYPE_WEATHER_DELAY,
+                        'severity' => 'MEDIUM',
+                        'status' => ShipmentException::STATUS_OPEN,
+                        'description' => 'Severe blizzard alert across Rocky Mountain & Midwest transit zone. Highway safety hold in place.',
+                        'detected_at' => $weatherDetectedAt,
+                        'created_by' => $operator->id,
+                    ]);
+                }
+
+                // Exception Tracking Event: create only if no WEATHER_DELAY event exists
+                $hasWeatherEvent = TrackingEvent::where('shipment_id', $delayedShipment->id)
+                    ->where('event_type', 'WEATHER_DELAY')
+                    ->exists();
+
+                if (! $hasWeatherEvent) {
+                    TrackingEvent::create([
+                        'shipment_id' => $delayedShipment->id,
+                        'event_type' => 'WEATHER_DELAY',
+                        'description' => 'EXCEPTION [WEATHER_DELAY]: Blizzard alert hold in Denver corridor. ETA rescheduled +18 hours.',
+                        'event_time' => $weatherDetectedAt,
+                        'location_id' => $locModels['DEN']->id,
+                        'location_name' => 'Denver Regional Hold Area',
+                        'latitude' => 39.739236,
+                        'longitude' => -104.990251,
+                        'status_after_event' => 'IN_TRANSIT',
+                        'is_exception' => true,
+                        'created_by' => $operator->id,
+                    ]);
+                }
+
+                // Notification: create only if no SHIPMENT_DELAYED notification exists
+                $hasWeatherNotif = Notification::where('shipment_id', $delayedShipment->id)
+                    ->where('type', 'SHIPMENT_DELAYED')
+                    ->exists();
+
+                if (! $hasWeatherNotif) {
+                    Notification::create([
+                        'shipment_id' => $delayedShipment->id,
+                        'title' => 'Severe Weather Delay Alert',
+                        'user_id' => $delayedShipment->customer_id,
+                        'message' => 'Your shipment SHP-2024-001284 has encountered a weather delay (Blizzard hold) near Denver. Estimated arrival adjusted.',
+                        'type' => 'SHIPMENT_DELAYED',
+                        'is_read' => false,
+                    ]);
                 }
             }
-
-            $exception = ShipmentException::firstOrCreate(
-                ['shipment_id' => $delayedShipment->id, 'exception_type' => ShipmentException::TYPE_WEATHER_DELAY],
-                [
-                    'severity' => 'MEDIUM',
-                    'status' => ShipmentException::STATUS_OPEN,
-                    'description' => 'Severe blizzard alert across Rocky Mountain & Midwest transit zone. Highway safety hold in place.',
-                    'detected_at' => $weatherDetectedAt,
-                    'created_by' => $operator->id,
-                ]
-            );
-
-            // Exception Tracking Event (idempotent firstOrCreate matching exact canonical description)
-            TrackingEvent::firstOrCreate(
-                [
-                    'shipment_id' => $delayedShipment->id,
-                    'event_type' => 'WEATHER_DELAY',
-                    'description' => 'EXCEPTION [WEATHER_DELAY]: Blizzard alert hold in Denver corridor. ETA rescheduled +18 hours.',
-                ],
-                [
-                    'event_time' => $weatherDetectedAt,
-                    'location_id' => $locModels['DEN']->id,
-                    'location_name' => 'Denver Regional Hold Area',
-                    'latitude' => 39.739236,
-                    'longitude' => -104.990251,
-                    'status_after_event' => 'IN_TRANSIT',
-                    'is_exception' => true,
-                    'created_by' => $operator->id,
-                ]
-            );
-
-            // Notification (created only if missing, preserving customer is_read state)
-            Notification::firstOrCreate(
-                ['shipment_id' => $delayedShipment->id, 'title' => 'Severe Weather Delay Alert'],
-                [
-                    'user_id' => $delayedShipment->customer_id,
-                    'message' => 'Your shipment SHP-2024-001284 has encountered a weather delay (Blizzard hold) near Denver. Estimated arrival adjusted.',
-                    'type' => 'SHIPMENT_DELAYED',
-                    'is_read' => false,
-                ]
-            );
         }
 
         // Additional Exceptions for other shipments
         $shp2010 = Shipment::where('shipment_number', 'SHP-2024-002010')->first();
-        if ($shp2010) {
-            $inTransit2010 = TrackingEvent::where('shipment_id', $shp2010->id)
-                ->where('event_type', 'IN_TRANSIT')
-                ->where('description', 'Shipment is en route through scheduled international transit corridor.')
-                ->first();
+        if ($shp2010 && $shp2010->current_status === Shipment::STATUS_IN_TRANSIT) {
+            $hasPortCongestion = ShipmentException::where('shipment_id', $shp2010->id)
+                ->where('exception_type', ShipmentException::TYPE_PORT_CONGESTION)
+                ->exists();
 
-            $inTransit2010Time = $inTransit2010 ? Carbon::parse($inTransit2010->event_time) : Carbon::parse($shp2010->expected_departure)->addHours(6);
-            $portCongestionDetectedAt = $inTransit2010Time->copy()->addDays(3);
+            if (! $hasPortCongestion) {
+                $inTransit2010 = TrackingEvent::where('shipment_id', $shp2010->id)
+                    ->where('event_type', 'IN_TRANSIT')
+                    ->where('description', 'Shipment is en route through scheduled international transit corridor.')
+                    ->first();
 
-            ShipmentException::firstOrCreate(
-                ['shipment_id' => $shp2010->id, 'exception_type' => ShipmentException::TYPE_PORT_CONGESTION],
-                [
+                $inTransit2010Time = $inTransit2010 ? Carbon::parse($inTransit2010->event_time) : Carbon::parse($shp2010->expected_departure)->addHours(6);
+                $portCongestionDetectedAt = $inTransit2010Time->copy()->addDays(3);
+
+                ShipmentException::create([
+                    'shipment_id' => $shp2010->id,
+                    'exception_type' => ShipmentException::TYPE_PORT_CONGESTION,
                     'severity' => 'LOW',
                     'status' => ShipmentException::STATUS_INVESTIGATING,
                     'description' => 'Berthing wait time at Jebel Ali Hub extended by 8 hours due to high vessel queue.',
                     'detected_at' => $portCongestionDetectedAt,
                     'created_by' => $operator->id,
-                ]
-            );
+                ]);
+            }
         }
 
         $shp2011 = Shipment::where('shipment_number', 'SHP-2024-002011')->first();
         if ($shp2011) {
-            $inTransit2011 = TrackingEvent::where('shipment_id', $shp2011->id)
-                ->where('event_type', 'IN_TRANSIT')
-                ->where('description', 'Shipment is en route through scheduled international transit corridor.')
-                ->first();
+            $hasCustomsHold = ShipmentException::where('shipment_id', $shp2011->id)
+                ->where('exception_type', ShipmentException::TYPE_CUSTOMS_HOLD)
+                ->exists();
 
-            $inTransit2011Time = $inTransit2011 ? Carbon::parse($inTransit2011->event_time) : Carbon::parse($shp2011->expected_departure)->addHours(6);
-            $customsDetectedAt = $inTransit2011Time->copy()->addHours(24);
-            $customsResolvedAt = $customsDetectedAt->copy()->addHours(18);
+            if (! $hasCustomsHold) {
+                $inTransit2011 = TrackingEvent::where('shipment_id', $shp2011->id)
+                    ->where('event_type', 'IN_TRANSIT')
+                    ->where('description', 'Shipment is en route through scheduled international transit corridor.')
+                    ->first();
 
-            ShipmentException::firstOrCreate(
-                ['shipment_id' => $shp2011->id, 'exception_type' => ShipmentException::TYPE_CUSTOMS_HOLD],
-                [
+                $inTransit2011Time = $inTransit2011 ? Carbon::parse($inTransit2011->event_time) : Carbon::parse($shp2011->expected_departure)->addHours(6);
+                $customsDetectedAt = $inTransit2011Time->copy()->addHours(24);
+                $customsResolvedAt = $customsDetectedAt->copy()->addHours(18);
+
+                ShipmentException::create([
+                    'shipment_id' => $shp2011->id,
+                    'exception_type' => ShipmentException::TYPE_CUSTOMS_HOLD,
                     'severity' => 'LOW',
                     'status' => ShipmentException::STATUS_RESOLVED,
                     'description' => 'Routine CBP customs documentation check at LAX Air Cargo terminal.',
@@ -681,18 +738,18 @@ class DatabaseSeeder extends Seeder
                     'resolution_notes' => 'Import duty declaration cleared. Released for final delivery.',
                     'created_by' => $operator->id,
                     'resolved_by' => $admin->id,
-                ]
-            );
+                ]);
+            }
         }
 
-        // 6. INITIAL AUDIT LOGS (Immutable append-only records)
+        // 6. INITIAL AUDIT LOGS (Immutable append-only demo baseline records)
         AuditLog::firstOrCreate(
             ['action' => 'SYSTEM_INITIALIZATION', 'user_id' => $admin->id],
             [
                 'entity_type' => 'System',
                 'entity_id' => null,
                 'old_values' => null,
-                'new_values' => ['version' => '1.0.0', 'environment' => 'production_ready'],
+                'new_values' => ['version' => '1.0.0', 'environment' => 'production_ready', 'seeded_baseline' => true],
                 'ip_address' => '127.0.0.1',
                 'user_agent' => 'WorldCargo360-System/1.0',
                 'created_at' => now()->subDays(7),
@@ -705,11 +762,18 @@ class DatabaseSeeder extends Seeder
                 'entity_type' => 'Shipment',
                 'entity_id' => $delayedShipment->id ?? 1,
                 'old_values' => ['status' => 'BOOKED'],
-                'new_values' => ['status' => 'IN_TRANSIT'],
+                'new_values' => ['status' => 'IN_TRANSIT', 'seeded_baseline' => true],
                 'ip_address' => '127.0.0.1',
                 'user_agent' => 'WorldCargo360-System/1.0',
                 'created_at' => now()->subDays(2),
             ]
         );
+        } finally {
+            if ($seederLock) {
+                try {
+                    $seederLock->release();
+                } catch (\Throwable $e) {}
+            }
+        }
     }
 }
