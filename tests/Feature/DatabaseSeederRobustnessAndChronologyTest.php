@@ -15,6 +15,7 @@ use App\Services\TrackingService;
 use Carbon\Carbon;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use InvalidArgumentException;
 use Tests\TestCase;
@@ -863,5 +864,98 @@ class DatabaseSeederRobustnessAndChronologyTest extends TestCase
 
         $this->assertNotNull(AuditLog::find($log1->id));
         $this->assertNotNull(AuditLog::find($log2->id));
+    }
+
+    /**
+     * Requirement Concurrency Guard 1: Seeder is not executed when lock is already held by another process.
+     */
+    public function test_25_seeder_is_not_executed_when_lock_is_held_by_another_process(): void
+    {
+        // Simulate external process holding the lock
+        $externalLock = Cache::lock('worldcargo360_database_seeder_mutex', 300);
+        $this->assertTrue($externalLock->get(), 'External lock must be successfully acquired.');
+
+        try {
+            // Attempt to run seeder while lock is held
+            $seeder = new DatabaseSeeder();
+            $seeder->run();
+
+            // Verify no seeding occurred
+            $this->assertEquals(0, User::count(), 'Seeder must not execute any insertions when lock is held by another process.');
+            $this->assertEquals(0, Shipment::count(), 'No shipments should be created.');
+        } finally {
+            $externalLock->release();
+        }
+    }
+
+    /**
+     * Requirement Concurrency Guard 2: Seeder fails closed when lock acquisition throws an exception.
+     */
+    public function test_26_seeder_fails_closed_when_lock_acquisition_encounters_exception(): void
+    {
+        Cache::shouldReceive('lock')
+            ->with('worldcargo360_database_seeder_mutex', \Mockery::any())
+            ->once()
+            ->andThrow(new \RuntimeException('Simulated cache engine connection failure'));
+
+        $seeder = new DatabaseSeeder();
+        $seeder->run();
+
+        // Verify seeder halted safely without executing in unprotected state
+        $this->assertEquals(0, User::count(), 'Seeder must fail closed and insert nothing when lock acquisition throws an exception.');
+        $this->assertEquals(0, Shipment::count(), 'No shipments should be created on lock acquisition failure.');
+    }
+
+    /**
+     * Requirement Concurrency Guard 3: Lock is released after seeder successfully completes.
+     */
+    public function test_27_lock_is_released_after_seeder_successfully_completes(): void
+    {
+        $seeder = new DatabaseSeeder();
+        $seeder->run();
+
+        // Verify data was seeded
+        $this->assertGreaterThan(0, User::count());
+
+        // Immediately verify lock can be acquired by another process
+        $testLock = Cache::lock('worldcargo360_database_seeder_mutex', 10);
+        $acquired = $testLock->get();
+        $this->assertTrue($acquired, 'Lock must be completely released after DatabaseSeeder finishes successfully.');
+
+        $testLock->release();
+    }
+
+    /**
+     * Requirement Concurrency Guard 4: Lock is released even when seeder encounters an unhandled exception.
+     */
+    public function test_28_lock_is_released_when_seeder_encounters_exception(): void
+    {
+        // Hook into User::saving to force an exception midway during seeding
+        User::saving(function () {
+            throw new \RuntimeException('Simulated unexpected crash during database seeding');
+        });
+
+        try {
+            $seeder = new DatabaseSeeder();
+
+            $threwException = false;
+            try {
+                $seeder->run();
+            } catch (\RuntimeException $e) {
+                $threwException = true;
+                $this->assertStringContainsString('Simulated unexpected crash', $e->getMessage());
+            }
+
+            $this->assertTrue($threwException, 'Seeder should have propagated the exception.');
+
+            // Verify lock is released despite the crash
+            $testLock = Cache::lock('worldcargo360_database_seeder_mutex', 10);
+            $acquired = $testLock->get();
+            $this->assertTrue($acquired, 'Lock must be released via finally block even when seeder crashes with an exception.');
+
+            $testLock->release();
+        } finally {
+            User::flushEventListeners();
+        }
     }
 }

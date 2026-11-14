@@ -29,15 +29,39 @@ class DatabaseSeeder extends Seeder
         // Concurrency Guard: Enforce single-process execution strategy using an atomic cache lock.
         // This prevents race conditions on child tables (tracking_events, shipment_items, exceptions, notifications)
         // which legitimately permit multiple operational records and therefore do not have DB-level composite unique keys.
+        $lockTtlSeconds = 300; // 300s (5-min) TTL prevents premature expiration during large/slow batch operations
+        $seederLock = null;
+        $hasLock = false;
+
         try {
-            $seederLock = Cache::lock('worldcargo360_database_seeder_mutex', 60);
-            $hasLock = $seederLock->get();
+            $seederLock = Cache::lock('worldcargo360_database_seeder_mutex', $lockTtlSeconds);
+            $hasLock = (bool) $seederLock->get();
         } catch (\Throwable $e) {
+            // Fail-Closed: Never proceed if lock driver or acquisition throws an exception
             $seederLock = null;
-            $hasLock = true;
+            $hasLock = false;
+
+            $errorMessage = sprintf(
+                '[WORLD CARGO 360 SEEDER CONCURRENCY WARNING] Failed to acquire seeder lock due to exception: %s. Seeder execution safely halted to prevent unprotected concurrent execution (Fail-Closed).',
+                $e->getMessage()
+            );
+
+            if (isset($this->command)) {
+                $this->command->warn($errorMessage);
+            }
+            \Illuminate\Support\Facades\Log::warning($errorMessage, ['exception' => $e]);
+
+            return;
         }
 
         if (! $hasLock) {
+            $warningMessage = '[WORLD CARGO 360 SEEDER CONCURRENCY WARNING] Another seeder process is currently running (lock "worldcargo360_database_seeder_mutex" is active). Seeder execution safely halted to prevent duplicate records.';
+
+            if (isset($this->command)) {
+                $this->command->warn($warningMessage);
+            }
+            \Illuminate\Support\Facades\Log::warning($warningMessage);
+
             return;
         }
 
@@ -772,7 +796,16 @@ class DatabaseSeeder extends Seeder
             if ($seederLock) {
                 try {
                     $seederLock->release();
-                } catch (\Throwable $e) {}
+                } catch (\Throwable $e) {
+                    $releaseWarning = sprintf(
+                        '[WORLD CARGO 360 SEEDER CONCURRENCY WARNING] Failed to cleanly release seeder lock: %s.',
+                        $e->getMessage()
+                    );
+                    if (isset($this->command)) {
+                        $this->command->warn($releaseWarning);
+                    }
+                    \Illuminate\Support\Facades\Log::warning($releaseWarning, ['exception' => $e]);
+                }
             }
         }
     }
