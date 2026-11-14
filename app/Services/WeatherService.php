@@ -37,29 +37,45 @@ class WeatherService
 
                 if ($response->successful()) {
                     $data = $response->json();
-                    $current = $data['current'] ?? [];
 
-                    $weatherCode = (int) ($current['weather_code'] ?? 0);
-                    $description = $this->interpretWeatherCode($weatherCode);
-                    $observedTime = $current['time'] ?? now()->toIso8601String();
+                    // Strict validation: must be array and contain non-empty 'current' object with required fields
+                    $current = $data['current'] ?? null;
+                    $isValidPayload = is_array($current)
+                        && ! empty($current)
+                        && isset($current['weather_code'])
+                        && is_numeric($current['weather_code'])
+                        && isset($current['temperature_2m'])
+                        && is_numeric($current['temperature_2m']);
 
-                    $payload = [
-                        'status' => 'available',
-                        'temperature' => isset($current['temperature_2m']) ? (float) $current['temperature_2m'] : null,
-                        'wind_speed' => isset($current['wind_speed_10m']) ? (float) $current['wind_speed_10m'] : null,
-                        'precipitation' => isset($current['precipitation']) ? (float) $current['precipitation'] : 0.0,
-                        'condition' => $description,
-                        'weather_code' => $weatherCode,
-                        'is_adverse' => $weatherCode >= 51, // Drizzle, rain, snow, thunderstorm
-                        'timestamp' => $observedTime,
-                        'is_stale' => false,
-                        'notice' => 'Live observation from Open-Meteo Global Forecasting API.',
-                    ];
+                    if ($isValidPayload) {
+                        $weatherCode = (int) $current['weather_code'];
+                        $description = $this->interpretWeatherCode($weatherCode);
+                        $observedTime = $current['time'] ?? now()->toIso8601String();
 
-                    // Store as last-known persistent observation for 7 days
-                    Cache::put($lastKnownKey, $payload, now()->addDays(7));
+                        $payload = [
+                            'status' => 'available',
+                            'temperature' => (float) $current['temperature_2m'],
+                            'wind_speed' => isset($current['wind_speed_10m']) && is_numeric($current['wind_speed_10m']) ? (float) $current['wind_speed_10m'] : null,
+                            'precipitation' => isset($current['precipitation']) && is_numeric($current['precipitation']) ? (float) $current['precipitation'] : 0.0,
+                            'condition' => $description,
+                            'weather_code' => $weatherCode,
+                            'is_adverse' => $weatherCode >= 51, // Drizzle, rain, snow, thunderstorm
+                            'timestamp' => $observedTime,
+                            'is_stale' => false,
+                            'notice' => 'Live observation from Open-Meteo Global Forecasting API.',
+                        ];
 
-                    return $payload;
+                        // Store as last-known persistent observation for 7 days
+                        Cache::put($lastKnownKey, $payload, now()->addDays(7));
+
+                        return $payload;
+                    }
+
+                    Log::warning("WeatherService: HTTP 200 returned invalid or incomplete weather payload for coords ({$roundedLat}, {$roundedLon}).", [
+                        'response' => $data,
+                    ]);
+                } else {
+                    Log::info("WeatherService: HTTP status {$response->status()} returned for coords ({$roundedLat}, {$roundedLon}).");
                 }
             } catch (\Throwable $e) {
                 Log::info('WeatherService request unavailable or timed out: ' . $e->getMessage());

@@ -5,49 +5,123 @@
 
     <!-- Top Action & Filter Bar -->
     <div class="bg-white p-6 rounded-2xl border border-brand-border shadow-soft-sm">
-        <form action="{{ route('shipments.index') }}" method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <!-- Search -->
-            <div class="lg:col-span-2">
-                <label class="block text-xs font-bold text-brand-navy mb-1.5">Search Fleet</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <form action="{{ route('shipments.index') }}" method="GET" class="space-y-4">
+            <!-- Row 1: Core Search & Master Data Filters -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <!-- Search -->
+                <div class="lg:col-span-2">
+                    <label class="block text-xs font-bold text-brand-navy mb-1.5">Search Fleet</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </div>
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Shipment No, Cargo, City, Customer..."
+                               class="w-full pl-10 pr-4 py-2 bg-brand-bg border border-brand-border rounded-xl text-xs font-medium text-brand-navy focus:outline-none focus:border-brand-primary focus:bg-white transition-all">
                     </div>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Shipment No, Cargo, City, Customer..."
-                           class="w-full pl-10 pr-4 py-2.5 bg-brand-bg border border-brand-border rounded-xl text-xs font-medium text-brand-navy focus:outline-none focus:border-brand-primary focus:bg-white transition-all">
+                </div>
+
+                <!-- Status Filter -->
+                <div>
+                    <label class="block text-xs font-bold text-brand-navy mb-1.5">Status Filter</label>
+                    <select name="status" class="w-full px-3 py-2 bg-brand-bg border border-brand-border rounded-xl text-xs font-semibold text-brand-navy focus:outline-none focus:border-brand-primary focus:bg-white transition-all">
+                        <option value="">All Statuses</option>
+                        @foreach($statuses as $st)
+                            <option value="{{ $st }}" {{ request('status') === $st ? 'selected' : '' }}>{{ $st }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Carrier Filter -->
+                <div>
+                    <label class="block text-xs font-bold text-brand-navy mb-1.5">Carrier Partner</label>
+                    <select name="carrier_id" class="w-full px-3 py-2 bg-brand-bg border border-brand-border rounded-xl text-xs font-semibold text-brand-navy focus:outline-none focus:border-brand-primary focus:bg-white transition-all">
+                        <option value="">All Carriers</option>
+                        @foreach($carriers as $carrier)
+                            <option value="{{ $carrier->id }}" {{ request('carrier_id') == $carrier->id ? 'selected' : '' }}>{{ $carrier->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Delay Status Filter -->
+                <div>
+                    <label class="block text-xs font-bold text-brand-navy mb-1.5">Delay Status</label>
+                    <select name="delayed" class="w-full px-3 py-2 bg-brand-bg border border-brand-border rounded-xl text-xs font-semibold text-brand-navy focus:outline-none focus:border-brand-primary focus:bg-white transition-all">
+                        <option value="">All Deliveries</option>
+                        <option value="1" {{ request('delayed') === '1' ? 'selected' : '' }}>⚠️ Delayed Only</option>
+                        <option value="0" {{ request('delayed') === '0' ? 'selected' : '' }}>✅ On Schedule Only</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- Status Filter -->
-            <div>
-                <label class="block text-xs font-bold text-brand-navy mb-1.5">Status Filter</label>
-                <select name="status" class="w-full px-3.5 py-2.5 bg-brand-bg border border-brand-border rounded-xl text-xs font-semibold text-brand-navy focus:outline-none focus:border-brand-primary focus:bg-white transition-all">
-                    <option value="">All Statuses</option>
-                    @foreach($statuses as $st)
-                        <option value="{{ $st }}" {{ request('status') === $st ? 'selected' : '' }}>{{ $st }}</option>
-                    @endforeach
-                </select>
-            </div>
+            <!-- Row 2: Location, Date Range, Sorting & Action Buttons -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 pt-2 border-t border-slate-100">
+                <!-- Origin Location -->
+                <div>
+                    <label class="block text-xs font-bold text-brand-navy mb-1.5">Origin Location</label>
+                    <select name="origin_id" class="w-full px-3 py-2 bg-brand-bg border border-brand-border rounded-xl text-xs font-semibold text-brand-navy focus:outline-none focus:border-brand-primary focus:bg-white transition-all">
+                        <option value="">All Origins</option>
+                        @foreach($locations as $loc)
+                            <option value="{{ $loc->id }}" {{ request('origin_id') == $loc->id ? 'selected' : '' }}>
+                                {{ $loc->city }}, {{ $loc->country }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-            <!-- Carrier Filter -->
-            <div>
-                <label class="block text-xs font-bold text-brand-navy mb-1.5">Carrier Partner</label>
-                <select name="carrier_id" class="w-full px-3.5 py-2.5 bg-brand-bg border border-brand-border rounded-xl text-xs font-semibold text-brand-navy focus:outline-none focus:border-brand-primary focus:bg-white transition-all">
-                    <option value="">All Carriers</option>
-                    @foreach($carriers as $carrier)
-                        <option value="{{ $carrier->id }}" {{ request('carrier_id') == $carrier->id ? 'selected' : '' }}>{{ $carrier->name }}</option>
-                    @endforeach
-                </select>
-            </div>
+                <!-- Destination Location -->
+                <div>
+                    <label class="block text-xs font-bold text-brand-navy mb-1.5">Destination</label>
+                    <select name="destination_id" class="w-full px-3 py-2 bg-brand-bg border border-brand-border rounded-xl text-xs font-semibold text-brand-navy focus:outline-none focus:border-brand-primary focus:bg-white transition-all">
+                        <option value="">All Destinations</option>
+                        @foreach($locations as $loc)
+                            <option value="{{ $loc->id }}" {{ request('destination_id') == $loc->id ? 'selected' : '' }}>
+                                {{ $loc->city }}, {{ $loc->country }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-            <!-- Filter Buttons -->
-            <div class="flex items-end space-x-2">
-                <button type="submit" class="flex-1 py-2.5 bg-brand-primary hover:bg-brand-primary-hover text-white rounded-xl text-xs font-bold shadow-soft-sm shadow-brand-primary/25 transition-all hover:scale-[1.02]">
-                    Filter
-                </button>
-                <a href="{{ route('shipments.index') }}" class="px-4 py-2.5 bg-brand-bg hover:bg-slate-200/60 border border-brand-border rounded-xl text-xs font-bold text-brand-secondary transition-all">
-                    Reset
-                </a>
+                <!-- Start Date -->
+                <div>
+                    <label class="block text-xs font-bold text-brand-navy mb-1.5">Start Date</label>
+                    <input type="date" name="start_date" value="{{ request('start_date') }}"
+                           class="w-full px-3 py-2 bg-brand-bg border border-brand-border rounded-xl text-xs font-medium text-brand-navy focus:outline-none focus:border-brand-primary focus:bg-white transition-all">
+                </div>
+
+                <!-- End Date -->
+                <div>
+                    <label class="block text-xs font-bold text-brand-navy mb-1.5">End Date</label>
+                    <input type="date" name="end_date" value="{{ request('end_date') }}"
+                           class="w-full px-3 py-2 bg-brand-bg border border-brand-border rounded-xl text-xs font-medium text-brand-navy focus:outline-none focus:border-brand-primary focus:bg-white transition-all">
+                </div>
+
+                <!-- Sorting & Direction Combined -->
+                <div>
+                    <label class="block text-xs font-bold text-brand-navy mb-1.5">Sort Manifest</label>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <select name="sort_by" class="w-full px-2 py-2 bg-brand-bg border border-brand-border rounded-xl text-[11px] font-semibold text-brand-navy focus:outline-none focus:border-brand-primary">
+                            <option value="created_at" {{ request('sort_by', request('sort')) === 'created_at' ? 'selected' : '' }}>Created</option>
+                            <option value="shipment_number" {{ request('sort_by', request('sort')) === 'shipment_number' ? 'selected' : '' }}>Shipment No</option>
+                            <option value="expected_arrival" {{ request('sort_by', request('sort')) === 'expected_arrival' ? 'selected' : '' }}>ETA</option>
+                            <option value="current_status" {{ request('sort_by', request('sort')) === 'current_status' ? 'selected' : '' }}>Status</option>
+                            <option value="weight" {{ request('sort_by', request('sort')) === 'weight' ? 'selected' : '' }}>Weight</option>
+                        </select>
+                        <select name="sort_direction" class="w-full px-2 py-2 bg-brand-bg border border-brand-border rounded-xl text-[11px] font-semibold text-brand-navy focus:outline-none focus:border-brand-primary">
+                            <option value="desc" {{ strtolower(request('sort_direction', request('direction', 'desc'))) === 'desc' ? 'selected' : '' }}>DESC</option>
+                            <option value="asc" {{ strtolower(request('sort_direction', request('direction'))) === 'asc' ? 'selected' : '' }}>ASC</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-end space-x-2">
+                    <button type="submit" class="flex-1 py-2 bg-brand-primary hover:bg-brand-primary-hover text-white rounded-xl text-xs font-bold shadow-soft-sm shadow-brand-primary/25 transition-all hover:scale-[1.02]">
+                        Apply Filters
+                    </button>
+                    <a href="{{ route('shipments.index') }}" class="px-3.5 py-2 bg-brand-bg hover:bg-slate-200/60 border border-brand-border rounded-xl text-xs font-bold text-brand-secondary transition-all" title="Clear all filters">
+                        Reset
+                    </a>
+                </div>
             </div>
         </form>
     </div>

@@ -7,6 +7,7 @@ use App\Models\Notification;
 use App\Models\Shipment;
 use App\Models\ShipmentException;
 use App\Models\TrackingEvent;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -29,7 +30,18 @@ class ExceptionService
 
             $severity = strtoupper(trim($data['severity'] ?? 'MEDIUM'));
             $description = $data['description'] ?? "Exception reported: {$type}";
-            $detectedAt = isset($data['detected_at']) ? $data['detected_at'] : now();
+            $detectedAt = isset($data['detected_at']) ? Carbon::parse($data['detected_at']) : now();
+            if ($detectedAt->isFuture()) {
+                $detectedAt = now();
+            }
+
+            // Enforce chronology: exception event cannot have timestamp earlier than latest tracking event
+            $latestEvent = $shipment->trackingEvents()->orderBy('event_time', 'desc')->first();
+            if ($latestEvent && $detectedAt->lt(Carbon::parse($latestEvent->event_time))) {
+                throw new InvalidArgumentException(
+                    "Exception detected_at ({$detectedAt->toDateTimeString()}) cannot be earlier than the latest tracking event time ({$latestEvent->event_time->toDateTimeString()}) on shipment {$shipment->shipment_number}."
+                );
+            }
 
             $exception = ShipmentException::create([
                 'shipment_id' => $shipment->id,
@@ -102,6 +114,29 @@ class ExceptionService
                 throw new InvalidArgumentException("Invalid status: {$status}");
             }
 
+            // Enforce workflow: OPEN -> INVESTIGATING -> RESOLVED
+            if ($oldStatus === ShipmentException::STATUS_RESOLVED) {
+                throw new InvalidArgumentException("Cannot update exception. Exceptions in RESOLVED status cannot be reopened or modified.");
+            }
+
+            if ($oldStatus === ShipmentException::STATUS_OPEN) {
+                if ($status === ShipmentException::STATUS_RESOLVED) {
+                    throw new InvalidArgumentException("Invalid status transition. Exceptions must move from OPEN to INVESTIGATING before they can be RESOLVED.");
+                }
+                if ($status === ShipmentException::STATUS_OPEN) {
+                    throw new InvalidArgumentException("Exception is already in OPEN status.");
+                }
+            }
+
+            if ($oldStatus === ShipmentException::STATUS_INVESTIGATING) {
+                if ($status === ShipmentException::STATUS_OPEN) {
+                    throw new InvalidArgumentException("Invalid status transition. Exceptions in INVESTIGATING status cannot revert back to OPEN.");
+                }
+                if ($status === ShipmentException::STATUS_INVESTIGATING) {
+                    throw new InvalidArgumentException("Exception is already in INVESTIGATING status.");
+                }
+            }
+
             $updateData = ['status' => $status];
 
             if ($status === ShipmentException::STATUS_RESOLVED) {
@@ -115,6 +150,18 @@ class ExceptionService
             $exception->update($updateData);
 
             $shipment = $exception->shipment;
+
+            // In-app notification when moving to INVESTIGATING
+            if ($status === ShipmentException::STATUS_INVESTIGATING) {
+                Notification::create([
+                    'user_id' => $shipment->customer_id,
+                    'shipment_id' => $shipment->id,
+                    'title' => "Exception Under Investigation on {$shipment->shipment_number}",
+                    'message' => "The exception ({$exception->exception_type}) is now under active investigation by our operations team.",
+                    'type' => 'EXCEPTION_INVESTIGATING',
+                    'is_read' => false,
+                ]);
+            }
 
             // If resolved, re-evaluate delay metrics on shipment
             if ($status === ShipmentException::STATUS_RESOLVED) {

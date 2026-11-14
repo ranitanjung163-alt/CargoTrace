@@ -232,10 +232,23 @@ All requests and responses use standard JSON formatting:
   ```
 - **Response (201 Created)**
 
-### 4.3 Resolve Exception
+### 4.3 Update Exception Status (Workflow: OPEN -> INVESTIGATING -> RESOLVED)
 - **Endpoint:** `PATCH /api/exceptions/{id}`
-- **Access:** Operator / Admin
-- **Request Body:**
+- **Access:** Operator / Admin (Customers receive 403 Forbidden)
+- **Status Progression Rules:**
+  - `OPEN` &rarr; `INVESTIGATING` (Allowed)
+  - `OPEN` &rarr; `RESOLVED` (Rejected with 422: must be investigated first)
+  - `INVESTIGATING` &rarr; `RESOLVED` (Allowed)
+  - `INVESTIGATING` &rarr; `OPEN` (Rejected with 422: cannot revert)
+  - `RESOLVED` &rarr; Any (Rejected with 422: resolved exceptions cannot be reopened)
+- **Request Body (to INVESTIGATING):**
+  ```json
+  {
+    "status": "INVESTIGATING",
+    "resolution_notes": "Operations reviewing alternative highway transit routes."
+  }
+  ```
+- **Request Body (to RESOLVED):**
   ```json
   {
     "status": "RESOLVED",
@@ -243,6 +256,13 @@ All requests and responses use standard JSON formatting:
   }
   ```
 - **Response (200 OK)**
+- **Error Response (422 Unprocessable Content on Invalid Transition):**
+  ```json
+  {
+    "success": false,
+    "message": "Invalid status transition. Exceptions must move from OPEN to INVESTIGATING before they can be RESOLVED."
+  }
+  ```
 
 ---
 

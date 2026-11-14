@@ -4,8 +4,8 @@
 [![Laravel Version](https://img.shields.io/badge/Laravel-12.x-red.svg)](https://laravel.com)
 [![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-blue.svg)](https://php.net)
 [![Database](https://img.shields.io/badge/Database-MySQL%20%2F%20MariaDB-orange.svg)](https://mariadb.org)
-[![Testing](https://img.shields.io/badge/Tests-25%20Passed%20(100%25)-brightgreen.svg)](tests/Feature)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Testing](https://img.shields.io/badge/Tests-60%20Passed%20(100%25)-brightgreen.svg)](tests/Feature)
+[![License](https://img.shields.io/badge/License-Academic%20Permissive-green.svg)](LICENSE)
 
 > **Individual Final Project (UAS) – Web Programming 2**  
 > **Course Lecturer:** Pak Ikhwan  
@@ -118,8 +118,9 @@ For grading, demonstration, and interview evaluation:
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/your-username/cargo_trace.git
-cd cargo_trace
+# Clone the repository [Pending Repository Setup / Academic Submission]
+git clone <repository-url>
+cd WorldCargo_360
 ```
 
 ### Step 2: Install Composer Dependencies
@@ -169,40 +170,24 @@ The test suite covers all 18 mandatory evaluation criteria required by the cours
 php artisan test
 ```
 
-### Test Evidence (25/25 Passing, 94 Assertions)
-```
-PASS  Tests\Unit\ExampleTest
-✓ that true is true
+### Test Evidence (60/60 Passing, 295 Assertions, 0 Failures)
+```text
+PASS  Tests\Unit\ExampleTest (1 test)
+PASS  Tests\Feature\ExampleTest (1 test)
+PASS  Tests\Feature\CargoTraceCompleteTestSuiteTest (30 tests)
+  - Auth, Role-Based Access Control, Customer Data Isolation
+  - Shipment CRUD, Validations, Coordinates, and Filter Matrix
+  - Tracking Chronology, ETA SLA Thresholds, and Delay Severity
+  - Exception Workflow (OPEN -> INVESTIGATING -> RESOLVED)
+  - Weather API Resilience, Payloads, Stale Caching & Fallback
+  - REST API Sanctum Authorization & Data Protection
+PASS  Tests\Feature\DatabaseSeederRobustnessAndChronologyTest (28 tests)
+  - Seeder Idempotency, Concurrency Mutex Lock & Fail-Closed Guards
+  - Chronological Tracking Milestones (Created -> Booked -> Picked Up -> In Transit -> Delivered)
+  - Operational Mutation Preservation & Anti-Duplication Controls
 
-PASS  Tests\Feature\CargoTraceCompleteTestSuiteTest
-✓ 1 login berhasil
-✓ 2 login gagal
-✓ 3 akses tanpa autentikasi
-✓ 4 admin dapat mengakses fitur admin
-✓ 5 operator tidak dapat mengakses fitur admin
-✓ 6 customer tidak dapat melihat shipment milik orang lain
-✓ 7 shipment crud
-✓ 8 shipment validation
-✓ 9 tracking event creation
-✓ 10 tracking chronology
-✓ 11 invalid status transition
-✓ 12 delivered tidak dapat kembali ke status awal
-✓ 13 eta calculation
-✓ 14 delay severity
-✓ 15 exception management
-✓ 16 api authorization
-✓ 17 global coordinate validation
-✓ 18 geocoding api error handling
-✓ 19 eta threshold 12 hours and edge cases
-✓ 20 on time delivery rate calculation
-✓ 21 coordinate edge cases zero negative and limits
-✓ 22 weather service failure and unavailable state
-✓ 23 csv export filters and formula injection prevention
-
-PASS  Tests\Feature\ExampleTest
-✓ the application returns a successful response
-
-Tests:    25 passed, 0 failed, 0 skipped (93 assertions)
+Tests:    60 passed (295 assertions)
+Duration: ~7.65s (Executed on isolated in-memory SQLite database)
 ```
 
 ---

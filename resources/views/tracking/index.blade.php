@@ -15,7 +15,7 @@
                 <div class="flex items-center space-x-2">
                     <h2 class="text-base font-extrabold text-brand-navy">Interactive Route Navigation</h2>
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-50 text-brand-primary border border-blue-200">
-                        Google Maps Engine
+                        Leaflet / OpenStreetMap
                     </span>
                 </div>
                 <p class="text-xs text-brand-secondary">Multimodal turn-by-turn waypoint routing, transit telemetry, and worldwide coverage</p>
@@ -28,14 +28,19 @@
             <form action="{{ route('tracking.index') }}" method="GET" class="flex items-center space-x-2">
                 <select id="consignmentSelect" name="shipment_number" onchange="this.form.submit()"
                         class="px-3.5 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-brand-navy focus:outline-none focus:border-brand-primary focus:bg-white shadow-xs">
-                    <option value="DEMO-FR-NORMANDY" {{ request('shipment_number') === 'DEMO-FR-NORMANDY' ? 'selected' : '' }}>
-                        📍 Demo: France Corridor (Paris → Cherbourg - 912 km)
-                    </option>
+                    @if(!$shipment && request('shipment_number') !== 'DEMO-FR-NORMANDY')
+                        <option value="" disabled selected>-- Select Shipment --</option>
+                    @endif
                     @foreach($activeShipments as $ashp)
                         <option value="{{ $ashp->shipment_number }}" {{ ($shipment && $shipment->shipment_number === $ashp->shipment_number && request('shipment_number') !== 'DEMO-FR-NORMANDY') ? 'selected' : '' }}>
                             {{ $ashp->shipment_number }} ({{ $ashp->origin->city }} → {{ $ashp->destination->city }})
                         </option>
                     @endforeach
+                    <optgroup label="Academic & Presentation Demo">
+                        <option value="DEMO-FR-NORMANDY" {{ request('shipment_number') === 'DEMO-FR-NORMANDY' ? 'selected' : '' }}>
+                            📍 Demo: France Corridor (Paris → Cherbourg - 912 km)
+                        </option>
+                    </optgroup>
                 </select>
                 <noscript><button type="submit" class="px-3 py-1.5 bg-brand-primary text-white text-xs font-bold rounded-xl">Load</button></noscript>
             </form>
@@ -151,8 +156,8 @@
                         @endif
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="font-bold text-brand-navy" id="info-shipment-number">{{ $shipment ? $shipment->shipment_number : 'DEMO-FR-NORMANDY' }}</span>
-                        <span class="font-mono text-slate-600" id="info-carrier-name">{{ $shipment ? $shipment->carrier->name : 'FastShip Global Express' }}</span>
+                        <span class="font-bold text-brand-navy" id="info-shipment-number">{{ $shipment ? $shipment->shipment_number : (request('shipment_number') === 'DEMO-FR-NORMANDY' ? 'DEMO-FR-NORMANDY' : 'No Shipment Selected') }}</span>
+                        <span class="font-mono text-slate-600" id="info-carrier-name">{{ $shipment ? $shipment->carrier->name : (request('shipment_number') === 'DEMO-FR-NORMANDY' ? 'FastShip Global Express' : '—') }}</span>
                     </div>
                     @if($weather)
                     <div class="pt-1 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-600">
@@ -444,7 +449,7 @@
     // -------------------------------------------------------------
     // DATA INITIALIZATION: Loaded from Shipment DB or France Reference Demo
     // -------------------------------------------------------------
-    const isDemoFrance = {{ request('shipment_number') === 'DEMO-FR-NORMANDY' || (!$shipment && !request('shipment_number')) ? 'true' : 'false' }};
+    const isDemoFrance = {{ request('shipment_number') === 'DEMO-FR-NORMANDY' ? 'true' : 'false' }};
     const currentShipment = @json($shipment);
 
     // EXACT ROUTE FROM SCREENSHOT: Paris -> Versailles -> Chartres -> Le Mans -> Caen -> Cherbourg
@@ -459,9 +464,9 @@
 
     let activeWaypoints = [];
 
-    if (isDemoFrance || !currentShipment) {
+    if (isDemoFrance) {
         activeWaypoints = franceDemoWaypoints;
-    } else {
+    } else if (currentShipment) {
         // Construct from database shipment with coordinate validation
         if (isValidCoord(currentShipment.origin.latitude, currentShipment.origin.longitude)) {
             activeWaypoints.push({
@@ -504,7 +509,18 @@
     // -------------------------------------------------------------
     function renderWaypointsList() {
         const container = document.getElementById('waypointsListContainer');
+        if (!container) return;
         container.innerHTML = '';
+
+        if (activeWaypoints.length === 0) {
+            container.innerHTML = `
+                <div class="py-8 px-4 text-center rounded-2xl bg-slate-50 border border-slate-200/80">
+                    <p class="font-bold text-slate-700 text-xs">No Active Shipment Selected</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Please select an active consignment from the fleet menu above or load the presentation corridor.</p>
+                </div>
+            `;
+            return;
+        }
 
         activeWaypoints.forEach((wp, index) => {
             const isFirst = index === 0;

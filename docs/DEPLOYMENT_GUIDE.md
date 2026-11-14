@@ -24,7 +24,7 @@ APP_NAME="WorldCargo 360"
 APP_ENV=production
 APP_KEY=base64:YOUR_GENERATED_APP_KEY
 APP_DEBUG=false
-APP_URL=https://your-domain.com
+APP_URL=https://your-domain.com # [Pending Production Domain]
 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -53,9 +53,9 @@ WEATHER_API_KEY=
 ## 3. Deployment Steps
 
 ```bash
-# 1. Clone repository
-git clone https://github.com/your-username/cargo_trace.git /var/www/cargotrace
-cd /var/www/cargotrace
+# 1. Clone repository [Pending Official Remote Repository URL]
+git clone <repository-url> /var/www/WorldCargo_360
+cd /var/www/WorldCargo_360
 
 # 2. Install production PHP dependencies (no dev packages)
 composer install --no-dev --optimize-autoloader
@@ -90,17 +90,17 @@ sudo chmod -R 775 storage bootstrap/cache
 ```nginx
 server {
     listen 80;
-    server_name cargotrace.yourdomain.com;
+    server_name your-domain.com; # [Pending Domain Name Configuration]
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name cargotrace.yourdomain.com;
-    root /var/www/cargotrace/public;
+    server_name your-domain.com; # [Pending Domain Name Configuration]
+    root /var/www/WorldCargo_360/public;
 
-    ssl_certificate /etc/letsencrypt/live/cargotrace.yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/cargotrace.yourdomain.com/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
 
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";

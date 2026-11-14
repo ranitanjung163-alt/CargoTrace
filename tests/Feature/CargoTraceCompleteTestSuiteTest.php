@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use InvalidArgumentException;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class CargoTraceCompleteTestSuiteTest extends TestCase
@@ -487,8 +488,12 @@ class CargoTraceCompleteTestSuiteTest extends TestCase
         // Auto-marked delayed
         $this->assertTrue($shipment->fresh()->is_delayed);
 
+        // Move to INVESTIGATING
+        $investigating = $exceptionService->updateStatus($exception, 'INVESTIGATING', 'Dispatch investigating alternate highway route', $this->operator->id);
+        $this->assertEquals('INVESTIGATING', $investigating->status);
+
         // Resolve exception
-        $resolved = $exceptionService->updateStatus($exception, 'RESOLVED', 'Road cleared by highway patrol', $this->operator->id);
+        $resolved = $exceptionService->updateStatus($investigating, 'RESOLVED', 'Road cleared by highway patrol', $this->operator->id);
         $this->assertEquals('RESOLVED', $resolved->status);
         $this->assertNotNull($resolved->resolved_at);
     }
@@ -788,5 +793,457 @@ class CargoTraceCompleteTestSuiteTest extends TestCase
 
         // Verify sanitization: leading '=' must be safely prefixed with single quote "'"
         $this->assertStringContainsString("'=1+1", $content);
+    }
+
+    /**
+     * TEST 24: Comprehensive shipment filtering (origin, destination, date range, delayed status, sorting)
+     */
+    public function test_24_comprehensive_shipment_filters_origin_destination_dates_delayed_and_sorting(): void
+    {
+        $locTokyo = Location::create([
+            'code' => 'NRT-TEST',
+            'name' => 'Narita Hub',
+            'city' => 'Tokyo',
+            'country' => 'Japan',
+            'country_code' => 'JP',
+            'type' => 'AIRPORT',
+            'latitude' => 35.76,
+            'longitude' => 140.38,
+        ]);
+
+        $locLondon = Location::create([
+            'code' => 'LHR-TEST',
+            'name' => 'Heathrow Terminal',
+            'city' => 'London',
+            'country' => 'United Kingdom',
+            'country_code' => 'GB',
+            'type' => 'AIRPORT',
+            'latitude' => 51.47,
+            'longitude' => -0.45,
+        ]);
+
+        // Shipment A: Tokyo to London, created 3 days ago, delayed, weight 500
+        $shipmentA = Shipment::create([
+            'shipment_number' => 'SHP-FILTER-AAA',
+            'customer_id' => $this->customer1->id,
+            'carrier_id' => $this->carrier->id,
+            'origin_location_id' => $locTokyo->id,
+            'destination_location_id' => $locLondon->id,
+            'cargo_type' => 'Semiconductors',
+            'weight' => 500.0,
+            'volume' => 5.0,
+            'expected_departure' => now()->subDays(3),
+            'expected_arrival' => now()->addDays(1),
+            'estimated_arrival' => now()->addDays(2),
+            'current_status' => Shipment::STATUS_IN_TRANSIT,
+            'is_delayed' => true,
+            'delay_severity' => 'HIGH',
+        ]);
+        $shipmentA->created_at = now()->subDays(3);
+        $shipmentA->save();
+
+        // Shipment B: Origin to Destination, created 1 day ago, NOT delayed, weight 100
+        $shipmentB = Shipment::create([
+            'shipment_number' => 'SHP-FILTER-BBB',
+            'customer_id' => $this->customer1->id,
+            'carrier_id' => $this->carrier->id,
+            'origin_location_id' => $this->origin->id,
+            'destination_location_id' => $this->destination->id,
+            'cargo_type' => 'Apparel',
+            'weight' => 100.0,
+            'volume' => 2.0,
+            'expected_departure' => now()->subDay(),
+            'expected_arrival' => now()->addDays(3),
+            'estimated_arrival' => now()->addDays(3),
+            'current_status' => Shipment::STATUS_PICKED_UP,
+            'is_delayed' => false,
+        ]);
+        $shipmentB->created_at = now()->subDay();
+        $shipmentB->save();
+
+        // 1. Filter by Origin
+        $resOrigin = $this->actingAs($this->admin)->get(route('shipments.index', ['origin_id' => $locTokyo->id]));
+        $resOrigin->assertStatus(200);
+        $resOrigin->assertSee('SHP-FILTER-AAA');
+        $resOrigin->assertDontSee('SHP-FILTER-BBB');
+
+        // 2. Filter by Destination
+        $resDest = $this->actingAs($this->admin)->get(route('shipments.index', ['destination_id' => $locLondon->id]));
+        $resDest->assertStatus(200);
+        $resDest->assertSee('SHP-FILTER-AAA');
+        $resDest->assertDontSee('SHP-FILTER-BBB');
+
+        // 3. Filter by Delayed
+        $resDelayed = $this->actingAs($this->admin)->get(route('shipments.index', ['delayed' => '1']));
+        $resDelayed->assertStatus(200);
+        $resDelayed->assertSee('SHP-FILTER-AAA');
+        $resDelayed->assertDontSee('SHP-FILTER-BBB');
+
+        $resNotDelayed = $this->actingAs($this->admin)->get(route('shipments.index', ['delayed' => '0']));
+        $resNotDelayed->assertStatus(200);
+        $resNotDelayed->assertSee('SHP-FILTER-BBB');
+
+        // 4. Filter by Date Range
+        $resDate = $this->actingAs($this->admin)->get(route('shipments.index', [
+            'start_date' => now()->subDays(4)->toDateString(),
+            'end_date' => now()->subDays(2)->toDateString(),
+        ]));
+        $resDate->assertStatus(200);
+        $resDate->assertSee('SHP-FILTER-AAA');
+        $resDate->assertDontSee('SHP-FILTER-BBB');
+
+        // 5. Sorting by weight ascending
+        $resSort = $this->actingAs($this->admin)->get(route('shipments.index', [
+            'sort_by' => 'weight',
+            'sort_direction' => 'asc',
+        ]));
+        $resSort->assertStatus(200);
+        $shipmentsData = $resSort->viewData('shipments');
+        $this->assertEquals('SHP-FILTER-BBB', $shipmentsData->first()->shipment_number);
+    }
+
+    /**
+     * TEST 25: Customer isolation on web shipment views and CSV exports
+     */
+    public function test_25_customer_shipment_isolation_on_web_and_csv_export(): void
+    {
+        $shpCust1 = Shipment::create([
+            'shipment_number' => 'SHP-CUST1-ONLY',
+            'customer_id' => $this->customer1->id,
+            'carrier_id' => $this->carrier->id,
+            'origin_location_id' => $this->origin->id,
+            'destination_location_id' => $this->destination->id,
+            'cargo_type' => 'Private Cargo 1',
+            'weight' => 50,
+            'volume' => 1,
+            'expected_departure' => now(),
+            'expected_arrival' => now()->addDays(2),
+            'estimated_arrival' => now()->addDays(2),
+            'current_status' => Shipment::STATUS_IN_TRANSIT,
+        ]);
+
+        $shpCust2 = Shipment::create([
+            'shipment_number' => 'SHP-CUST2-SECRET',
+            'customer_id' => $this->customer2->id,
+            'carrier_id' => $this->carrier->id,
+            'origin_location_id' => $this->origin->id,
+            'destination_location_id' => $this->destination->id,
+            'cargo_type' => 'Secret Cargo 2',
+            'weight' => 99,
+            'volume' => 2,
+            'expected_departure' => now(),
+            'expected_arrival' => now()->addDays(2),
+            'estimated_arrival' => now()->addDays(2),
+            'current_status' => Shipment::STATUS_BOOKED,
+        ]);
+
+        // Customer 1 cannot see Customer 2's shipments on index
+        $resWeb = $this->actingAs($this->customer1)->get(route('shipments.index'));
+        $resWeb->assertStatus(200);
+        $resWeb->assertSee('SHP-CUST1-ONLY');
+        $resWeb->assertDontSee('SHP-CUST2-SECRET');
+
+        // Customer 1 export only contains Customer 1's shipments
+        $resExport = $this->actingAs($this->customer1)->get(route('shipments.export'));
+        $resExport->assertStatus(200);
+        $csv = $resExport->streamedContent();
+        $this->assertStringContainsString('SHP-CUST1-ONLY', $csv);
+        $this->assertStringNotContainsString('SHP-CUST2-SECRET', $csv);
+    }
+
+    /**
+     * TEST 26: Default tracking map uses actual shipment from database, not demo route
+     */
+    public function test_26_default_tracking_map_uses_actual_shipment_not_demo(): void
+    {
+        $actualShipment = Shipment::create([
+            'shipment_number' => 'SHP-ACTUAL-MAP',
+            'customer_id' => $this->customer1->id,
+            'carrier_id' => $this->carrier->id,
+            'origin_location_id' => $this->origin->id,
+            'destination_location_id' => $this->destination->id,
+            'cargo_type' => 'Live Satellite Components',
+            'weight' => 120,
+            'volume' => 3,
+            'expected_departure' => now(),
+            'expected_arrival' => now()->addDays(3),
+            'estimated_arrival' => now()->addDays(3),
+            'current_status' => Shipment::STATUS_IN_TRANSIT,
+        ]);
+
+        // Access tracking page without any search/shipment_number query string
+        $response = $this->actingAs($this->admin)->get(route('tracking.index'));
+        $response->assertStatus(200);
+
+        // Verify that the view receives the actual shipment from the database
+        $viewShipment = $response->viewData('shipment');
+        $this->assertNotNull($viewShipment);
+        $this->assertEquals('SHP-ACTUAL-MAP', $viewShipment->shipment_number);
+        $response->assertSee('SHP-ACTUAL-MAP');
+        $response->assertSee('Leaflet / OpenStreetMap');
+        $response->assertDontSee('Google Maps Engine');
+
+        // Verify explicit demo corridor is only loaded when query explicitly requests it
+        $demoResponse = $this->actingAs($this->admin)->get(route('tracking.index', ['shipment_number' => 'DEMO-FR-NORMANDY']));
+        $demoResponse->assertStatus(200);
+        $this->assertEquals('DEMO-FR-NORMANDY', $demoResponse->viewData('search'));
+    }
+
+    /**
+     * TEST 27: Exception workflow enforces strict OPEN -> INVESTIGATING -> RESOLVED sequence
+     */
+    public function test_27_exception_workflow_enforces_strict_transition_sequence(): void
+    {
+        $shipment = Shipment::create([
+            'shipment_number' => 'SHP-EX-FLOW',
+            'customer_id' => $this->customer1->id,
+            'carrier_id' => $this->carrier->id,
+            'origin_location_id' => $this->origin->id,
+            'destination_location_id' => $this->destination->id,
+            'cargo_type' => 'Medical Equipment',
+            'weight' => 50,
+            'volume' => 1,
+            'expected_departure' => now(),
+            'expected_arrival' => now()->addDays(2),
+            'estimated_arrival' => now()->addDays(2),
+            'current_status' => Shipment::STATUS_IN_TRANSIT,
+        ]);
+
+        $exceptionService = app(ExceptionService::class);
+        $exception = $exceptionService->createException($shipment, [
+            'exception_type' => ShipmentException::TYPE_WEATHER_DELAY,
+            'severity' => 'HIGH',
+            'description' => 'Blizzard conditions',
+        ], $this->operator->id);
+
+        $this->assertEquals(ShipmentException::STATUS_OPEN, $exception->status);
+
+        // 1. Direct transition from OPEN to RESOLVED must be rejected
+        $threw = false;
+        try {
+            $exceptionService->updateStatus($exception, ShipmentException::STATUS_RESOLVED, 'Attempt direct resolve', $this->operator->id);
+        } catch (\InvalidArgumentException $e) {
+            $threw = true;
+            $this->assertStringContainsString('INVESTIGATING', $e->getMessage());
+        }
+        $this->assertTrue($threw, 'Direct transition from OPEN to RESOLVED must throw InvalidArgumentException.');
+
+        // 2. Re-applying OPEN must be rejected
+        $threw = false;
+        try {
+            $exceptionService->updateStatus($exception, ShipmentException::STATUS_OPEN, 'Still open', $this->operator->id);
+        } catch (\InvalidArgumentException $e) {
+            $threw = true;
+        }
+        $this->assertTrue($threw);
+
+        // 3. Valid transition: OPEN -> INVESTIGATING
+        $investigating = $exceptionService->updateStatus($exception, ShipmentException::STATUS_INVESTIGATING, 'Operations reviewing satellite radar', $this->operator->id);
+        $this->assertEquals(ShipmentException::STATUS_INVESTIGATING, $investigating->status);
+
+        // 4. Reverting from INVESTIGATING back to OPEN must be rejected
+        $threw = false;
+        try {
+            $exceptionService->updateStatus($investigating, ShipmentException::STATUS_OPEN, 'Revert to open', $this->operator->id);
+        } catch (\InvalidArgumentException $e) {
+            $threw = true;
+            $this->assertStringContainsString('revert', strtolower($e->getMessage()));
+        }
+        $this->assertTrue($threw, 'Reverting from INVESTIGATING to OPEN must be rejected.');
+
+        // 5. Valid transition: INVESTIGATING -> RESOLVED
+        $resolved = $exceptionService->updateStatus($investigating, ShipmentException::STATUS_RESOLVED, 'Storm bypassed, highway open', $this->operator->id);
+        $this->assertEquals(ShipmentException::STATUS_RESOLVED, $resolved->status);
+        $this->assertNotNull($resolved->resolved_at);
+
+        // 6. Reopening from RESOLVED must be strictly rejected
+        $threw = false;
+        try {
+            $exceptionService->updateStatus($resolved, ShipmentException::STATUS_OPEN, 'Try reopen', $this->operator->id);
+        } catch (\InvalidArgumentException $e) {
+            $threw = true;
+            $this->assertStringContainsString('RESOLVED', $e->getMessage());
+        }
+        $this->assertTrue($threw, 'Reopening a RESOLVED exception must be strictly rejected.');
+    }
+
+    /**
+     * TEST 28: Tracking chronology for exception events
+     */
+    public function test_28_exception_chronology_cannot_precede_latest_tracking_event(): void
+    {
+        $shipment = Shipment::create([
+            'shipment_number' => 'SHP-CHRONO-EX',
+            'customer_id' => $this->customer1->id,
+            'carrier_id' => $this->carrier->id,
+            'origin_location_id' => $this->origin->id,
+            'destination_location_id' => $this->destination->id,
+            'cargo_type' => 'Perishables',
+            'weight' => 20,
+            'volume' => 1,
+            'expected_departure' => now()->subDays(2),
+            'expected_arrival' => now()->addDays(2),
+            'estimated_arrival' => now()->addDays(2),
+            'current_status' => Shipment::STATUS_IN_TRANSIT,
+        ]);
+
+        // Add a tracking event at now()->subHours(2)
+        TrackingEvent::create([
+            'shipment_id' => $shipment->id,
+            'event_type' => Shipment::STATUS_IN_TRANSIT,
+            'event_time' => now()->subHours(2),
+            'location_id' => $this->origin->id,
+            'location_name' => 'Transit Hub A',
+            'latitude' => 37.77,
+            'longitude' => -122.42,
+            'status_after_event' => Shipment::STATUS_IN_TRANSIT,
+            'description' => 'Departed facility',
+            'is_exception' => false,
+            'created_by' => $this->operator->id,
+        ]);
+
+        $exceptionService = app(ExceptionService::class);
+
+        // Attempt to create an exception with timestamp 5 hours ago (earlier than the 2 hours ago event)
+        $threw = false;
+        try {
+            $exceptionService->createException($shipment, [
+                'exception_type' => ShipmentException::TYPE_WEATHER_DELAY,
+                'severity' => 'MEDIUM',
+                'description' => 'Backdated blizzard',
+                'detected_at' => now()->subHours(5)->toDateTimeString(),
+            ], $this->operator->id);
+        } catch (\InvalidArgumentException $e) {
+            $threw = true;
+            $this->assertStringContainsString('earlier than the latest tracking event', $e->getMessage());
+        }
+        $this->assertTrue($threw, 'Creating exception with timestamp earlier than latest event must throw InvalidArgumentException.');
+
+        // Creating exception with timestamp after latest event succeeds
+        $validEx = $exceptionService->createException($shipment, [
+            'exception_type' => ShipmentException::TYPE_WEATHER_DELAY,
+            'severity' => 'MEDIUM',
+            'description' => 'Chronologically valid blizzard',
+            'detected_at' => now()->subHours(1)->toDateTimeString(),
+        ], $this->operator->id);
+
+        $this->assertNotNull($validEx);
+        $this->assertEquals('WEATHER_DELAY', $validEx->exception_type);
+    }
+
+    /**
+     * TEST 29: Weather API invalid payload validation and last-known fallback
+     */
+    public function test_29_weather_service_invalid_payload_validation_and_fallback(): void
+    {
+        $weatherService = app(WeatherService::class);
+        $lat = 48.85;
+        $lon = 2.35;
+        $roundedLat = round($lat, 2);
+        $roundedLon = round($lon, 2);
+        Cache::forget("weather_{$roundedLat}_{$roundedLon}");
+        Cache::forget("weather_last_known_{$roundedLat}_{$roundedLon}");
+
+        // 1. HTTP 200 with empty payload must NOT return "Clear Sky"
+        Http::fake([
+            'https://api.open-meteo.com/*' => Http::response([], 200),
+        ]);
+        $emptyRes = $weatherService->getWeather($lat, $lon);
+        $this->assertEquals('unavailable', $emptyRes['status'], 'Empty payload must return unavailable, not Clear Sky.');
+        $this->assertNull($emptyRes['temperature']);
+        $this->assertNotEquals('Clear Sky', $emptyRes['condition']);
+
+        // 2. HTTP 200 with incomplete payload (e.g. missing weather_code or temperature)
+        Cache::forget("weather_{$roundedLat}_{$roundedLon}");
+        Http::fake([
+            'https://api.open-meteo.com/*' => Http::response([
+                'current' => ['wind_speed_10m' => 15.0], // missing weather_code and temperature_2m
+            ], 200),
+        ]);
+        $incompleteRes = $weatherService->getWeather($lat, $lon);
+        $this->assertEquals('unavailable', $incompleteRes['status'], 'Incomplete payload must return unavailable.');
+
+        // 3. HTTP 500 server error
+        Cache::forget("weather_{$roundedLat}_{$roundedLon}");
+        Http::fake([
+            'https://api.open-meteo.com/*' => Http::response('Internal Server Error', 500),
+        ]);
+        $serverErrorRes = $weatherService->getWeather($lat, $lon);
+        $this->assertEquals('unavailable', $serverErrorRes['status']);
+
+        // 4. Stale fallback: when a valid last-known observation exists in persistent cache
+        Cache::forget("weather_{$roundedLat}_{$roundedLon}");
+        Cache::put("weather_last_known_{$roundedLat}_{$roundedLon}", [
+            'status' => 'available',
+            'temperature' => 18.5,
+            'wind_speed' => 12.0,
+            'precipitation' => 0.0,
+            'condition' => 'Mainly Clear / Partly Cloudy',
+            'weather_code' => 1,
+            'is_adverse' => false,
+            'timestamp' => now()->subHours(2)->toIso8601String(),
+            'is_stale' => false,
+            'notice' => 'Historical observation',
+        ], now()->addDays(7));
+
+        // When external API times out or fails with 500
+        Http::fake([
+            'https://api.open-meteo.com/*' => Http::response('Gateway Timeout', 504),
+        ]);
+        $staleRes = $weatherService->getWeather($lat, $lon);
+        $this->assertEquals('stale', $staleRes['status'], 'Service must serve last-known observation tagged as stale.');
+        $this->assertTrue($staleRes['is_stale']);
+        $this->assertEquals(18.5, $staleRes['temperature']);
+    }
+
+    /**
+     * TEST 30: API exception status transition rules and customer authorization
+     */
+    public function test_30_api_exception_status_transition_rules_and_authorization(): void
+    {
+        $shipment = Shipment::create([
+            'shipment_number' => 'SHP-API-EX',
+            'customer_id' => $this->customer1->id,
+            'carrier_id' => $this->carrier->id,
+            'origin_location_id' => $this->origin->id,
+            'destination_location_id' => $this->destination->id,
+            'cargo_type' => 'Industrial Parts',
+            'weight' => 75,
+            'volume' => 2,
+            'expected_departure' => now(),
+            'expected_arrival' => now()->addDays(2),
+            'estimated_arrival' => now()->addDays(2),
+            'current_status' => Shipment::STATUS_IN_TRANSIT,
+        ]);
+
+        $exception = app(ExceptionService::class)->createException($shipment, [
+            'exception_type' => ShipmentException::TYPE_PORT_CONGESTION,
+            'severity' => 'MEDIUM',
+            'description' => 'Container terminal queue',
+        ], $this->operator->id);
+
+        // Customer cannot update exceptions via API (403 Forbidden)
+        Sanctum::actingAs($this->customer1);
+        $custRes = $this->patchJson("/api/exceptions/{$exception->id}", ['status' => 'INVESTIGATING']);
+        $custRes->assertStatus(403);
+
+        // Operator attempting direct transition to RESOLVED without INVESTIGATING (422 Unprocessable)
+        Sanctum::actingAs($this->operator);
+        $illegalRes = $this->patchJson("/api/exceptions/{$exception->id}", [
+            'status' => 'RESOLVED',
+            'resolution_notes' => 'Attempt illegal jump',
+        ]);
+        $illegalRes->assertStatus(422);
+        $illegalRes->assertJsonFragment(['success' => false]);
+        $this->assertStringContainsString('INVESTIGATING', $illegalRes->json('message'));
+
+        // Operator valid transition to INVESTIGATING (200 OK)
+        $validRes = $this->patchJson("/api/exceptions/{$exception->id}", [
+            'status' => 'INVESTIGATING',
+            'resolution_notes' => 'Dispatcher reviewing queue metrics',
+        ]);
+        $validRes->assertStatus(200);
+        $validRes->assertJsonFragment(['success' => true]);
+        $this->assertEquals('INVESTIGATING', $exception->fresh()->status);
     }
 }

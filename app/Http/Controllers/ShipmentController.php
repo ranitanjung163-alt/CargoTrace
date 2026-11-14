@@ -32,11 +32,13 @@ class ShipmentController extends Controller
         $query = $this->buildShipmentsQuery($request, $user);
 
         $shipments = $query->paginate(12)->withQueryString();
-        $carriers = Carrier::where('is_active', true)->get();
+        $carriers = Carrier::where('is_active', true)->orderBy('name')->get();
+        $locations = Location::orderBy('country')->orderBy('city')->get();
 
         return view('shipments.index', [
             'shipments' => $shipments,
             'carriers' => $carriers,
+            'locations' => $locations,
             'statuses' => Shipment::STATUSES,
         ]);
     }
@@ -55,48 +57,83 @@ class ShipmentController extends Controller
 
         // Search across shipment number, cargo type, customer name, carrier, and cities
         if ($request->filled('search')) {
-            $search = $request->input('search');
+            $search = trim((string) $request->input('search'));
             $query->where(function ($q) use ($search) {
                 $q->where('shipment_number', 'like', "%{$search}%")
                   ->orWhere('cargo_type', 'like', "%{$search}%")
                   ->orWhereHas('customer', fn ($sq) => $sq->where('name', 'like', "%{$search}%"))
                   ->orWhereHas('carrier', fn ($sq) => $sq->where('name', 'like', "%{$search}%"))
-                  ->orWhereHas('origin', fn ($sq) => $sq->where('city', 'like', "%{$search}%"))
-                  ->orWhereHas('destination', fn ($sq) => $sq->where('city', 'like', "%{$search}%"));
+                  ->orWhereHas('origin', fn ($sq) => $sq->where('city', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%"))
+                  ->orWhereHas('destination', fn ($sq) => $sq->where('city', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%"));
             });
         }
 
         // Filter by Status
         if ($request->filled('status')) {
-            $query->where('current_status', $request->input('status'));
+            $status = strtoupper(trim((string) $request->input('status')));
+            if (in_array($status, Shipment::STATUSES, true)) {
+                $query->where('current_status', $status);
+            }
         }
 
         // Filter by Carrier
         if ($request->filled('carrier_id')) {
-            $query->where('carrier_id', $request->input('carrier_id'));
+            $carrierId = (int) $request->input('carrier_id');
+            if ($carrierId > 0) {
+                $query->where('carrier_id', $carrierId);
+            }
         }
 
-        // Filter by Delay
+        // Filter by Origin Location
+        if ($request->filled('origin_id')) {
+            $originId = (int) $request->input('origin_id');
+            if ($originId > 0) {
+                $query->where('origin_location_id', $originId);
+            }
+        }
+
+        // Filter by Destination Location
+        if ($request->filled('destination_id')) {
+            $destinationId = (int) $request->input('destination_id');
+            if ($destinationId > 0) {
+                $query->where('destination_location_id', $destinationId);
+            }
+        }
+
+        // Filter by Delay Status
         if ($request->filled('delayed')) {
-            $query->where('is_delayed', $request->boolean('delayed'));
+            $delayedVal = (string) $request->input('delayed');
+            if ($delayedVal === '1' || $delayedVal === 'true') {
+                $query->where('is_delayed', true);
+            } elseif ($delayedVal === '0' || $delayedVal === 'false') {
+                $query->where('is_delayed', false);
+            }
         }
 
-        // Filter by Date Range
+        // Filter by Date Range (created_at) with format validation
         if ($request->filled('start_date')) {
-            $query->whereDate('created_at', '>=', $request->input('start_date'));
+            $startDate = trim((string) $request->input('start_date'));
+            if (strtotime($startDate) !== false) {
+                $query->whereDate('created_at', '>=', $startDate);
+            }
         }
         if ($request->filled('end_date')) {
-            $query->whereDate('created_at', '<=', $request->input('end_date'));
+            $endDate = trim((string) $request->input('end_date'));
+            if (strtotime($endDate) !== false) {
+                $query->whereDate('created_at', '<=', $endDate);
+            }
         }
 
-        // Sorting
-        $sortField = $request->input('sort', 'created_at');
-        $sortDirection = $request->input('direction', 'desc');
+        // Sorting: validate column and direction
+        $sortField = $request->input('sort_by') ?? $request->input('sort') ?? 'created_at';
+        $rawDirection = $request->input('sort_direction') ?? $request->input('direction') ?? 'desc';
+        $sortDirection = strtolower((string) $rawDirection) === 'asc' ? 'asc' : 'desc';
+
         $allowedSorts = ['shipment_number', 'created_at', 'expected_arrival', 'current_status', 'weight'];
         if (in_array($sortField, $allowedSorts, true)) {
-            $query->orderBy($sortField, $sortDirection === 'asc' ? 'asc' : 'desc');
+            $query->orderBy($sortField, $sortDirection);
         } else {
-            $query->latest();
+            $query->latest('created_at');
         }
 
         return $query;
