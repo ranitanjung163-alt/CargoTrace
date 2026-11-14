@@ -97,7 +97,7 @@ Sesuai aturan keamanan wajib, **tidak ada operasi destructive** yang dijalankan 
 | `shipments` | **10** | Utuh, tidak ada perubahan record atau status |
 | `tracking_events` | **38** | Utuh, riwayat tracking operasional terjaga lengkap |
 | `shipment_exceptions` | **3** | Utuh, status exception tidak tereset |
-| `users` | **7** | Utuh, akun demo (admin, operator, customers) aman |
+| `users` | **7** | Utuh, 7 akun operasional aktif: 1 Admin, 1 Operator, 5 Customer (100% konsisten) |
 | `carriers` | **5** | Utuh, data master carrier logistik aktif |
 | `locations` | **21** | Utuh, master lokasi pelabuhan dan hub kargo global |
 | `audit_logs` | **41** | Utuh, append-only security logs terjaga 100% |

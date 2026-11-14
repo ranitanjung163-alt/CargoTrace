@@ -100,15 +100,17 @@ International logistics faces critical visibility challenges:
 
 ## 5. Demo Accounts
 
-For grading, demonstration, and interview evaluation:
+For grading, demonstration, and interview evaluation (7 total users: 1 Administrator, 1 Logistics Operator, 5 Customers):
 
-| Role | Email | Password | Scope |
+| Role | Email | Password | Scope / Organization |
 |---|---|---|---|
-| **Administrator** | `admin@cargotrace.com` | `password123` | Full System Access |
-| **Logistics Operator** | `operator@cargotrace.com` | `password123` | Operational Dispatch |
+| **Administrator** | `admin@cargotrace.com` | `password123` | Full System Governance & Security |
+| **Logistics Operator** | `operator@cargotrace.com` | `password123` | Operational Dispatch & Waypoints |
 | **Customer 1** | `customer@cargotrace.com` | `password123` | Global Industries Ltd (Delayed SHP-2024-001284) |
 | **Customer 2** | `tech@cargotrace.com` | `password123` | Tech Solutions Corp (Trans-Pacific SHP-2024-001223) |
 | **Customer 3** | `retail@cargotrace.com` | `password123` | Retail Hub International (SHP-2024-001222) |
+| **Customer 4** | `alpha@cargotrace.com` | `password123` | Alpha Manufacturing |
+| **Customer 5** | `omega@cargotrace.com` | `password123` | Omega Retail Group |
 
 *(A 1-click quick login selector is available directly on the `/login` page for convenience during evaluation).*
 
