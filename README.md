@@ -119,23 +119,34 @@ For grading, demonstration, and interview evaluation (7 total users: 1 Administr
 ## 6. Installation & Local Setup
 
 ### Step 1: Clone the Repository
+
 ```bash
-# Clone the repository [Pending Repository Setup / Academic Submission]
-git clone <repository-url>
-cd WorldCargo_360
+git clone https://github.com/ranitanjung163-alt/CargoTrace.git
+cd CargoTrace
 ```
 
 ### Step 2: Install Composer Dependencies
+
 ```bash
 composer install
 ```
 
 ### Step 3: Configure Environment
-Copy `.env.example` to `.env`:
+
+Copy `.env.example` to `.env`.
+
+**Windows PowerShell:**
+```powershell
+Copy-Item .env.example .env
+```
+
+**Linux / macOS:**
 ```bash
 cp .env.example .env
 ```
-Ensure database credentials point to your local MySQL/MariaDB server:
+
+Configure your local MySQL/MariaDB database credentials in `.env`:
+
 ```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -145,24 +156,31 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
+Make sure the `cargo_trace` database exists before running migrations.
+
 ### Step 4: Generate Application Key
+
 ```bash
 php artisan key:generate
 ```
 
-### Step 5: Run Migrations & Seed Realistic Demo Data
+### Step 5: Run Migrations & Seed Demo Data
+
 ```bash
 php artisan migrate
 php artisan db:seed
 ```
 
 ### Step 6: Start the Development Server
+
 ```bash
 php artisan serve
 ```
-Open your browser and navigate to `http://127.0.0.1:8000`.
 
----
+Open your browser and navigate to:
+
+http://127.0.0.1:8000
+
 
 ## 7. Automated Test Suite
 
