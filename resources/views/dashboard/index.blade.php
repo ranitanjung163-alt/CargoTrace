@@ -126,19 +126,24 @@
             </div>
             <div class="mt-4 pt-3 border-t border-brand-border/60 flex items-center justify-between text-[11px]">
                 <span class="inline-flex items-center font-bold text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded-md">
-                    Threshold &gt;12h
+                    Threshold &gt;{{ $delayThresholdHours }}h
                 </span>
                 <span class="text-brand-secondary font-medium">ETA Variance</span>
             </div>
         </div>
 
-        <!-- Card 5: Open Exceptions -->
+        <!-- Card 5: Open Exceptions & Exception Rate -->
         <div class="group relative bg-white p-5 rounded-2xl border border-brand-border shadow-soft-sm hover:shadow-soft-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden">
             <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-rose-400 to-red-500"></div>
             <div class="flex items-start justify-between">
                 <div>
                     <span class="text-[11px] font-bold uppercase tracking-wider text-brand-secondary">Open Exceptions</span>
-                    <h3 class="text-3xl font-extrabold text-brand-navy tracking-tight mt-1">{{ $kpis['open_exceptions'] }}</h3>
+                    <div class="flex items-baseline space-x-2 mt-1">
+                        <h3 class="text-3xl font-extrabold text-brand-navy tracking-tight">{{ $kpis['open_exceptions'] }}</h3>
+                        <span class="text-xs font-extrabold text-red-600 bg-red-50 border border-red-200/70 px-2 py-0.5 rounded-md" title="Open Exception Rate (Shipments with active exceptions / total shipments)">
+                            {{ $openExceptionRate }}%
+                        </span>
+                    </div>
                 </div>
                 <div class="w-12 h-12 rounded-2xl bg-red-50 text-brand-danger flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:bg-brand-danger group-hover:text-white transition-all duration-300 shadow-sm">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
@@ -151,7 +156,7 @@
                     <span class="w-2 h-2 rounded-full bg-red-500 mr-1.5 animate-pulse"></span>
                     Needs Action
                 </span>
-                <span class="text-brand-secondary">Incident Queue</span>
+                <span class="text-brand-secondary font-medium">{{ $openExceptionRate }}% Exception Rate</span>
             </div>
         </div>
     </div>
@@ -194,7 +199,7 @@
             <div>
                 <div class="flex items-center justify-between mb-1">
                     <h2 class="text-base font-bold text-brand-navy">Delay Rate by Carrier</h2>
-                    <span class="text-xs font-bold text-brand-warning bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-lg">Threshold: 12h</span>
+                    <span class="text-xs font-bold text-brand-warning bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-lg">Threshold: {{ $delayThresholdHours }}h</span>
                 </div>
                 <p class="text-xs text-brand-secondary mb-4">SLA reliability metrics across contracted logistics carriers</p>
             </div>
@@ -273,6 +278,80 @@
                     <span class="flex items-center"><span class="w-2 h-2 rounded-full bg-amber-500 mr-1.5 shadow-sm"></span>Current</span>
                 </div>
                 <span class="font-bold text-brand-navy">Interactive Zoom</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 2.5 CARRIER ANALYTICS: SHIPMENTS BY CARRIER ================= -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-8 bg-white p-6 rounded-2xl border border-brand-border shadow-soft-sm flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <div class="flex items-center space-x-2">
+                        <h2 class="text-base font-bold text-brand-navy">Shipments by Carrier</h2>
+                        <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-blue-50 text-brand-primary rounded-md border border-blue-100">
+                            Fleet Volume
+                        </span>
+                    </div>
+                    <span class="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
+                        {{ array_sum($shipmentsByCarrier) }} Total Consignments
+                    </span>
+                </div>
+                <p class="text-xs text-brand-secondary mb-4">Total consignment volume allocated across contracted logistics partners</p>
+            </div>
+
+            @if(count($shipmentsByCarrier) > 0 && array_sum($shipmentsByCarrier) > 0)
+                <div class="h-60 relative my-auto">
+                    <canvas id="shipmentsByCarrierChart"></canvas>
+                </div>
+            @else
+                <div class="py-12 text-center bg-slate-50/60 rounded-xl border border-dashed border-slate-200 my-auto">
+                    <svg class="w-9 h-9 mx-auto text-slate-400 mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.25h2.25m-2.25 0V3.75a1.125 1.125 0 00-1.125-1.125H9.75a1.125 1.125 0 00-1.125 1.125v3.75m4.5 0H9.75m0 0H7.5m2.25 0V18.75m-2.25-11.25H5.25a1.125 1.125 0 00-1.125 1.125v9"/>
+                    </svg>
+                    <p class="text-xs font-bold text-slate-700">No Carrier Shipment Data</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">No consignments allocated to carriers yet.</p>
+                </div>
+            @endif
+
+            <div class="mt-4 pt-3 border-t border-brand-border flex items-center justify-between text-[11px] text-brand-secondary">
+                <span>Contracted Carriers: <strong class="text-brand-navy">{{ count($shipmentsByCarrier) }} Vendors</strong></span>
+                <span class="font-bold text-brand-primary">Active Volume</span>
+            </div>
+        </div>
+
+        <!-- Carrier Volume Share Breakdown -->
+        <div class="lg:col-span-4 bg-white p-6 rounded-2xl border border-brand-border shadow-soft-sm flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <h2 class="text-base font-bold text-brand-navy">Carrier Share</h2>
+                    <span class="text-[11px] font-bold text-brand-secondary">Distribution</span>
+                </div>
+                <p class="text-xs text-brand-secondary mb-4">Volume allocation percentage per vendor</p>
+            </div>
+
+            <div class="space-y-3 my-auto">
+                @php $totalAllocated = array_sum($shipmentsByCarrier); @endphp
+                @forelse($shipmentsByCarrier as $cName => $cCount)
+                    @php $sharePct = $totalAllocated > 0 ? round(($cCount / $totalAllocated) * 100, 1) : 0; @endphp
+                    <div>
+                        <div class="flex items-center justify-between text-xs mb-1">
+                            <span class="font-bold text-brand-navy truncate pr-2">{{ $cName }}</span>
+                            <span class="font-mono text-slate-600 font-bold shrink-0">{{ $cCount }} ({{ $sharePct }}%)</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                            <div class="h-1.5 rounded-full bg-brand-primary transition-all duration-500"
+                                 style="width: {{ $sharePct }}%;"></div>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-xs text-brand-secondary py-4 text-center">No carrier metrics available.</p>
+                @endforelse
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-brand-border flex items-center justify-between text-[11px] text-brand-secondary">
+                <span>Total Workload</span>
+                <span class="font-extrabold text-brand-navy">{{ $totalAllocated }} Shipments</span>
             </div>
         </div>
     </div>
@@ -628,6 +707,70 @@
         });
 
         // ----------------------------------------------------
+        // 2.5 CHART: SHIPMENTS BY CARRIER (BAR CHART)
+        // ----------------------------------------------------
+        const carrierShipmentsCanvas = document.getElementById('shipmentsByCarrierChart');
+        if (carrierShipmentsCanvas) {
+            const carrierShipmentsData = @json($shipmentsByCarrier);
+            const carrierNames = Object.keys(carrierShipmentsData);
+            const carrierCounts = Object.values(carrierShipmentsData);
+
+            if (carrierNames.length > 0) {
+                const ctxCarrierShipments = carrierShipmentsCanvas.getContext('2d');
+                const carrierColors = ['#3182CE', '#E59A32', '#16A36A', '#DC6262', '#8B5CF6', '#0694A2', '#D97706'];
+
+                new Chart(ctxCarrierShipments, {
+                    type: 'bar',
+                    data: {
+                        labels: carrierNames,
+                        datasets: [{
+                            label: 'Consignments',
+                            data: carrierCounts,
+                            backgroundColor: carrierNames.map((_, idx) => carrierColors[idx % carrierColors.length]),
+                            borderRadius: 8,
+                            borderSkipped: false,
+                            barThickness: 28,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#183653',
+                                padding: 10,
+                                titleFont: { size: 12, weight: 'bold', family: 'Plus Jakarta Sans' },
+                                bodyFont: { size: 12, family: 'Plus Jakarta Sans' },
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        return ` ${context.parsed.y} consignments`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { size: 11, weight: '600', family: 'Plus Jakarta Sans' }, color: '#64748B' }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: '#F1F5F9' },
+                                ticks: {
+                                    precision: 0,
+                                    font: { size: 11, family: 'Plus Jakarta Sans' },
+                                    color: '#64748B'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // ----------------------------------------------------
         // 3. WORLDWIDE SHIPMENT MAP (LEAFLET.JS + OSM)
         // ----------------------------------------------------
         const mapShipments = @json($mapShipments);
@@ -715,6 +858,7 @@
 
             // Current location marker if in transit
             if (s.current && isValidCoord(s.current.lat, s.current.lng)) {
+                bounds.push([s.current.lat, s.current.lng]);
                 const currentMarker = L.circleMarker([s.current.lat, s.current.lng], {
                     radius: 8,
                     fillColor: s.is_delayed ? '#DC6262' : '#E59A32',

@@ -45,6 +45,13 @@ class DashboardController extends Controller
         }
         $openExceptions = $exceptionsQuery->count();
 
+        // Open Exception Rate: (Distinct shipments with active exceptions / Total shipments) * 100
+        $activeExceptionShipments = (clone $exceptionsQuery)->distinct()->count('shipment_id');
+        $openExceptionRate = $totalShipments > 0 ? round(($activeExceptionShipments / $totalShipments) * 100, 1) : 0.0;
+
+        // Delay threshold configured in application
+        $delayThresholdHours = config('cargotrace.delay_threshold_hours', 12);
+
         // On-Time Delivery Rate: (on_time_delivered / total_delivered) * 100
         $onTimeDelivered = (clone $shipmentsQuery)
             ->where('current_status', Shipment::STATUS_DELIVERED)
@@ -66,9 +73,10 @@ class DashboardController extends Controller
             'Delivered' => $delivered,
         ];
 
-        // 3. CHART: DELAY RATE BY CARRIER (Donut Chart)
+        // 3. CHART: DELAY RATE BY CARRIER (Donut Chart) & SHIPMENTS BY CARRIER
         // Formula: (Carrier delayed shipments / Carrier total shipments) * 100
         $carrierStats = [];
+        $shipmentsByCarrier = [];
         $carriers = Carrier::where('is_active', true)->get();
 
         $totalDelayedAcrossCarriers = 0;
@@ -79,6 +87,9 @@ class DashboardController extends Controller
             }
             $cTotal = (clone $cQuery)->count();
             $cDelayed = (clone $cQuery)->where('is_delayed', true)->count();
+
+            // Shipments by Carrier (Total shipments per carrier with customer data isolation)
+            $shipmentsByCarrier[$carrier->name] = $cTotal;
 
             if ($cTotal > 0) {
                 $rate = round(($cDelayed / $cTotal) * 100, 1);
@@ -154,12 +165,17 @@ class DashboardController extends Controller
                 'delivered' => $delivered,
                 'delayed' => $delayed,
                 'open_exceptions' => $openExceptions,
+                'open_exception_rate' => $openExceptionRate,
+                'active_exception_shipments' => $activeExceptionShipments,
             ],
             'onTimeDeliveryRate' => $onTimeDeliveryRate,
             'avgDelayHours' => $avgDelayHours,
             'statusCounts' => $statusCounts,
             'carrierStats' => $carrierStats,
+            'shipmentsByCarrier' => $shipmentsByCarrier,
             'overallDelayRate' => $overallDelayRate,
+            'openExceptionRate' => $openExceptionRate,
+            'delayThresholdHours' => $delayThresholdHours,
             'mapShipments' => $mapShipments,
             'recentShipments' => $recentShipments,
         ]);
