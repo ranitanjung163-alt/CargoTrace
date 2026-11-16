@@ -159,10 +159,43 @@
                         <span class="font-bold text-brand-navy" id="info-shipment-number">{{ $shipment ? $shipment->shipment_number : (request('shipment_number') === 'DEMO-FR-NORMANDY' ? 'DEMO-FR-NORMANDY' : 'No Shipment Selected') }}</span>
                         <span class="font-mono text-slate-600" id="info-carrier-name">{{ $shipment ? $shipment->carrier->name : (request('shipment_number') === 'DEMO-FR-NORMANDY' ? 'FastShip Global Express' : '—') }}</span>
                     </div>
-                    @if($weather)
-                    <div class="pt-1 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-600">
-                        <span>🌤️ {{ $weather['condition'] }} ({{ $weather['temperature'] }}°C)</span>
-                        <span>💨 {{ $weather['wind_speed'] }} km/h</span>
+                    @php
+                        $weatherStatus = is_array($weather) ? ($weather['status'] ?? null) : null;
+                    @endphp
+
+                    @if(in_array($weatherStatus, ['available', 'stale'], true))
+                    <div class="pt-2 border-t border-slate-200/60 space-y-1.5 text-[11px] text-slate-600">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="flex items-center space-x-1.5 min-w-0">
+                                <svg class="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                </svg>
+                                <span class="truncate">{{ $weather['condition'] ?? '--' }}</span>
+                                <span class="font-bold text-slate-800 shrink-0">({{ isset($weather['temperature']) && $weather['temperature'] !== null ? $weather['temperature'] . '°C' : '--' }})</span>
+                            </span>
+                            <span class="flex items-center space-x-1 text-slate-500 shrink-0 font-medium">
+                                <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                </svg>
+                                <span>{{ isset($weather['wind_speed']) && $weather['wind_speed'] !== null ? $weather['wind_speed'] . ' km/h' : '--' }}</span>
+                            </span>
+                        </div>
+
+                        @if($weatherStatus === 'stale')
+                        <div class="flex items-center justify-between text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60 font-semibold">
+                            <span>Cached / Stale Data</span>
+                            <span class="text-slate-400 text-[9px] font-normal">Historical fallback</span>
+                        </div>
+                        @endif
+                    </div>
+                    @else
+                    <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-500">
+                        <span class="flex items-center space-x-1.5">
+                            <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"/>
+                            </svg>
+                            <span class="italic text-slate-500">Weather data unavailable</span>
+                        </span>
                     </div>
                     @endif
                 </div>
@@ -594,9 +627,57 @@
     });
 
     function plotRouteOnMap() {
-        if (!map || activeWaypoints.length < 2) return;
+        if (!map) return;
 
-        const latLngs = activeWaypoints.map(wp => [wp.lat, wp.lng]);
+        const validWaypoints = (Array.isArray(activeWaypoints) ? activeWaypoints : []).filter(wp => wp && isValidCoord(wp.lat, wp.lng));
+        if (validWaypoints.length === 0) return;
+
+        if (validWaypoints.length === 1) {
+            const wp = validWaypoints[0];
+            const isDest = Boolean(wp.isDestination);
+
+            if (isDest) {
+                const pinIcon = L.divIcon({
+                    className: 'custom-destination-marker',
+                    html: `
+                        <div class="relative -top-7 -left-3.5">
+                            <svg class="w-8 h-8 text-red-600 destination-pin drop-shadow-md" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                            </svg>
+                            ${wp.label ? `<span class="absolute left-8 top-1 bg-white px-2 py-0.5 rounded shadow text-[10px] font-extrabold text-blue-700 whitespace-nowrap border border-slate-200">${escapeHtml(wp.label)}</span>` : ''}
+                        </div>
+                    `,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 24]
+                });
+                L.marker([wp.lat, wp.lng], { icon: pinIcon }).addTo(map).bindPopup(`
+                    <div class="text-xs p-1 font-sans">
+                        <strong class="text-red-600">Destination:</strong> ${escapeHtml(wp.name)}
+                        ${wp.label ? `<p class="font-bold text-slate-800">${escapeHtml(wp.label)}</p>` : ''}
+                    </div>
+                `);
+            } else {
+                const stopIcon = L.divIcon({
+                    className: 'custom-stop-marker',
+                    html: `
+                        <div class="w-4 h-4 rounded-full border-2 border-slate-700 bg-white shadow-md flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2">
+                            <div class="w-1.5 h-1.5 rounded-full bg-slate-700"></div>
+                        </div>
+                    `,
+                    iconSize: [16, 16]
+                });
+                L.marker([wp.lat, wp.lng], { icon: stopIcon }).addTo(map).bindPopup(`
+                    <div class="text-xs p-1 font-sans">
+                        <strong>${wp.isOrigin ? 'Origin' : 'Waypoint'}:</strong> ${escapeHtml(wp.name)}
+                    </div>
+                `);
+            }
+
+            map.setView([wp.lat, wp.lng], 10);
+            return;
+        }
+
+        const latLngs = validWaypoints.map(wp => [wp.lat, wp.lng]);
 
         // 1. Plot the Google Maps Blue Route Line (with dark casing and antimeridian handling)
         drawRouteSegments(map, latLngs, {
@@ -616,9 +697,9 @@
         });
 
         // 2. Add Waypoint Nodes
-        activeWaypoints.forEach((wp, i) => {
+        validWaypoints.forEach((wp, i) => {
             const isFirst = i === 0;
-            const isLast = i === activeWaypoints.length - 1;
+            const isLast = i === validWaypoints.length - 1;
 
             if (isLast) {
                 // Classic Red Location Pin for Destination
