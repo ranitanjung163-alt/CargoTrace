@@ -594,9 +594,57 @@
     });
 
     function plotRouteOnMap() {
-        if (!map || activeWaypoints.length < 2) return;
+        if (!map) return;
 
-        const latLngs = activeWaypoints.map(wp => [wp.lat, wp.lng]);
+        const validWaypoints = (Array.isArray(activeWaypoints) ? activeWaypoints : []).filter(wp => wp && isValidCoord(wp.lat, wp.lng));
+        if (validWaypoints.length === 0) return;
+
+        if (validWaypoints.length === 1) {
+            const wp = validWaypoints[0];
+            const isDest = Boolean(wp.isDestination);
+
+            if (isDest) {
+                const pinIcon = L.divIcon({
+                    className: 'custom-destination-marker',
+                    html: `
+                        <div class="relative -top-7 -left-3.5">
+                            <svg class="w-8 h-8 text-red-600 destination-pin drop-shadow-md" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                            </svg>
+                            ${wp.label ? `<span class="absolute left-8 top-1 bg-white px-2 py-0.5 rounded shadow text-[10px] font-extrabold text-blue-700 whitespace-nowrap border border-slate-200">${escapeHtml(wp.label)}</span>` : ''}
+                        </div>
+                    `,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 24]
+                });
+                L.marker([wp.lat, wp.lng], { icon: pinIcon }).addTo(map).bindPopup(`
+                    <div class="text-xs p-1 font-sans">
+                        <strong class="text-red-600">Destination:</strong> ${escapeHtml(wp.name)}
+                        ${wp.label ? `<p class="font-bold text-slate-800">${escapeHtml(wp.label)}</p>` : ''}
+                    </div>
+                `);
+            } else {
+                const stopIcon = L.divIcon({
+                    className: 'custom-stop-marker',
+                    html: `
+                        <div class="w-4 h-4 rounded-full border-2 border-slate-700 bg-white shadow-md flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2">
+                            <div class="w-1.5 h-1.5 rounded-full bg-slate-700"></div>
+                        </div>
+                    `,
+                    iconSize: [16, 16]
+                });
+                L.marker([wp.lat, wp.lng], { icon: stopIcon }).addTo(map).bindPopup(`
+                    <div class="text-xs p-1 font-sans">
+                        <strong>${wp.isOrigin ? 'Origin' : 'Waypoint'}:</strong> ${escapeHtml(wp.name)}
+                    </div>
+                `);
+            }
+
+            map.setView([wp.lat, wp.lng], 10);
+            return;
+        }
+
+        const latLngs = validWaypoints.map(wp => [wp.lat, wp.lng]);
 
         // 1. Plot the Google Maps Blue Route Line (with dark casing and antimeridian handling)
         drawRouteSegments(map, latLngs, {
@@ -616,9 +664,9 @@
         });
 
         // 2. Add Waypoint Nodes
-        activeWaypoints.forEach((wp, i) => {
+        validWaypoints.forEach((wp, i) => {
             const isFirst = i === 0;
-            const isLast = i === activeWaypoints.length - 1;
+            const isLast = i === validWaypoints.length - 1;
 
             if (isLast) {
                 // Classic Red Location Pin for Destination
