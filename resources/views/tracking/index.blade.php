@@ -159,10 +159,43 @@
                         <span class="font-bold text-brand-navy" id="info-shipment-number">{{ $shipment ? $shipment->shipment_number : (request('shipment_number') === 'DEMO-FR-NORMANDY' ? 'DEMO-FR-NORMANDY' : 'No Shipment Selected') }}</span>
                         <span class="font-mono text-slate-600" id="info-carrier-name">{{ $shipment ? $shipment->carrier->name : (request('shipment_number') === 'DEMO-FR-NORMANDY' ? 'FastShip Global Express' : '—') }}</span>
                     </div>
-                    @if($weather)
-                    <div class="pt-1 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-600">
-                        <span>🌤️ {{ $weather['condition'] }} ({{ $weather['temperature'] }}°C)</span>
-                        <span>💨 {{ $weather['wind_speed'] }} km/h</span>
+                    @php
+                        $weatherStatus = is_array($weather) ? ($weather['status'] ?? null) : null;
+                    @endphp
+
+                    @if(in_array($weatherStatus, ['available', 'stale'], true))
+                    <div class="pt-2 border-t border-slate-200/60 space-y-1.5 text-[11px] text-slate-600">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="flex items-center space-x-1.5 min-w-0">
+                                <svg class="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                </svg>
+                                <span class="truncate">{{ $weather['condition'] ?? '--' }}</span>
+                                <span class="font-bold text-slate-800 shrink-0">({{ isset($weather['temperature']) && $weather['temperature'] !== null ? $weather['temperature'] . '°C' : '--' }})</span>
+                            </span>
+                            <span class="flex items-center space-x-1 text-slate-500 shrink-0 font-medium">
+                                <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                </svg>
+                                <span>{{ isset($weather['wind_speed']) && $weather['wind_speed'] !== null ? $weather['wind_speed'] . ' km/h' : '--' }}</span>
+                            </span>
+                        </div>
+
+                        @if($weatherStatus === 'stale')
+                        <div class="flex items-center justify-between text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60 font-semibold">
+                            <span>Cached / Stale Data</span>
+                            <span class="text-slate-400 text-[9px] font-normal">Historical fallback</span>
+                        </div>
+                        @endif
+                    </div>
+                    @else
+                    <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-500">
+                        <span class="flex items-center space-x-1.5">
+                            <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"/>
+                            </svg>
+                            <span class="italic text-slate-500">Weather data unavailable</span>
+                        </span>
                     </div>
                     @endif
                 </div>
