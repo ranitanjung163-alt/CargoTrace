@@ -271,7 +271,7 @@
 
             <!-- Leaflet Container -->
             <div class="relative">
-                <div id="dashboardMap" class="w-full h-60 rounded-2xl border border-slate-200 z-10 overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab;"></div>
+                <div id="dashboardMap" class="w-full h-60 rounded-2xl border border-slate-200 z-10 overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab; background-color: #aad3df !important;"></div>
 
                 <!-- 4-Way Directional Pan Dock (Geser: Kiri, Atas, Bawah, Kanan, Reset) -->
                 <div class="absolute bottom-2.5 right-2.5 z-20 bg-white/95 backdrop-blur-md p-1 rounded-xl border border-slate-200 shadow-soft-xs flex items-center space-x-1 select-none">
@@ -805,6 +805,8 @@
         const mapShipments = @json($mapShipments);
         let dashboardMapInstance = null;
         let dashboardBounds = [];
+        const DASH_MAX_NORTH = 72.0;
+        const DASH_MAX_SOUTH = -62.0;
 
         // 4-Way Directional Pan Controller for Dashboard Map
         window.panDashboardMap = function (dir) {
@@ -812,10 +814,14 @@
             const distance = 200;
             switch (dir) {
                 case 'up':
-                    dashboardMapInstance.panBy([0, -distance], { animate: true, duration: 0.25 });
+                    if (dashboardMapInstance.getCenter().lat < DASH_MAX_NORTH - 5) {
+                        dashboardMapInstance.panBy([0, -distance], { animate: true, duration: 0.25 });
+                    }
                     break;
                 case 'down':
-                    dashboardMapInstance.panBy([0, distance], { animate: true, duration: 0.25 });
+                    if (dashboardMapInstance.getCenter().lat > DASH_MAX_SOUTH + 5) {
+                        dashboardMapInstance.panBy([0, distance], { animate: true, duration: 0.25 });
+                    }
                     break;
                 case 'left':
                     dashboardMapInstance.panBy([-distance, 0], { animate: true, duration: 0.25 });
@@ -836,7 +842,7 @@
         // Global map initialization (worldwide bounds -90..90, -180..180, deep zoom & smooth horizontal drag)
         const map = L.map('dashboardMap', {
             zoomControl: true,
-            minZoom: 1,
+            minZoom: 2,
             maxZoom: 20,
             scrollWheelZoom: true,
             doubleClickZoom: true,
@@ -856,10 +862,21 @@
         map.doubleClickZoom.enable();
         map.scrollWheelZoom.enable();
 
+        // Continuous world vertical clamping: prevent grey void above/below the poles
+        map.on('move', function () {
+            const center = map.getCenter();
+            if (center.lat > DASH_MAX_NORTH) {
+                map.setView([DASH_MAX_NORTH, center.lng], map.getZoom(), { animate: false });
+            } else if (center.lat < DASH_MAX_SOUTH) {
+                map.setView([DASH_MAX_SOUTH, center.lng], map.getZoom(), { animate: false });
+            }
+        });
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxNativeZoom: 19,
-            maxZoom: 20
+            maxZoom: 20,
+            noWrap: false
         }).addTo(map);
 
         setTimeout(function() {

@@ -166,7 +166,7 @@
                         {{ $shipment->origin->city }} &rarr; {{ $shipment->destination->city }}
                     </span>
                 </div>
-                <div id="shipmentMap" class="w-full h-80 rounded-xl border border-brand-border z-10 overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab;"></div>
+                <div id="shipmentMap" class="w-full h-80 rounded-xl border border-brand-border z-10 overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab; background-color: #aad3df !important;"></div>
                 <div class="flex items-center justify-between text-xs text-brand-secondary pt-1">
                     <div class="flex items-center space-x-4">
                         <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 mr-1.5 shadow-sm"></span>Origin</span>
@@ -568,9 +568,12 @@
         const destLat = parseFloat("{{ $shipment->destination->latitude }}");
         const destLng = parseFloat("{{ $shipment->destination->longitude }}");
 
+        const SHIP_MAX_NORTH = 72.0;
+        const SHIP_MAX_SOUTH = -62.0;
+
         const map = L.map('shipmentMap', {
             zoomControl: true,
-            minZoom: 1,
+            minZoom: 2,
             maxZoom: 20,
             scrollWheelZoom: true,
             doubleClickZoom: true,
@@ -587,11 +590,22 @@
         map.doubleClickZoom.enable();
         map.scrollWheelZoom.enable();
 
+        // Continuous world vertical clamping: prevent grey void above/below the poles
+        map.on('move', function () {
+            const center = map.getCenter();
+            if (center.lat > SHIP_MAX_NORTH) {
+                map.setView([SHIP_MAX_NORTH, center.lng], map.getZoom(), { animate: false });
+            } else if (center.lat < SHIP_MAX_SOUTH) {
+                map.setView([SHIP_MAX_SOUTH, center.lng], map.getZoom(), { animate: false });
+            }
+        });
+
         // OpenStreetMap Standard Tiles (Fast & 100% Guaranteed Available, deep zoom)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxNativeZoom: 19,
-            maxZoom: 20
+            maxZoom: 20,
+            noWrap: false
         }).addTo(map);
 
         setTimeout(function() {

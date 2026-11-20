@@ -81,7 +81,7 @@
             </div>
             <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">{{ count($mapLocations) }} Hubs</span>
         </div>
-        <div id="worldLocationsMap" class="w-full h-80 rounded-xl border border-brand-border overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab;"></div>
+        <div id="worldLocationsMap" class="w-full h-80 rounded-xl border border-brand-border overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab; background-color: #aad3df !important;"></div>
     </div>
 
     <!-- Locations Table -->
@@ -254,10 +254,12 @@
     // Initialize Map with all hubs
     document.addEventListener('DOMContentLoaded', function () {
         const mapLocations = @json($mapLocations);
+        const LOC_MAX_NORTH = 72.0;
+        const LOC_MAX_SOUTH = -62.0;
 
         const map = L.map('worldLocationsMap', {
             zoomControl: true,
-            minZoom: 1,
+            minZoom: 2,
             maxZoom: 20,
             scrollWheelZoom: true,
             doubleClickZoom: true,
@@ -274,10 +276,21 @@
         map.doubleClickZoom.enable();
         map.scrollWheelZoom.enable();
 
+        // Continuous world vertical clamping: prevent grey void above/below the poles
+        map.on('move', function () {
+            const center = map.getCenter();
+            if (center.lat > LOC_MAX_NORTH) {
+                map.setView([LOC_MAX_NORTH, center.lng], map.getZoom(), { animate: false });
+            } else if (center.lat < LOC_MAX_SOUTH) {
+                map.setView([LOC_MAX_SOUTH, center.lng], map.getZoom(), { animate: false });
+            }
+        });
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap',
             maxNativeZoom: 19,
-            maxZoom: 20
+            maxZoom: 20,
+            noWrap: false
         }).addTo(map);
 
         setTimeout(function() {
