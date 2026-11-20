@@ -701,7 +701,7 @@
                 <!-- Leaflet Interactive Map Card -->
                 <div class="bg-white rounded-3xl border border-slate-200/90 shadow-soft-lg overflow-hidden relative">
                     <!-- Map Canvas Container (Touch Action None & Grab Cursor for 4-Way Smooth Panning) -->
-                    <div id="landingCoverageMap" class="w-full h-[460px] z-10" style="touch-action: none !important; cursor: grab; background-color: #0b1726 !important;"></div>
+                    <div id="landingCoverageMap" class="w-full h-[460px] z-10" style="touch-action: none !important; cursor: grab; background-color: #f8fafc !important;"></div>
 
                     <!-- 4-Way D-Pad Pan Navigation Dock (Geser Peta: Atas, Bawah, Kiri, Kanan, Reset) -->
                     <div class="absolute top-20 left-3.5 z-20 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 shadow-soft-md flex flex-col items-center select-none">
@@ -714,9 +714,9 @@
                                     class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors focus:outline-none">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                             </button>
-                            <button type="button" onclick="panCoverageMap('center')" title="Reset Posisi Dunia" aria-label="Reset Posisi Dunia"
+                            <button type="button" onclick="panCoverageMap('focus')" title="Fokuskan ke Jaringan Hub" aria-label="Fokus Hub"
                                     class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 active:scale-95 transition-all focus:outline-none">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="2 2"/></svg>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                             </button>
                             <button type="button" onclick="panCoverageMap('right')" title="Geser ke Kanan (Pan Right)" aria-label="Geser ke Kanan"
                                     class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors focus:outline-none">
@@ -726,6 +726,12 @@
                         <button type="button" onclick="panCoverageMap('down')" title="Geser ke Bawah (Pan Down)" aria-label="Geser ke Bawah"
                                 class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors focus:outline-none">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div class="w-full h-px bg-slate-200 my-1"></div>
+                        <!-- World View Button -->
+                        <button type="button" onclick="panCoverageMap('world')" title="Kembali ke Tampilan Seluruh Dunia" aria-label="Tampilan Dunia"
+                                class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors focus:outline-none">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                         </button>
                     </div>
 
@@ -746,7 +752,7 @@
                     <!-- Top Right Projection Badge -->
                     <div class="absolute top-4 right-4 z-20 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-slate-200 shadow-soft-xs text-[11px] font-bold text-slate-900 hidden sm:flex items-center space-x-2 pointer-events-none">
                         <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                        <span>Google Satellite &bull; World Topology</span>
+                        <span>OpenStreetMap &bull; World Topology</span>
                     </div>
                 </div>
 
@@ -1135,8 +1141,13 @@
                 case 'right':
                     coverageMap.panBy([panDistance, 0], { animate: true, duration: 0.25 });
                     break;
+                case 'world':
                 case 'center':
                     coverageMap.setView([20.0, 15.0], 2, { animate: true });
+                    break;
+                case 'focus':
+                    // Focus on Singapore / Southeast Asia hub gateway
+                    coverageMap.setView([1.3521, 103.8198], 4, { animate: true });
                     break;
             }
         };
@@ -1204,12 +1215,48 @@
             // Bind continuous smooth bounds clamping
             enforceGoogleMapsContinuity(coverageMap);
 
-            L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            // Base Layer 1: OpenStreetMap Standard (Full Street & Village Level Detail)
+            const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Leaflet / OpenStreetMap',
+                maxNativeZoom: 19,
+                maxZoom: 20,
+                noWrap: false
+            });
+
+            // Base Layer 2: CartoDB Voyager (Modern High-Detail OpenStreetMap Vector-Style)
+            const cartoVoyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; <a href="https://carto.com/attributions">CARTO</a> &bull; Leaflet / OpenStreetMap',
+                maxNativeZoom: 19,
+                maxZoom: 20,
+                subdomains: 'abcd',
+                noWrap: false
+            });
+
+            // Base Layer 3: Google Maps Standard Roadmap (Bright Clean Road Network)
+            const googleRoadmap = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+                attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
                 maxZoom: 20,
                 subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-                attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
                 noWrap: false
-            }).addTo(coverageMap);
+            });
+
+            // Base Layer 4: Google Maps Satellite Hybrid (Photorealistic Satellite Imagery)
+            const googleSatellite = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+                attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
+                maxZoom: 20,
+                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                noWrap: false
+            });
+
+            // Default to OpenStreetMap Layer
+            osmLayer.addTo(coverageMap);
+
+            L.control.layers({
+                "🌐 OpenStreetMap": osmLayer,
+                "🏙️ CartoDB Voyager": cartoVoyager,
+                "🗺️ Google Roadmap": googleRoadmap,
+                "🛰️ Google Satellite": googleSatellite
+            }, null, { position: 'topright' }).addTo(coverageMap);
 
             // International Logistics Gateway Hubs
             const hubs = [
@@ -1223,11 +1270,11 @@
                 { name: 'Sydney Port Botany', code: 'AU-SYD', country: 'Australia', lat: -33.8688, lon: 151.2093, type: 'Oceania Hub' }
             ];
 
-            // Custom Hub Marker Icon Generator (Luminous Cyan Pin for Satellite Imagery)
+            // Custom Hub Marker Icon Generator (Luminous Blue Pin with White Border for High Visibility)
             function createHubIcon() {
                 return L.divIcon({
                     className: 'custom-hub-marker',
-                    html: `<div style="width: 14px; height: 14px; background: #38BDF8; border: 2.5px solid #FFFFFF; border-radius: 50%; box-shadow: 0 0 12px rgba(56,189,248,0.95);"></div>`,
+                    html: `<div style="width: 14px; height: 14px; background: #2563EB; border: 2.5px solid #FFFFFF; border-radius: 50%; box-shadow: 0 0 10px rgba(37,99,235,0.7);"></div>`,
                     iconSize: [14, 14],
                     iconAnchor: [7, 7]
                 });

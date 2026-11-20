@@ -166,7 +166,34 @@
                         {{ $shipment->origin->city }} &rarr; {{ $shipment->destination->city }}
                     </span>
                 </div>
-                <div id="shipmentMap" class="w-full h-80 rounded-xl border border-brand-border z-10 overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab; background-color: #0b1726 !important;"></div>
+                <div class="relative">
+                    <div id="shipmentMap" class="w-full h-80 rounded-xl border border-brand-border z-10 overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab; background-color: #f8fafc !important;"></div>
+
+                    <!-- 4-Way Directional Pan Dock & Navigation Actions -->
+                    <div class="absolute bottom-2.5 right-2.5 z-20 bg-white/95 backdrop-blur-md p-1 rounded-xl border border-slate-200 shadow-soft-xs flex items-center space-x-1 select-none">
+                        <button type="button" onclick="panShipmentMap('left')" title="Geser ke Kiri (Pan Left)" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+                        <button type="button" onclick="panShipmentMap('up')" title="Geser ke Atas (Pan Up)" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+                        </button>
+                        <button type="button" onclick="panShipmentMap('down')" title="Geser ke Bawah (Pan Down)" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <button type="button" onclick="panShipmentMap('right')" title="Geser ke Kanan (Pan Right)" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                        </button>
+                        <div class="w-px h-4 bg-slate-200 mx-0.5"></div>
+                        <!-- World View -->
+                        <button type="button" onclick="panShipmentMap('world')" title="Tampilan Seluruh Dunia (World View)" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:scale-95 transition-all">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        </button>
+                        <!-- Focus Consignment -->
+                        <button type="button" onclick="panShipmentMap('focus')" title="Fokus Rute Pengiriman Ini" class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 active:scale-95 transition-all">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </button>
+                    </div>
+                </div>
                 <div class="flex items-center justify-between text-xs text-brand-secondary pt-1">
                     <div class="flex items-center space-x-4">
                         <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 mr-1.5 shadow-sm"></span>Origin</span>
@@ -609,6 +636,53 @@
             mapInstance.on('drag move zoomend', keepInVerticalBounds);
         }
 
+        let shipmentBounds = [];
+
+        // 4-Way Directional Pan Controller & Quick Actions for Shipment Detail Map
+        window.panShipmentMap = function (dir) {
+            if (!map) return;
+            const distance = 240;
+            const size = map.getSize();
+            const zoom = map.getZoom();
+            const worldHeight = 256 * Math.pow(2, zoom);
+            const viewHalfY = size.y / 2;
+            const centerPoint = map.project(map.getCenter(), zoom);
+
+            switch (dir) {
+                case 'up':
+                    if (centerPoint.y - viewHalfY > 2) {
+                        const dist = Math.min(distance, centerPoint.y - viewHalfY);
+                        map.panBy([0, -dist], { animate: true, duration: 0.25 });
+                    }
+                    break;
+                case 'down':
+                    if (centerPoint.y + viewHalfY < worldHeight - 2) {
+                        const dist = Math.min(distance, worldHeight - (centerPoint.y + viewHalfY));
+                        map.panBy([0, dist], { animate: true, duration: 0.25 });
+                    }
+                    break;
+                case 'left':
+                    map.panBy([-distance, 0], { animate: true, duration: 0.25 });
+                    break;
+                case 'right':
+                    map.panBy([distance, 0], { animate: true, duration: 0.25 });
+                    break;
+                case 'world':
+                    map.setView([20.0, 0.0], 2, { animate: true });
+                    break;
+                case 'focus':
+                case 'reset':
+                    if (shipmentBounds.length > 0) {
+                        map.fitBounds(shipmentBounds, { padding: [40, 40], maxZoom: 10 });
+                    } else if (isValidCoord(originLat, originLng)) {
+                        map.setView([originLat, originLng], 6, { animate: true });
+                    } else {
+                        map.setView([20.0, 0.0], 2, { animate: true });
+                    }
+                    break;
+            }
+        };
+
         const map = L.map('shipmentMap', {
             zoomControl: true,
             minZoom: 2,
@@ -632,13 +706,48 @@
         map.scrollWheelZoom.enable();
         enforceGoogleMapsContinuity(map);
 
-        // Google Maps Satellite Hybrid (Deep Photorealistic Earth Imagery)
-        L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+        // Base Layer 1: OpenStreetMap Standard (Full Street & Village Level Detail)
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Leaflet / OpenStreetMap',
+            maxNativeZoom: 19,
+            maxZoom: 20,
+            noWrap: false
+        });
+
+        // Base Layer 2: CartoDB Voyager (Modern High-Detail OpenStreetMap Vector-Style)
+        const cartoVoyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; <a href="https://carto.com/attributions">CARTO</a> &bull; Leaflet / OpenStreetMap',
+            maxNativeZoom: 19,
+            maxZoom: 20,
+            subdomains: 'abcd',
+            noWrap: false
+        });
+
+        // Base Layer 3: Google Maps Standard Roadmap (Bright Clean Road Network)
+        const googleRoadmap = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
             attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
             maxZoom: 20,
             subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
             noWrap: false
-        }).addTo(map);
+        });
+
+        // Base Layer 4: Google Maps Satellite Hybrid (Photorealistic Satellite Imagery)
+        const googleSatellite = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            noWrap: false
+        });
+
+        // Default to OpenStreetMap Layer
+        osmLayer.addTo(map);
+
+        L.control.layers({
+            "🌐 OpenStreetMap": osmLayer,
+            "🏙️ CartoDB Voyager": cartoVoyager,
+            "🗺️ Google Roadmap": googleRoadmap,
+            "🛰️ Google Satellite": googleSatellite
+        }, null, { position: 'topright' }).addTo(map);
 
         setTimeout(function() {
             map.invalidateSize();
@@ -646,6 +755,7 @@
 
         const routePoints = [];
         const bounds = [];
+        shipmentBounds = bounds;
 
         if (isValidCoord(originLat, originLng)) {
             routePoints.push([originLat, originLng]);

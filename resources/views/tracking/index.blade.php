@@ -266,7 +266,7 @@
             </div>
 
             <!-- Leaflet Map Container with Smooth 4-Way Panning (Drag Ke Kiri, Kanan, Atas, Bawah) -->
-            <div id="googleDirectionsMap" class="w-full h-full relative z-10 select-none" style="background-color: #0b1726 !important;"></div>
+            <div id="googleDirectionsMap" class="w-full h-full relative z-10 select-none" style="background-color: #f8fafc !important;"></div>
 
             <!-- Floating 4-Way Directional Pan Controller & Zoom Dock (Geser Peta ke Kiri, Kanan, Atas, Bawah) -->
             <div class="absolute bottom-4 left-4 z-[400] flex flex-col items-center gap-2 pointer-events-auto">
@@ -285,7 +285,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                         </button>
                         <!-- Center: Fit Route / Reset View -->
-                        <button type="button" onclick="panMap('center')" title="Pusatkan Rute Pengiriman (Fit Route)"
+                        <button type="button" onclick="panMap('center')" title="Fokuskan ke Rute Pengiriman (Focus Consignment Route)"
                                 class="w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white flex items-center justify-center transition-all active:scale-95 font-bold text-xs" id="fitRouteBtn">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg>
                         </button>
@@ -302,13 +302,27 @@
                     </button>
                 </div>
 
-                <!-- Zoom Controls (+ and -) -->
-                <div class="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-slate-200/90 p-0.5 flex flex-col select-none">
+                <!-- Navigation Quick Actions (World View & Fit Consignment) & Zoom Controls (+ and -) -->
+                <div class="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-slate-200/90 p-0.5 flex flex-col items-center select-none">
+                    <!-- Zoom In -->
                     <button type="button" onclick="map && map.zoomIn()" title="Perbesar (Zoom In)"
                             class="w-7 h-7 hover:bg-slate-100 text-slate-700 font-bold flex items-center justify-center rounded-lg transition-all text-sm active:scale-95">+</button>
                     <div class="w-full h-px bg-slate-200"></div>
+                    <!-- Zoom Out -->
                     <button type="button" onclick="map && map.zoomOut()" title="Perkecil (Zoom Out)"
                             class="w-7 h-7 hover:bg-slate-100 text-slate-700 font-bold flex items-center justify-center rounded-lg transition-all text-sm active:scale-95">&minus;</button>
+                    <div class="w-full h-px bg-slate-200"></div>
+                    <!-- World View (Kembali ke Tampilan Seluruh Dunia) -->
+                    <button type="button" onclick="panMap('world')" title="Kembali ke Tampilan Seluruh Dunia (World View)"
+                            class="w-7 h-7 hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center rounded-lg transition-all text-xs active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    </button>
+                    <div class="w-full h-px bg-slate-200"></div>
+                    <!-- Focus Consignment (Kembali ke Lokasi/Area Shipment) -->
+                    <button type="button" onclick="panMap('center')" title="Fokus ke Area Shipment Terpilih (Focus Consignment)"
+                            class="w-7 h-7 hover:bg-emerald-50 text-slate-700 hover:text-emerald-600 flex items-center justify-center rounded-lg transition-all text-xs active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </button>
                 </div>
             </div>
 
@@ -745,15 +759,24 @@
         map.keyboard.enable();
         enforceGoogleMapsContinuity(map);
 
-        // Base Layer 1: Google Maps Satellite Hybrid (Photorealistic Satellite Imagery with Roads & Country Labels)
-        const googleSatelliteHybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
-            attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
+        // Base Layer 1: OpenStreetMap Standard (Full Global Coverage, Street & Village Level Detail)
+        const osmDetailed = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Leaflet / OpenStreetMap',
+            maxNativeZoom: 19,
             maxZoom: 20,
-            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
             noWrap: false
         });
 
-        // Base Layer 2: Google Maps Standard Roadmap
+        // Base Layer 2: CartoDB Voyager (Modern High-Detail OpenStreetMap Vector-Style)
+        const cartoVoyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; <a href="https://carto.com/attributions">CARTO</a> &bull; Leaflet / OpenStreetMap',
+            maxNativeZoom: 19,
+            maxZoom: 20,
+            subdomains: 'abcd',
+            noWrap: false
+        });
+
+        // Base Layer 3: Google Maps Standard Roadmap (Bright Clean Road Network)
         const googleRoadmap = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
             attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
             maxZoom: 20,
@@ -761,22 +784,23 @@
             noWrap: false
         });
 
-        // Base Layer 3: OpenStreetMap Detailed
-        const osmDetailed = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; Leaflet / OpenStreetMap contributors',
-            maxNativeZoom: 19,
+        // Base Layer 4: Google Maps Satellite Hybrid (Photorealistic Satellite Imagery with Roads & Country Labels)
+        const googleSatelliteHybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
             maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
             noWrap: false
         });
 
-        // Default to Google Satellite Hybrid (Exact matching user's requested view)
-        googleSatelliteHybrid.addTo(map);
+        // Default to OpenStreetMap Detailed (Bright, clean, and full street/village level coverage)
+        osmDetailed.addTo(map);
 
         // Layer Switcher Control (topright)
         const baseLayers = {
-            "🛰️ Google Satellite Hybrid": googleSatelliteHybrid,
-            "🗺️ Google Roadmap": googleRoadmap,
-            "🌐 OpenStreetMap": osmDetailed
+            "🌐 OpenStreetMap (Peta Jalan & Desa)": osmDetailed,
+            "🏙️ CartoDB Voyager (OSM Modern)": cartoVoyager,
+            "🗺️ Google Roadmap (Peta Jalan Bersih)": googleRoadmap,
+            "🛰️ Google Satellite (Citra Satelit)": googleSatelliteHybrid
         };
         L.control.layers(baseLayers, null, { position: 'topright' }).addTo(map);
 
@@ -787,7 +811,7 @@
         }, 200);
     });
 
-    // 4-Way Directional Pan Controller (Geser Peta ke Kiri, Kanan, Atas, Bawah)
+    // 4-Way Directional Pan Controller (Geser Peta ke Kiri, Kanan, Atas, Bawah, Reset, dan Fokus)
     function panMap(direction) {
         if (!map) return;
         const panDistance = 260;
@@ -815,6 +839,9 @@
                 break;
             case 'right':
                 map.panBy([panDistance, 0], { animate: true, duration: 0.25 });
+                break;
+            case 'world':
+                map.setView([20.0, 0.0], 2, { animate: true });
                 break;
             case 'center':
                 fitActiveRoute();
