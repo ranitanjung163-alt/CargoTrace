@@ -674,15 +674,14 @@
     document.addEventListener('DOMContentLoaded', function () {
         renderWaypointsList();
 
-        const TRACK_MAX_NORTH = 72.0;
-        const TRACK_MAX_SOUTH = -62.0;
-
         // Initialize Map with Global Worldwide View, deep zoom (level 20) & smooth 4-way dragging
         map = L.map('googleDirectionsMap', {
             zoomControl: false, // Managed by custom floating controller dock
-            minZoom: 2,
+            minZoom: 1,
             maxZoom: 20,
             scrollWheelZoom: true,
+            wheelDebounceTime: 40,
+            wheelPxPerZoomLevel: 60,
             doubleClickZoom: true,
             touchZoom: true,
             boxZoom: true,
@@ -701,16 +700,6 @@
         map.scrollWheelZoom.enable();
         map.boxZoom.enable();
         map.keyboard.enable();
-
-        // Continuous world vertical clamping: prevent grey void above/below the poles
-        map.on('move', function () {
-            const center = map.getCenter();
-            if (center.lat > TRACK_MAX_NORTH) {
-                map.setView([TRACK_MAX_NORTH, center.lng], map.getZoom(), { animate: false });
-            } else if (center.lat < TRACK_MAX_SOUTH) {
-                map.setView([TRACK_MAX_SOUTH, center.lng], map.getZoom(), { animate: false });
-            }
-        });
 
         // Base Layer 1: OpenStreetMap Detailed (Streets, villages, ports, and remote settlements)
         const osmDetailed = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -757,18 +746,13 @@
     // 4-Way Directional Pan Controller (Geser Peta ke Kiri, Kanan, Atas, Bawah)
     function panMap(direction) {
         if (!map) return;
-        const panDistance = 240;
-        const center = map.getCenter();
+        const panDistance = 260;
         switch (direction) {
             case 'up':
-                if (center.lat < TRACK_MAX_NORTH - 5) {
-                    map.panBy([0, -panDistance], { animate: true, duration: 0.25 });
-                }
+                map.panBy([0, -panDistance], { animate: true, duration: 0.25 });
                 break;
             case 'down':
-                if (center.lat > TRACK_MAX_SOUTH + 5) {
-                    map.panBy([0, panDistance], { animate: true, duration: 0.25 });
-                }
+                map.panBy([0, panDistance], { animate: true, duration: 0.25 });
                 break;
             case 'left':
                 map.panBy([-panDistance, 0], { animate: true, duration: 0.25 });
@@ -801,7 +785,6 @@
         if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
         if (!map) return;
         const keyStep = 180;
-        const center = map.getCenter();
         if (e.key === 'ArrowLeft') {
             e.preventDefault();
             map.panBy([-keyStep, 0], { animate: true, duration: 0.2 });
@@ -810,15 +793,12 @@
             map.panBy([keyStep, 0], { animate: true, duration: 0.2 });
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
-            if (center.lat < TRACK_MAX_NORTH - 5) {
-                map.panBy([0, -keyStep], { animate: true, duration: 0.2 });
-            }
+            map.panBy([0, -keyStep], { animate: true, duration: 0.2 });
         } else if (e.key === 'ArrowDown') {
             e.preventDefault();
-            if (center.lat > TRACK_MAX_SOUTH + 5) {
-                map.panBy([0, keyStep], { animate: true, duration: 0.2 });
-            }
+            map.panBy([0, keyStep], { animate: true, duration: 0.2 });
         }
+    });
         }
     });
 

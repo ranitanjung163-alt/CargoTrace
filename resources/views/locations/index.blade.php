@@ -254,16 +254,17 @@
     // Initialize Map with all hubs
     document.addEventListener('DOMContentLoaded', function () {
         const mapLocations = @json($mapLocations);
-        const LOC_MAX_NORTH = 72.0;
-        const LOC_MAX_SOUTH = -62.0;
 
         const map = L.map('worldLocationsMap', {
             zoomControl: true,
-            minZoom: 2,
+            minZoom: 1,
             maxZoom: 20,
             scrollWheelZoom: true,
+            wheelDebounceTime: 40,
+            wheelPxPerZoomLevel: 60,
             doubleClickZoom: true,
             touchZoom: true,
+            boxZoom: true,
             dragging: true,
             tap: false,
             inertia: true,
@@ -275,16 +276,6 @@
         map.touchZoom.enable();
         map.doubleClickZoom.enable();
         map.scrollWheelZoom.enable();
-
-        // Continuous world vertical clamping: prevent grey void above/below the poles
-        map.on('move', function () {
-            const center = map.getCenter();
-            if (center.lat > LOC_MAX_NORTH) {
-                map.setView([LOC_MAX_NORTH, center.lng], map.getZoom(), { animate: false });
-            } else if (center.lat < LOC_MAX_SOUTH) {
-                map.setView([LOC_MAX_SOUTH, center.lng], map.getZoom(), { animate: false });
-            }
-        });
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap',

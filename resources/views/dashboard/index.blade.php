@@ -805,23 +805,17 @@
         const mapShipments = @json($mapShipments);
         let dashboardMapInstance = null;
         let dashboardBounds = [];
-        const DASH_MAX_NORTH = 72.0;
-        const DASH_MAX_SOUTH = -62.0;
 
         // 4-Way Directional Pan Controller for Dashboard Map
         window.panDashboardMap = function (dir) {
             if (!dashboardMapInstance) return;
-            const distance = 200;
+            const distance = 240;
             switch (dir) {
                 case 'up':
-                    if (dashboardMapInstance.getCenter().lat < DASH_MAX_NORTH - 5) {
-                        dashboardMapInstance.panBy([0, -distance], { animate: true, duration: 0.25 });
-                    }
+                    dashboardMapInstance.panBy([0, -distance], { animate: true, duration: 0.25 });
                     break;
                 case 'down':
-                    if (dashboardMapInstance.getCenter().lat > DASH_MAX_SOUTH + 5) {
-                        dashboardMapInstance.panBy([0, distance], { animate: true, duration: 0.25 });
-                    }
+                    dashboardMapInstance.panBy([0, distance], { animate: true, duration: 0.25 });
                     break;
                 case 'left':
                     dashboardMapInstance.panBy([-distance, 0], { animate: true, duration: 0.25 });
@@ -842,11 +836,14 @@
         // Global map initialization (worldwide bounds -90..90, -180..180, deep zoom & smooth horizontal drag)
         const map = L.map('dashboardMap', {
             zoomControl: true,
-            minZoom: 2,
+            minZoom: 1,
             maxZoom: 20,
             scrollWheelZoom: true,
+            wheelDebounceTime: 40,
+            wheelPxPerZoomLevel: 60,
             doubleClickZoom: true,
             touchZoom: true,
+            boxZoom: true,
             dragging: true,
             tap: false,
             inertia: true,
@@ -861,16 +858,6 @@
         map.touchZoom.enable();
         map.doubleClickZoom.enable();
         map.scrollWheelZoom.enable();
-
-        // Continuous world vertical clamping: prevent grey void above/below the poles
-        map.on('move', function () {
-            const center = map.getCenter();
-            if (center.lat > DASH_MAX_NORTH) {
-                map.setView([DASH_MAX_NORTH, center.lng], map.getZoom(), { animate: false });
-            } else if (center.lat < DASH_MAX_SOUTH) {
-                map.setView([DASH_MAX_SOUTH, center.lng], map.getZoom(), { animate: false });
-            }
-        });
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',

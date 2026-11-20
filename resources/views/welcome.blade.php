@@ -1063,24 +1063,16 @@
         // 4. Leaflet Worldwide Network Map & 4-Way Pan Engine
         let coverageMap = null;
 
-        const MAX_NORTH_LAT = 72.0;
-        const MAX_SOUTH_LAT = -62.0;
-
         // 4-Way Directional Pan Controller (Geser Peta ke Kiri, Kanan, Atas, Bawah, dan Reset)
         window.panCoverageMap = function (direction) {
             if (!coverageMap) return;
-            const panDistance = 220;
-            const center = coverageMap.getCenter();
+            const panDistance = 260;
             switch (direction) {
                 case 'up':
-                    if (center.lat < MAX_NORTH_LAT - 5) {
-                        coverageMap.panBy([0, -panDistance], { animate: true, duration: 0.25 });
-                    }
+                    coverageMap.panBy([0, -panDistance], { animate: true, duration: 0.25 });
                     break;
                 case 'down':
-                    if (center.lat > MAX_SOUTH_LAT + 5) {
-                        coverageMap.panBy([0, panDistance], { animate: true, duration: 0.25 });
-                    }
+                    coverageMap.panBy([0, panDistance], { animate: true, duration: 0.25 });
                     break;
                 case 'left':
                     coverageMap.panBy([-panDistance, 0], { animate: true, duration: 0.25 });
@@ -1099,7 +1091,6 @@
             if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
             if (!coverageMap) return;
             const step = 200;
-            const center = coverageMap.getCenter();
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
                 coverageMap.panBy([-step, 0], { animate: true, duration: 0.2 });
@@ -1108,14 +1099,10 @@
                 coverageMap.panBy([step, 0], { animate: true, duration: 0.2 });
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
-                if (center.lat < MAX_NORTH_LAT - 5) {
-                    coverageMap.panBy([0, -step], { animate: true, duration: 0.2 });
-                }
+                coverageMap.panBy([0, -step], { animate: true, duration: 0.2 });
             } else if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                if (center.lat > MAX_SOUTH_LAT + 5) {
-                    coverageMap.panBy([0, step], { animate: true, duration: 0.2 });
-                }
+                coverageMap.panBy([0, step], { animate: true, duration: 0.2 });
             }
         });
 
@@ -1125,12 +1112,15 @@
 
             coverageMap = L.map('landingCoverageMap', {
                 zoomControl: true,
-                minZoom: 2,
-                maxZoom: 19,
+                minZoom: 1,
+                maxZoom: 20,
                 worldCopyJump: true,
                 scrollWheelZoom: true,
+                wheelDebounceTime: 40,
+                wheelPxPerZoomLevel: 60,
                 doubleClickZoom: true,
                 touchZoom: true,
+                boxZoom: true,
                 dragging: true,
                 tap: false,
                 inertia: true,
@@ -1144,20 +1134,10 @@
             coverageMap.doubleClickZoom.enable();
             coverageMap.scrollWheelZoom.enable();
 
-            // Seamless continuous world: clamp vertical movement to prevent grey void while allowing infinite horizontal wrap
-            coverageMap.on('move', function () {
-                const center = coverageMap.getCenter();
-                if (center.lat > MAX_NORTH_LAT) {
-                    coverageMap.setView([MAX_NORTH_LAT, center.lng], coverageMap.getZoom(), { animate: false });
-                } else if (center.lat < MAX_SOUTH_LAT) {
-                    coverageMap.setView([MAX_SOUTH_LAT, center.lng], coverageMap.getZoom(), { animate: false });
-                }
-            });
-
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 maxNativeZoom: 19,
-                maxZoom: 19,
+                maxZoom: 20,
                 noWrap: false
             }).addTo(coverageMap);
 

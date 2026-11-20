@@ -568,16 +568,16 @@
         const destLat = parseFloat("{{ $shipment->destination->latitude }}");
         const destLng = parseFloat("{{ $shipment->destination->longitude }}");
 
-        const SHIP_MAX_NORTH = 72.0;
-        const SHIP_MAX_SOUTH = -62.0;
-
         const map = L.map('shipmentMap', {
             zoomControl: true,
-            minZoom: 2,
+            minZoom: 1,
             maxZoom: 20,
             scrollWheelZoom: true,
+            wheelDebounceTime: 40,
+            wheelPxPerZoomLevel: 60,
             doubleClickZoom: true,
             touchZoom: true,
+            boxZoom: true,
             dragging: true,
             tap: false,
             inertia: true,
@@ -589,16 +589,6 @@
         map.touchZoom.enable();
         map.doubleClickZoom.enable();
         map.scrollWheelZoom.enable();
-
-        // Continuous world vertical clamping: prevent grey void above/below the poles
-        map.on('move', function () {
-            const center = map.getCenter();
-            if (center.lat > SHIP_MAX_NORTH) {
-                map.setView([SHIP_MAX_NORTH, center.lng], map.getZoom(), { animate: false });
-            } else if (center.lat < SHIP_MAX_SOUTH) {
-                map.setView([SHIP_MAX_SOUTH, center.lng], map.getZoom(), { animate: false });
-            }
-        });
 
         // OpenStreetMap Standard Tiles (Fast & 100% Guaranteed Available, deep zoom)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
