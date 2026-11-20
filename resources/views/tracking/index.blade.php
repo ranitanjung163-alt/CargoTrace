@@ -663,25 +663,80 @@
     const MODE_SEQUENCE = [TRANSPORT_MODES.AIR, TRANSPORT_MODES.SEA, TRANSPORT_MODES.ROAD, TRANSPORT_MODES.RAIL];
 
     function getSegmentTransportMode(wp1, wp2, index) {
-        const text = ((wp1?.name || '') + ' ' + (wp1?.event || '') + ' ' + (wp1?.label || '') + ' ' + (wp1?.type || '') + ' ' +
-                      (wp2?.name || '') + ' ' + (wp2?.event || '') + ' ' + (wp2?.label || '') + ' ' + (wp2?.type || '')).toLowerCase();
+        const p1Name = (wp1?.name || '').toLowerCase();
+        const p1Label = (wp1?.label || '').toLowerCase();
+        const p1Type = (wp1?.type || '').toUpperCase();
 
-        if (/pesawat|flight|air|airport|bandara|udara|aviation/.test(text)) {
-            return TRANSPORT_MODES.AIR;
-        }
-        if (/kapal|ship|vessel|ocean|port|pelabuhan|maritime|sea|laut|dock|harbor/.test(text)) {
-            return TRANSPORT_MODES.SEA;
-        }
-        if (/kereta|train|rail|railway|stasiun|station/.test(text)) {
-            return TRANSPORT_MODES.RAIL;
-        }
-        if (/truk|truck|road|darat|highway|tol|inland|van|courier|delivery/.test(text)) {
-            return TRANSPORT_MODES.ROAD;
+        const p2Name = (wp2?.name || '').toLowerCase();
+        const p2Label = (wp2?.label || '').toLowerCase();
+        const p2Type = (wp2?.type || '').toUpperCase();
+
+        const carrierName = (typeof currentShipment !== 'undefined' && currentShipment?.carrier?.name || '').toLowerCase();
+        const carrierService = (typeof currentShipment !== 'undefined' && currentShipment?.carrier?.service_type || '').toLowerCase();
+        const shipmentDesc = (typeof currentShipment !== 'undefined' && currentShipment?.description || '').toLowerCase();
+        const combined = (p1Name + ' ' + p1Label + ' ' + p2Name + ' ' + p2Label + ' ' + carrierName + ' ' + carrierService + ' ' + shipmentDesc).toLowerCase();
+
+        const distKm = (wp1 && wp2 && isValidCoord(wp1.lat, wp1.lng) && isValidCoord(wp2.lat, wp2.lng))
+            ? getDistanceFromLatLonInKm(wp1.lat, wp1.lng, wp2.lat, wp2.lng)
+            : 0;
+
+        // Check if both points are in the same city / metropolitan area
+        const isSameCity = (
+            (p1Name.includes('shanghai') && p2Name.includes('shanghai')) ||
+            (p1Name.includes('paris') && p2Name.includes('paris')) ||
+            (p1Name.includes('los angeles') && p2Name.includes('los angeles')) ||
+            (p1Name.includes('tokyo') && p2Name.includes('tokyo')) ||
+            (p1Name.includes('jakarta') && p2Name.includes('jakarta')) ||
+            distKm < 120
+        );
+
+        // 1. WILAYAH DARAT: Any travel within the same city / local drayage / inland transfer (< 150 km)
+        // or between inland facilities (warehouse, distribution center, city pickup) MUST be Truk / Jalur Darat!
+        if (isSameCity || (p1Type === 'WAREHOUSE' || p2Type === 'WAREHOUSE' || p1Type === 'DISTRIBUTION_CENTER' || p2Type === 'DISTRIBUTION_CENTER' || p1Type === 'CITY_HUB')) {
+            // If rail explicitly specified:
+            if (/rail|train|kereta|intermodal|stasiun|station/.test(combined)) {
+                return TRANSPORT_MODES.RAIL;
+            }
+            return TRANSPORT_MODES.ROAD; // Oranye Solid!
         }
 
-        // Sequential multimodal progression explicitly requested:
-        // Leg 0 = Pesawat (Biru Solid), Leg 1 = Kapal (Hijau Putus), Leg 2 = Truk (Oranye), Leg 3 = Kereta (Ungu)
-        return MODE_SEQUENCE[index % MODE_SEQUENCE.length];
+        // 2. EXPLICIT RAIL CHECK:
+        if (/rail|train|kereta|intermodal terminal|stasiun|station/.test(combined)) {
+            return TRANSPORT_MODES.RAIL; // Ungu Putus-putus
+        }
+
+        // 3. FRANCE DEMO OVERLAND ROUTE:
+        if (typeof isDemoFrance !== 'undefined' && isDemoFrance) {
+            // Overland road & rail across Normandy (NO ocean ship inside France)
+            return (index % 2 === 0) ? TRANSPORT_MODES.ROAD : TRANSPORT_MODES.RAIL;
+        }
+
+        // 4. AIR FREIGHT (PESAWAT - BIRU SOLID):
+        // If long distance (> 600 km) and involves an airport, air carrier, or air charter/consignment
+        const isAirInvolved = p1Type === 'AIRPORT' || p2Type === 'AIRPORT' ||
+                              /airport|bandara|cargocity|air charter|air freight|air consignment|flight|udara|pesawat/.test(combined);
+
+        if (isAirInvolved && distKm > 300) {
+            return TRANSPORT_MODES.AIR; // Biru Solid!
+        }
+
+        // 5. OCEAN / MARITIME (KAPAL LAUT - HIJAU PUTUS-PUTUS):
+        // Only when traveling across open sea/ocean between seaports (> 300 km)
+        const isPortToPort = (p1Type === 'PORT' || /port|pelabuhan|harbor|marine/.test(p1Name)) &&
+                             (p2Type === 'PORT' || /port|pelabuhan|harbor|marine/.test(p2Name));
+        const isMaritime = /maersk|ocean liner|ocean container|maritime|sea lane|suez/.test(combined);
+
+        if ((isPortToPort || isMaritime) && distKm > 300 && !isAirInvolved) {
+            return TRANSPORT_MODES.SEA; // Hijau Putus-putus!
+        }
+
+        // 6. LONG-HAUL INTERCONTINENTAL DEFAULT:
+        if (distKm > 2500) {
+            return TRANSPORT_MODES.AIR; // Biru Solid!
+        }
+
+        // 7. INLAND DEFAULT:
+        return TRANSPORT_MODES.ROAD; // Oranye Solid!
     }
 
     window.toggleTransportLegend = function() {
@@ -714,12 +769,19 @@
         activeWaypoints = franceDemoWaypoints;
     } else if (currentShipment) {
         // Construct from database shipment with coordinate validation
-        if (isValidCoord(currentShipment.origin.latitude, currentShipment.origin.longitude)) {
+        const origCity = currentShipment.origin?.city || '';
+        const origCountry = currentShipment.origin?.country || '';
+        let origLat = parseFloat(currentShipment.origin?.latitude);
+        let origLng = parseFloat(currentShipment.origin?.longitude);
+
+        if (isValidCoord(origLat, origLng)) {
             activeWaypoints.push({
-                name: `${currentShipment.origin.city}, ${currentShipment.origin.country}`,
-                lat: parseFloat(currentShipment.origin.latitude),
-                lng: parseFloat(currentShipment.origin.longitude),
-                isOrigin: true
+                name: `${origCity}, ${origCountry}`,
+                label: currentShipment.origin?.name || `${origCity} Logistics Hub`,
+                lat: origLat,
+                lng: origLng,
+                isOrigin: true,
+                type: 'CITY_HUB'
             });
         }
 
@@ -727,25 +789,37 @@
         if (currentShipment.tracking_events && currentShipment.tracking_events.length > 0) {
             currentShipment.tracking_events.forEach(te => {
                 if (isValidCoord(te.latitude, te.longitude)) {
+                    let teLat = parseFloat(te.latitude);
+                    let teLng = parseFloat(te.longitude);
+
+                    // Place Yangshan Deepwater marine terminal at actual port coordinates (30.6300, 122.0600)
+                    // so the road corridor from Shanghai downtown Yan'an Road (31.2304, 121.4737) to the port is geographically clear
+                    if (te.location_name && te.location_name.toLowerCase().includes('yangshan') && Math.abs(teLat - 31.2304) < 0.05) {
+                        teLat = 30.6300;
+                        teLng = 122.0600;
+                    }
+
                     activeWaypoints.push({
                         name: te.location_name || `${te.event_type} Checkpoint`,
-                        lat: parseFloat(te.latitude),
-                        lng: parseFloat(te.longitude),
+                        lat: teLat,
+                        lng: teLng,
                         event: te.event_type,
-                        time: te.event_time
+                        time: te.event_time,
+                        type: (te.location_name && te.location_name.toLowerCase().includes('port')) ? 'PORT' : 'CHECKPOINT'
                     });
                 }
             });
         }
 
         // Add Destination
-        if (isValidCoord(currentShipment.destination.latitude, currentShipment.destination.longitude)) {
+        if (isValidCoord(currentShipment.destination?.latitude, currentShipment.destination?.longitude)) {
             activeWaypoints.push({
                 name: `${currentShipment.destination.city}, ${currentShipment.destination.country}`,
                 label: currentShipment.destination.name,
                 lat: parseFloat(currentShipment.destination.latitude),
                 lng: parseFloat(currentShipment.destination.longitude),
-                isDestination: true
+                isDestination: true,
+                type: currentShipment.destination.type || 'DESTINATION'
             });
         }
     }

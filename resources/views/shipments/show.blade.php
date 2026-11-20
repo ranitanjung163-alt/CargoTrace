@@ -626,12 +626,34 @@
         const MODE_SEQUENCE = [TRANSPORT_MODES.AIR, TRANSPORT_MODES.SEA, TRANSPORT_MODES.ROAD, TRANSPORT_MODES.RAIL];
 
         function getSegmentTransportMode(desc1, desc2, index) {
-            const text = ((desc1 || '') + ' ' + (desc2 || '')).toLowerCase();
-            if (/pesawat|flight|air|airport|bandara|udara|aviation/.test(text)) return TRANSPORT_MODES.AIR;
-            if (/kapal|ship|vessel|ocean|port|pelabuhan|maritime|sea|laut|dock/.test(text)) return TRANSPORT_MODES.SEA;
-            if (/kereta|train|rail|railway|stasiun|station/.test(text)) return TRANSPORT_MODES.RAIL;
-            if (/truk|truck|road|darat|highway|tol|inland|van|delivery/.test(text)) return TRANSPORT_MODES.ROAD;
-            return MODE_SEQUENCE[index % MODE_SEQUENCE.length];
+            const text1 = (desc1 || '').toLowerCase();
+            const text2 = (desc2 || '').toLowerCase();
+            const carrier = ("{{ $shipment->carrier->name ?? '' }} {{ $shipment->carrier->service_type ?? '' }} {{ $shipment->description ?? '' }}").toLowerCase();
+            const combined = (text1 + ' ' + text2 + ' ' + carrier).toLowerCase();
+
+            // 1. Wilayah Darat: Local drayage / same city / inland transfer
+            const isLocal = ((text1.includes('shanghai') && text2.includes('shanghai')) ||
+                             (text1.includes('los angeles') && text2.includes('los angeles')) ||
+                             (text1.includes('paris') && text2.includes('paris')) ||
+                             text1.includes('warehouse') || text2.includes('warehouse') ||
+                             text1.includes('distribution_center') || text2.includes('distribution_center'));
+            if (isLocal) {
+                if (/rail|train|kereta|intermodal|stasiun/.test(combined)) return TRANSPORT_MODES.RAIL;
+                return TRANSPORT_MODES.ROAD;
+            }
+
+            // 2. Rail freight:
+            if (/rail|train|kereta|intermodal|stasiun/.test(combined)) return TRANSPORT_MODES.RAIL;
+
+            // 3. Air freight:
+            if (/airport|bandara|cargocity|air charter|air freight|air consignment|flight/.test(combined)) return TRANSPORT_MODES.AIR;
+
+            // 4. Ocean / Maritime:
+            if (/maersk|ocean|maritime|sea lane/.test(combined) || (text1.includes('port') && text2.includes('port') && !combined.includes('airport'))) {
+                return TRANSPORT_MODES.SEA;
+            }
+
+            return TRANSPORT_MODES.ROAD;
         }
 
         const originLat = parseFloat("{{ $shipment->origin->latitude }}");

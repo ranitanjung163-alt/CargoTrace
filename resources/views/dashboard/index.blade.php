@@ -994,12 +994,26 @@
         const MODE_SEQUENCE = [TRANSPORT_MODES.AIR, TRANSPORT_MODES.SEA, TRANSPORT_MODES.ROAD, TRANSPORT_MODES.RAIL];
 
         function getSegmentTransportMode(desc1, desc2, index) {
-            const text = ((desc1 || '') + ' ' + (desc2 || '')).toLowerCase();
-            if (/pesawat|flight|air|airport|bandara|udara/.test(text)) return TRANSPORT_MODES.AIR;
-            if (/kapal|ship|vessel|ocean|port|pelabuhan|maritime|sea/.test(text)) return TRANSPORT_MODES.SEA;
-            if (/kereta|train|rail|railway|stasiun/.test(text)) return TRANSPORT_MODES.RAIL;
-            if (/truk|truck|road|darat|highway|tol/.test(text)) return TRANSPORT_MODES.ROAD;
-            return MODE_SEQUENCE[index % MODE_SEQUENCE.length];
+            const text1 = (desc1 || '').toLowerCase();
+            const text2 = (desc2 || '').toLowerCase();
+            const combined = (text1 + ' ' + text2).toLowerCase();
+
+            // 1. Local or inland drayage:
+            if ((text1.includes('shanghai') && text2.includes('shanghai')) || text1.includes('warehouse') || text2.includes('warehouse') || text1.includes('distribution_center') || text2.includes('distribution_center')) {
+                if (/rail|train|kereta|intermodal|stasiun/.test(combined)) return TRANSPORT_MODES.RAIL;
+                return TRANSPORT_MODES.ROAD;
+            }
+
+            // 2. Rail:
+            if (/rail|train|kereta|intermodal|stasiun/.test(combined)) return TRANSPORT_MODES.RAIL;
+
+            // 3. Air:
+            if (/airport|bandara|cargocity|flight|air/.test(combined)) return TRANSPORT_MODES.AIR;
+
+            // 4. Maritime:
+            if ((text1.includes('port') && text2.includes('port')) || /ocean|maritime|sea/.test(combined)) return TRANSPORT_MODES.SEA;
+
+            return TRANSPORT_MODES.ROAD;
         }
 
         mapShipments.forEach(s => {
