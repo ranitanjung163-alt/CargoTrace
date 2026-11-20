@@ -266,7 +266,7 @@
             </div>
 
             <!-- Leaflet Map Container with Smooth 4-Way Panning (Drag Ke Kiri, Kanan, Atas, Bawah) -->
-            <div id="googleDirectionsMap" class="w-full h-full relative z-10 select-none" style="background-color: #aad3df !important;"></div>
+            <div id="googleDirectionsMap" class="w-full h-full relative z-10 select-none" style="background-color: #0b1726 !important;"></div>
 
             <!-- Floating 4-Way Directional Pan Controller & Zoom Dock (Geser Peta ke Kiri, Kanan, Atas, Bawah) -->
             <div class="absolute bottom-4 left-4 z-[400] flex flex-col items-center gap-2 pointer-events-auto">
@@ -701,38 +701,38 @@
         map.boxZoom.enable();
         map.keyboard.enable();
 
-        // Base Layer 1: OpenStreetMap Detailed (Streets, villages, ports, and remote settlements)
+        // Base Layer 1: Google Maps Satellite Hybrid (Photorealistic Satellite Imagery with Roads & Country Labels)
+        const googleSatelliteHybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            noWrap: false
+        });
+
+        // Base Layer 2: Google Maps Standard Roadmap
+        const googleRoadmap = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            noWrap: false
+        });
+
+        // Base Layer 3: OpenStreetMap Detailed
         const osmDetailed = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            attribution: '&copy; Leaflet / OpenStreetMap contributors',
             maxNativeZoom: 19,
             maxZoom: 20,
             noWrap: false
         });
 
-        // Base Layer 2: High-Resolution Satellite & Aerial (Esri) - for viewing remote islands, coastlines, and terrain
-        const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
-            maxNativeZoom: 19,
-            maxZoom: 20,
-            noWrap: false
-        });
-
-        // Base Layer 3: Topographic Contours (OpenTopoMap)
-        const topoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
-            maxNativeZoom: 17,
-            maxZoom: 20,
-            noWrap: false
-        });
-
-        // Default to Detailed OSM
-        osmDetailed.addTo(map);
+        // Default to Google Satellite Hybrid (Exact matching user's requested view)
+        googleSatelliteHybrid.addTo(map);
 
         // Layer Switcher Control (topright)
         const baseLayers = {
-            "🗺️ Detail Jalan & Wilayah": osmDetailed,
-            "🛰️ Satelit & Wilayah Terpencil": esriSatellite,
-            "⛰️ Kontur & Topografi": topoMap
+            "🛰️ Google Satellite Hybrid": googleSatelliteHybrid,
+            "🗺️ Google Roadmap": googleRoadmap,
+            "🌐 OpenStreetMap": osmDetailed
         };
         L.control.layers(baseLayers, null, { position: 'topright' }).addTo(map);
 

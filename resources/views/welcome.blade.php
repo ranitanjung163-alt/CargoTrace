@@ -701,7 +701,7 @@
                 <!-- Leaflet Interactive Map Card -->
                 <div class="bg-white rounded-3xl border border-slate-200/90 shadow-soft-lg overflow-hidden relative">
                     <!-- Map Canvas Container (Touch Action None & Grab Cursor for 4-Way Smooth Panning) -->
-                    <div id="landingCoverageMap" class="w-full h-[460px] z-10" style="touch-action: none !important; cursor: grab; background-color: #aad3df !important;"></div>
+                    <div id="landingCoverageMap" class="w-full h-[460px] z-10" style="touch-action: none !important; cursor: grab; background-color: #0b1726 !important;"></div>
 
                     <!-- 4-Way D-Pad Pan Navigation Dock (Geser Peta: Atas, Bawah, Kiri, Kanan, Reset) -->
                     <div class="absolute top-20 left-3.5 z-20 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 shadow-soft-md flex flex-col items-center select-none">
@@ -746,7 +746,7 @@
                     <!-- Top Right Projection Badge -->
                     <div class="absolute top-4 right-4 z-20 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-slate-200 shadow-soft-xs text-[11px] font-bold text-slate-900 hidden sm:flex items-center space-x-2 pointer-events-none">
                         <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                        <span>OpenStreetMap World Topology</span>
+                        <span>Google Satellite &bull; World Topology</span>
                     </div>
                 </div>
 
@@ -1134,10 +1134,10 @@
             coverageMap.doubleClickZoom.enable();
             coverageMap.scrollWheelZoom.enable();
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxNativeZoom: 19,
+            L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
                 maxZoom: 20,
+                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
                 noWrap: false
             }).addTo(coverageMap);
 
@@ -1153,11 +1153,11 @@
                 { name: 'Sydney Port Botany', code: 'AU-SYD', country: 'Australia', lat: -33.8688, lon: 151.2093, type: 'Oceania Hub' }
             ];
 
-            // Custom Hub Marker Icon Generator
+            // Custom Hub Marker Icon Generator (Luminous Cyan Pin for Satellite Imagery)
             function createHubIcon() {
                 return L.divIcon({
                     className: 'custom-hub-marker',
-                    html: `<div style="width: 14px; height: 14px; background: #2563EB; border: 2.5px solid #FFFFFF; border-radius: 50%; box-shadow: 0 0 10px rgba(37,99,235,0.7);"></div>`,
+                    html: `<div style="width: 14px; height: 14px; background: #38BDF8; border: 2.5px solid #FFFFFF; border-radius: 50%; box-shadow: 0 0 12px rgba(56,189,248,0.95);"></div>`,
                     iconSize: [14, 14],
                     iconAnchor: [7, 7]
                 });
@@ -1167,14 +1167,14 @@
                 const marker = L.marker([hub.lat, hub.lon], { icon: createHubIcon() }).addTo(coverageMap);
                 marker.bindPopup(`
                     <div style="font-family: 'Plus Jakarta Sans', sans-serif; padding: 4px;">
-                        <span style="font-size: 10px; font-weight: 800; color: #2563EB; text-transform: uppercase;">${hub.code}</span>
+                        <span style="font-size: 10px; font-weight: 800; color: #0284C7; text-transform: uppercase;">${hub.code}</span>
                         <h4 style="font-size: 12px; font-weight: 800; color: #0F172A; margin: 2px 0;">${hub.name}</h4>
                         <p style="font-size: 11px; color: #64748B; margin: 0;">${hub.type} &bull; ${hub.country}</p>
                     </div>
                 `);
             });
 
-            // Maritime Trade Corridors (Polylines with interactive: false so dragging passes through seamlessly)
+            // Maritime Trade Corridors (Luminous Sky Blue with interactive: false so dragging passes through seamlessly)
             const corridors = [
                 // Asia-Europe (Tokyo -> Singapore -> Dubai -> Rotterdam)
                 [[35.6762, 139.6503], [1.3521, 103.8198]],
@@ -1191,10 +1191,10 @@
 
             corridors.forEach(corridor => {
                 L.polyline(corridor, {
-                    color: '#2563EB',
-                    weight: 2,
-                    dashArray: '4, 6',
-                    opacity: 0.65,
+                    color: '#38BDF8',
+                    weight: 2.5,
+                    dashArray: '5, 8',
+                    opacity: 0.85,
                     interactive: false // Prevents vector layer from blocking map dragging
                 }).addTo(coverageMap);
             });

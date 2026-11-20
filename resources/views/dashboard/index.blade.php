@@ -271,7 +271,7 @@
 
             <!-- Leaflet Container -->
             <div class="relative">
-                <div id="dashboardMap" class="w-full h-60 rounded-2xl border border-slate-200 z-10 overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab; background-color: #aad3df !important;"></div>
+                <div id="dashboardMap" class="w-full h-60 rounded-2xl border border-slate-200 z-10 overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab; background-color: #0b1726 !important;"></div>
 
                 <!-- 4-Way Directional Pan Dock (Geser: Kiri, Atas, Bawah, Kanan, Reset) -->
                 <div class="absolute bottom-2.5 right-2.5 z-20 bg-white/95 backdrop-blur-md p-1 rounded-xl border border-slate-200 shadow-soft-xs flex items-center space-x-1 select-none">
@@ -295,7 +295,7 @@
                 <!-- Floating Info Badge on Map (positioned top-right to preserve clear top-left zoom controls) -->
                 <div class="absolute top-2.5 right-2.5 z-20 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-xl border border-slate-200 shadow-soft-xs pointer-events-none text-[10px] font-bold text-slate-800 flex items-center space-x-1.5">
                     <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
-                    <span>OSM Worldwide Projection</span>
+                    <span>Google Satellite &bull; World Projection</span>
                 </div>
             </div>
 
@@ -859,10 +859,10 @@
         map.doubleClickZoom.enable();
         map.scrollWheelZoom.enable();
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxNativeZoom: 19,
+        L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
             maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
             noWrap: false
         }).addTo(map);
 
@@ -960,9 +960,9 @@
 
             // Route Polyline with antimeridian handling and interactive: false
             drawRouteSegments(map, routePoints, {
-                color: s.is_delayed ? '#EF4444' : '#2563EB',
+                color: s.is_delayed ? '#EF4444' : '#38BDF8',
                 weight: 3,
-                opacity: 0.85,
+                opacity: 0.9,
                 dashArray: s.is_delayed ? '6, 6' : null,
                 interactive: false
             });

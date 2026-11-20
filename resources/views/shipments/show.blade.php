@@ -166,7 +166,7 @@
                         {{ $shipment->origin->city }} &rarr; {{ $shipment->destination->city }}
                     </span>
                 </div>
-                <div id="shipmentMap" class="w-full h-80 rounded-xl border border-brand-border z-10 overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab; background-color: #aad3df !important;"></div>
+                <div id="shipmentMap" class="w-full h-80 rounded-xl border border-brand-border z-10 overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab; background-color: #0b1726 !important;"></div>
                 <div class="flex items-center justify-between text-xs text-brand-secondary pt-1">
                     <div class="flex items-center space-x-4">
                         <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 mr-1.5 shadow-sm"></span>Origin</span>
@@ -590,11 +590,11 @@
         map.doubleClickZoom.enable();
         map.scrollWheelZoom.enable();
 
-        // OpenStreetMap Standard Tiles (Fast & 100% Guaranteed Available, deep zoom)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxNativeZoom: 19,
+        // Google Maps Satellite Hybrid (Deep Photorealistic Earth Imagery)
+        L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
             maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
             noWrap: false
         }).addTo(map);
 

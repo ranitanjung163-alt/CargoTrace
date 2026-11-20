@@ -81,7 +81,7 @@
             </div>
             <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">{{ count($mapLocations) }} Hubs</span>
         </div>
-        <div id="worldLocationsMap" class="w-full h-80 rounded-xl border border-brand-border overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab; background-color: #aad3df !important;"></div>
+        <div id="worldLocationsMap" class="w-full h-80 rounded-xl border border-brand-border overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab; background-color: #0b1726 !important;"></div>
     </div>
 
     <!-- Locations Table -->
@@ -277,10 +277,10 @@
         map.doubleClickZoom.enable();
         map.scrollWheelZoom.enable();
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap',
-            maxNativeZoom: 19,
+        L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
             maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
             noWrap: false
         }).addTo(map);
 
