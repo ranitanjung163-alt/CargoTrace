@@ -65,17 +65,14 @@ class TrackingController extends Controller
             }
         }
 
-        // Active shipments list for quick lookup
-        $activeShipmentsQuery = Shipment::whereIn('current_status', [
-            Shipment::STATUS_PICKED_UP,
-            Shipment::STATUS_IN_TRANSIT,
-        ])->with(['origin', 'destination', 'carrier']);
+        // Consignments list for quick lookup across worldwide fleet corridors
+        $activeShipmentsQuery = Shipment::with(['origin', 'destination', 'carrier']);
 
         if ($user->isCustomer()) {
             $activeShipmentsQuery->where('customer_id', $user->id);
         }
 
-        $activeShipments = $activeShipmentsQuery->latest()->take(8)->get();
+        $activeShipments = $activeShipmentsQuery->latest()->take(20)->get();
         $locations = Location::orderBy('country')->orderBy('city')->get();
 
         return view('tracking.index', [

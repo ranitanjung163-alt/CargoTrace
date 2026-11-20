@@ -11,7 +11,7 @@
 > **Course Lecturer:** Pak Ikhwan  
 > **Platform Name:** WorldCargo 360 (WORLDCARGO 360)  
 > **Official Tagline:** Track Beyond Borders.  
-> **Scenario Configuration:** Worldwide Route Coverage, 12-Hour Delay Threshold, `WEATHER_DELAY` Primary Disruption Model, `On-time delivery rate` Core KPI.
+> **Scenario Configuration (Slide 23 - Individual Worldwide Scope):** Unified Worldwide Corridors (Southeast Asia ↔ Europe, Asia ↔ North America, Southeast Asia ↔ Australia, South America ↔ Africa, and Domestic/Intermodal corridors), Configurable Delay Thresholds (12h/18h/24h), Full Exception Disruption Suite (`WEATHER_DELAY`, `CUSTOMS_HOLD`, `PORT_CONGESTION`, etc.), Multi-KPI Operational Metrics (`on_time_delivery_rate`, delay rate, exception rate).
 
 ---
 

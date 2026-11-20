@@ -605,13 +605,13 @@
     document.addEventListener('DOMContentLoaded', function () {
         renderWaypointsList();
 
-        // Initialize Map
+        // Initialize Map with Global Worldwide View
         map = L.map('googleDirectionsMap', {
             zoomControl: true,
-            minZoom: 2,
+            minZoom: 1,
             maxZoom: 18,
             worldCopyJump: true
-        });
+        }).setView([20.0, 0.0], 2);
 
         // OpenStreetMap Standard Tiles (Fast, Universally Available Worldwide)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -742,12 +742,27 @@
         });
 
         // 3. Add Floating Route Duration Bubble (Exact speech bubble from screenshot!)
-        // Calculate midpoint along the route for placement
+        // Calculate midpoint along the route for placement (supporting antimeridian crossing)
         const midIndex = Math.floor(latLngs.length / 2);
-        const midCoord = [
-            (latLngs[midIndex][0] + latLngs[midIndex - 1][0]) / 2,
-            (latLngs[midIndex][1] + latLngs[midIndex - 1][1]) / 2
-        ];
+        const p1 = latLngs[midIndex - 1];
+        const p2 = latLngs[midIndex];
+        const midLat = (p1[0] + p2[0]) / 2;
+        let midLng;
+        const deltaLng = p2[1] - p1[1];
+        if (Math.abs(deltaLng) > 180) {
+            if (p1[1] > 0 && p2[1] < 0) {
+                const totalSpan = (180 - p1[1]) + (p2[1] + 180);
+                midLng = p1[1] + (totalSpan / 2);
+                if (midLng > 180) midLng -= 360;
+            } else {
+                const totalSpan = (p1[1] + 180) + (180 - p2[1]);
+                midLng = p1[1] - (totalSpan / 2);
+                if (midLng < -180) midLng += 360;
+            }
+        } else {
+            midLng = (p1[1] + p2[1]) / 2;
+        }
+        const midCoord = [midLat, midLng];
 
         // Format distance & duration
         let totalKm = 912;
