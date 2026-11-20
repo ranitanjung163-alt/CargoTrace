@@ -1060,19 +1060,74 @@
             }, 500);
         }
 
-        // 4. Leaflet Worldwide Network Map & 4-Way Pan Engine
+        // 4. Leaflet Worldwide Network Map & Continuous Google Maps-style Navigation
         let coverageMap = null;
+
+        // Continuity Enforcement: Clamps vertical movement smoothly so map never reveals empty space above/below
+        function enforceGoogleMapsContinuity(mapInstance) {
+            if (!mapInstance) return;
+            let isAdjusting = false;
+
+            function keepInVerticalBounds() {
+                if (isAdjusting) return;
+                const size = mapInstance.getSize();
+                if (!size || size.y <= 0) return;
+
+                const zoom = mapInstance.getZoom();
+                const worldHeight = 256 * Math.pow(2, zoom);
+                const viewHalfY = size.y / 2;
+                const center = mapInstance.getCenter();
+                const centerPoint = mapInstance.project(center, zoom);
+
+                let targetY = centerPoint.y;
+                if (worldHeight <= size.y) {
+                    targetY = worldHeight / 2;
+                } else {
+                    if (targetY - viewHalfY < 0) {
+                        targetY = viewHalfY;
+                    } else if (targetY + viewHalfY > worldHeight) {
+                        targetY = worldHeight - viewHalfY;
+                    }
+                }
+
+                if (Math.abs(targetY - centerPoint.y) > 0.5) {
+                    isAdjusting = true;
+                    try {
+                        const clampedCenter = mapInstance.unproject(L.point(centerPoint.x, targetY), zoom);
+                        mapInstance.setView([clampedCenter.lat, center.lng], zoom, { animate: false });
+                    } finally {
+                        isAdjusting = false;
+                    }
+                }
+            }
+
+            mapInstance.on('drag', keepInVerticalBounds);
+            mapInstance.on('move', keepInVerticalBounds);
+            mapInstance.on('zoomend', keepInVerticalBounds);
+        }
 
         // 4-Way Directional Pan Controller (Geser Peta ke Kiri, Kanan, Atas, Bawah, dan Reset)
         window.panCoverageMap = function (direction) {
             if (!coverageMap) return;
-            const panDistance = 260;
+            const panDistance = 240;
+            const size = coverageMap.getSize();
+            const zoom = coverageMap.getZoom();
+            const worldHeight = 256 * Math.pow(2, zoom);
+            const viewHalfY = size.y / 2;
+            const centerPoint = coverageMap.project(coverageMap.getCenter(), zoom);
+
             switch (direction) {
                 case 'up':
-                    coverageMap.panBy([0, -panDistance], { animate: true, duration: 0.25 });
+                    if (centerPoint.y - viewHalfY > 2) {
+                        const dist = Math.min(panDistance, centerPoint.y - viewHalfY);
+                        coverageMap.panBy([0, -dist], { animate: true, duration: 0.25 });
+                    }
                     break;
                 case 'down':
-                    coverageMap.panBy([0, panDistance], { animate: true, duration: 0.25 });
+                    if (centerPoint.y + viewHalfY < worldHeight - 2) {
+                        const dist = Math.min(panDistance, worldHeight - (centerPoint.y + viewHalfY));
+                        coverageMap.panBy([0, dist], { animate: true, duration: 0.25 });
+                    }
                     break;
                 case 'left':
                     coverageMap.panBy([-panDistance, 0], { animate: true, duration: 0.25 });
@@ -1090,7 +1145,13 @@
         window.addEventListener('keydown', function (e) {
             if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
             if (!coverageMap) return;
-            const step = 200;
+            const step = 180;
+            const size = coverageMap.getSize();
+            const zoom = coverageMap.getZoom();
+            const worldHeight = 256 * Math.pow(2, zoom);
+            const viewHalfY = size.y / 2;
+            const centerPoint = coverageMap.project(coverageMap.getCenter(), zoom);
+
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
                 coverageMap.panBy([-step, 0], { animate: true, duration: 0.2 });
@@ -1099,10 +1160,16 @@
                 coverageMap.panBy([step, 0], { animate: true, duration: 0.2 });
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
-                coverageMap.panBy([0, -step], { animate: true, duration: 0.2 });
+                if (centerPoint.y - viewHalfY > 2) {
+                    const dist = Math.min(step, centerPoint.y - viewHalfY);
+                    coverageMap.panBy([0, -dist], { animate: true, duration: 0.2 });
+                }
             } else if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                coverageMap.panBy([0, step], { animate: true, duration: 0.2 });
+                if (centerPoint.y + viewHalfY < worldHeight - 2) {
+                    const dist = Math.min(step, worldHeight - (centerPoint.y + viewHalfY));
+                    coverageMap.panBy([0, dist], { animate: true, duration: 0.2 });
+                }
             }
         });
 
@@ -1112,7 +1179,7 @@
 
             coverageMap = L.map('landingCoverageMap', {
                 zoomControl: true,
-                minZoom: 1,
+                minZoom: 2,
                 maxZoom: 20,
                 worldCopyJump: true,
                 scrollWheelZoom: true,
@@ -1133,6 +1200,9 @@
             coverageMap.touchZoom.enable();
             coverageMap.doubleClickZoom.enable();
             coverageMap.scrollWheelZoom.enable();
+
+            // Bind continuous smooth bounds clamping
+            enforceGoogleMapsContinuity(coverageMap);
 
             L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
                 maxZoom: 20,
@@ -1163,15 +1233,19 @@
                 });
             }
 
-            hubs.forEach(hub => {
-                const marker = L.marker([hub.lat, hub.lon], { icon: createHubIcon() }).addTo(coverageMap);
-                marker.bindPopup(`
-                    <div style="font-family: 'Plus Jakarta Sans', sans-serif; padding: 4px;">
-                        <span style="font-size: 10px; font-weight: 800; color: #0284C7; text-transform: uppercase;">${hub.code}</span>
-                        <h4 style="font-size: 12px; font-weight: 800; color: #0F172A; margin: 2px 0;">${hub.name}</h4>
-                        <p style="font-size: 11px; color: #64748B; margin: 0;">${hub.type} &bull; ${hub.country}</p>
-                    </div>
-                `);
+            // Render hubs across world copies [-360, 0, 360] for endless horizontal continuity
+            const worldOffsets = [-360, 0, 360];
+            worldOffsets.forEach(offset => {
+                hubs.forEach(hub => {
+                    const marker = L.marker([hub.lat, hub.lon + offset], { icon: createHubIcon() }).addTo(coverageMap);
+                    marker.bindPopup(`
+                        <div style="font-family: 'Plus Jakarta Sans', sans-serif; padding: 4px;">
+                            <span style="font-size: 10px; font-weight: 800; color: #0284C7; text-transform: uppercase;">${hub.code}</span>
+                            <h4 style="font-size: 12px; font-weight: 800; color: #0F172A; margin: 2px 0;">${hub.name}</h4>
+                            <p style="font-size: 11px; color: #64748B; margin: 0;">${hub.type} &bull; ${hub.country}</p>
+                        </div>
+                    `);
+                });
             });
 
             // Maritime Trade Corridors (Luminous Sky Blue with interactive: false so dragging passes through seamlessly)
@@ -1189,14 +1263,17 @@
                 [[-6.2088, 106.8456], [-33.8688, 151.2093]]
             ];
 
-            corridors.forEach(corridor => {
-                L.polyline(corridor, {
-                    color: '#38BDF8',
-                    weight: 2.5,
-                    dashArray: '5, 8',
-                    opacity: 0.85,
-                    interactive: false // Prevents vector layer from blocking map dragging
-                }).addTo(coverageMap);
+            worldOffsets.forEach(offset => {
+                corridors.forEach(corridor => {
+                    const shiftedCorridor = corridor.map(pt => [pt[0], pt[1] + offset]);
+                    L.polyline(shiftedCorridor, {
+                        color: '#38BDF8',
+                        weight: 2.5,
+                        dashArray: '5, 8',
+                        opacity: 0.85,
+                        interactive: false // Prevents vector layer from blocking map dragging
+                    }).addTo(coverageMap);
+                });
             });
 
             // Refresh size when window resizes

@@ -568,9 +568,50 @@
         const destLat = parseFloat("{{ $shipment->destination->latitude }}");
         const destLng = parseFloat("{{ $shipment->destination->longitude }}");
 
+        // Continuity Enforcement: Clamps vertical movement smoothly so map never reveals empty space above/below
+        function enforceGoogleMapsContinuity(mapInstance) {
+            if (!mapInstance) return;
+            let isAdjusting = false;
+
+            function keepInVerticalBounds() {
+                if (isAdjusting) return;
+                const size = mapInstance.getSize();
+                if (!size || size.y <= 0) return;
+
+                const zoom = mapInstance.getZoom();
+                const worldHeight = 256 * Math.pow(2, zoom);
+                const viewHalfY = size.y / 2;
+                const center = mapInstance.getCenter();
+                const centerPoint = mapInstance.project(center, zoom);
+
+                let targetY = centerPoint.y;
+                if (worldHeight <= size.y) {
+                    targetY = worldHeight / 2;
+                } else {
+                    if (targetY - viewHalfY < 0) {
+                        targetY = viewHalfY;
+                    } else if (targetY + viewHalfY > worldHeight) {
+                        targetY = worldHeight - viewHalfY;
+                    }
+                }
+
+                if (Math.abs(targetY - centerPoint.y) > 0.5) {
+                    isAdjusting = true;
+                    try {
+                        const clampedCenter = mapInstance.unproject(L.point(centerPoint.x, targetY), zoom);
+                        mapInstance.setView([clampedCenter.lat, center.lng], zoom, { animate: false });
+                    } finally {
+                        isAdjusting = false;
+                    }
+                }
+            }
+
+            mapInstance.on('drag move zoomend', keepInVerticalBounds);
+        }
+
         const map = L.map('shipmentMap', {
             zoomControl: true,
-            minZoom: 1,
+            minZoom: 2,
             maxZoom: 20,
             scrollWheelZoom: true,
             wheelDebounceTime: 40,
@@ -589,6 +630,7 @@
         map.touchZoom.enable();
         map.doubleClickZoom.enable();
         map.scrollWheelZoom.enable();
+        enforceGoogleMapsContinuity(map);
 
         // Google Maps Satellite Hybrid (Deep Photorealistic Earth Imagery)
         L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {

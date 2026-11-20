@@ -806,16 +806,71 @@
         let dashboardMapInstance = null;
         let dashboardBounds = [];
 
+        // Continuity Enforcement: Clamps vertical movement smoothly so map never reveals empty space above/below
+        function enforceGoogleMapsContinuity(mapInstance) {
+            if (!mapInstance) return;
+            let isAdjusting = false;
+
+            function keepInVerticalBounds() {
+                if (isAdjusting) return;
+                const size = mapInstance.getSize();
+                if (!size || size.y <= 0) return;
+
+                const zoom = mapInstance.getZoom();
+                const worldHeight = 256 * Math.pow(2, zoom);
+                const viewHalfY = size.y / 2;
+                const center = mapInstance.getCenter();
+                const centerPoint = mapInstance.project(center, zoom);
+
+                let targetY = centerPoint.y;
+                if (worldHeight <= size.y) {
+                    targetY = worldHeight / 2;
+                } else {
+                    if (targetY - viewHalfY < 0) {
+                        targetY = viewHalfY;
+                    } else if (targetY + viewHalfY > worldHeight) {
+                        targetY = worldHeight - viewHalfY;
+                    }
+                }
+
+                if (Math.abs(targetY - centerPoint.y) > 0.5) {
+                    isAdjusting = true;
+                    try {
+                        const clampedCenter = mapInstance.unproject(L.point(centerPoint.x, targetY), zoom);
+                        mapInstance.setView([clampedCenter.lat, center.lng], zoom, { animate: false });
+                    } finally {
+                        isAdjusting = false;
+                    }
+                }
+            }
+
+            mapInstance.on('drag', keepInVerticalBounds);
+            mapInstance.on('move', keepInVerticalBounds);
+            mapInstance.on('zoomend', keepInVerticalBounds);
+        }
+
         // 4-Way Directional Pan Controller for Dashboard Map
         window.panDashboardMap = function (dir) {
             if (!dashboardMapInstance) return;
             const distance = 240;
+            const size = dashboardMapInstance.getSize();
+            const zoom = dashboardMapInstance.getZoom();
+            const worldHeight = 256 * Math.pow(2, zoom);
+            const viewHalfY = size.y / 2;
+            const centerPoint = dashboardMapInstance.project(dashboardMapInstance.getCenter(), zoom);
+
             switch (dir) {
                 case 'up':
-                    dashboardMapInstance.panBy([0, -distance], { animate: true, duration: 0.25 });
+                    if (centerPoint.y - viewHalfY > 2) {
+                        const dist = Math.min(distance, centerPoint.y - viewHalfY);
+                        dashboardMapInstance.panBy([0, -dist], { animate: true, duration: 0.25 });
+                    }
                     break;
                 case 'down':
-                    dashboardMapInstance.panBy([0, distance], { animate: true, duration: 0.25 });
+                    if (centerPoint.y + viewHalfY < worldHeight - 2) {
+                        const dist = Math.min(distance, worldHeight - (centerPoint.y + viewHalfY));
+                        dashboardMapInstance.panBy([0, dist], { animate: true, duration: 0.25 });
+                    }
                     break;
                 case 'left':
                     dashboardMapInstance.panBy([-distance, 0], { animate: true, duration: 0.25 });
@@ -836,7 +891,7 @@
         // Global map initialization (worldwide bounds -90..90, -180..180, deep zoom & smooth horizontal drag)
         const map = L.map('dashboardMap', {
             zoomControl: true,
-            minZoom: 1,
+            minZoom: 2,
             maxZoom: 20,
             scrollWheelZoom: true,
             wheelDebounceTime: 40,
@@ -853,11 +908,12 @@
 
         dashboardMapInstance = map;
 
-        // Explicitly activate interaction handlers
+        // Explicitly activate interaction handlers & continuity
         map.dragging.enable();
         map.touchZoom.enable();
         map.doubleClickZoom.enable();
         map.scrollWheelZoom.enable();
+        enforceGoogleMapsContinuity(map);
 
         L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
             attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',

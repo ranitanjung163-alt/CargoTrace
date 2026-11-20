@@ -671,13 +671,56 @@
     let etaMarker = null;
     let poiMarkers = [];
 
+    // Continuity Enforcement: Clamps vertical movement smoothly so map never reveals empty space above/below
+    function enforceGoogleMapsContinuity(mapInstance) {
+        if (!mapInstance) return;
+        let isAdjusting = false;
+
+        function keepInVerticalBounds() {
+            if (isAdjusting) return;
+            const size = mapInstance.getSize();
+            if (!size || size.y <= 0) return;
+
+            const zoom = mapInstance.getZoom();
+            const worldHeight = 256 * Math.pow(2, zoom);
+            const viewHalfY = size.y / 2;
+            const center = mapInstance.getCenter();
+            const centerPoint = mapInstance.project(center, zoom);
+
+            let targetY = centerPoint.y;
+            if (worldHeight <= size.y) {
+                targetY = worldHeight / 2;
+            } else {
+                if (targetY - viewHalfY < 0) {
+                    targetY = viewHalfY;
+                } else if (targetY + viewHalfY > worldHeight) {
+                    targetY = worldHeight - viewHalfY;
+                }
+            }
+
+            if (Math.abs(targetY - centerPoint.y) > 0.5) {
+                isAdjusting = true;
+                try {
+                    const clampedCenter = mapInstance.unproject(L.point(centerPoint.x, targetY), zoom);
+                    mapInstance.setView([clampedCenter.lat, center.lng], zoom, { animate: false });
+                } finally {
+                    isAdjusting = false;
+                }
+            }
+        }
+
+        mapInstance.on('drag', keepInVerticalBounds);
+        mapInstance.on('move', keepInVerticalBounds);
+        mapInstance.on('zoomend', keepInVerticalBounds);
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         renderWaypointsList();
 
         // Initialize Map with Global Worldwide View, deep zoom (level 20) & smooth 4-way dragging
         map = L.map('googleDirectionsMap', {
             zoomControl: false, // Managed by custom floating controller dock
-            minZoom: 1,
+            minZoom: 2,
             maxZoom: 20,
             scrollWheelZoom: true,
             wheelDebounceTime: 40,
@@ -700,6 +743,7 @@
         map.scrollWheelZoom.enable();
         map.boxZoom.enable();
         map.keyboard.enable();
+        enforceGoogleMapsContinuity(map);
 
         // Base Layer 1: Google Maps Satellite Hybrid (Photorealistic Satellite Imagery with Roads & Country Labels)
         const googleSatelliteHybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
@@ -747,12 +791,24 @@
     function panMap(direction) {
         if (!map) return;
         const panDistance = 260;
+        const size = map.getSize();
+        const zoom = map.getZoom();
+        const worldHeight = 256 * Math.pow(2, zoom);
+        const viewHalfY = size.y / 2;
+        const centerPoint = map.project(map.getCenter(), zoom);
+
         switch (direction) {
             case 'up':
-                map.panBy([0, -panDistance], { animate: true, duration: 0.25 });
+                if (centerPoint.y - viewHalfY > 2) {
+                    const dist = Math.min(panDistance, centerPoint.y - viewHalfY);
+                    map.panBy([0, -dist], { animate: true, duration: 0.25 });
+                }
                 break;
             case 'down':
-                map.panBy([0, panDistance], { animate: true, duration: 0.25 });
+                if (centerPoint.y + viewHalfY < worldHeight - 2) {
+                    const dist = Math.min(panDistance, worldHeight - (centerPoint.y + viewHalfY));
+                    map.panBy([0, dist], { animate: true, duration: 0.25 });
+                }
                 break;
             case 'left':
                 map.panBy([-panDistance, 0], { animate: true, duration: 0.25 });
@@ -785,6 +841,12 @@
         if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
         if (!map) return;
         const keyStep = 180;
+        const size = map.getSize();
+        const zoom = map.getZoom();
+        const worldHeight = 256 * Math.pow(2, zoom);
+        const viewHalfY = size.y / 2;
+        const centerPoint = map.project(map.getCenter(), zoom);
+
         if (e.key === 'ArrowLeft') {
             e.preventDefault();
             map.panBy([-keyStep, 0], { animate: true, duration: 0.2 });
@@ -793,12 +855,16 @@
             map.panBy([keyStep, 0], { animate: true, duration: 0.2 });
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
-            map.panBy([0, -keyStep], { animate: true, duration: 0.2 });
+            if (centerPoint.y - viewHalfY > 2) {
+                const dist = Math.min(keyStep, centerPoint.y - viewHalfY);
+                map.panBy([0, -dist], { animate: true, duration: 0.2 });
+            }
         } else if (e.key === 'ArrowDown') {
             e.preventDefault();
-            map.panBy([0, keyStep], { animate: true, duration: 0.2 });
-        }
-    });
+            if (centerPoint.y + viewHalfY < worldHeight - 2) {
+                const dist = Math.min(keyStep, worldHeight - (centerPoint.y + viewHalfY));
+                map.panBy([0, dist], { animate: true, duration: 0.2 });
+            }
         }
     });
 
