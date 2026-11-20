@@ -271,7 +271,27 @@
 
             <!-- Leaflet Container -->
             <div class="relative">
-                <div id="dashboardMap" class="w-full h-60 rounded-2xl border border-slate-200 z-10 overflow-hidden shadow-inner"></div>
+                <div id="dashboardMap" class="w-full h-60 rounded-2xl border border-slate-200 z-10 overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab;"></div>
+
+                <!-- 4-Way Directional Pan Dock (Geser: Kiri, Atas, Bawah, Kanan, Reset) -->
+                <div class="absolute bottom-2.5 right-2.5 z-20 bg-white/95 backdrop-blur-md p-1 rounded-xl border border-slate-200 shadow-soft-xs flex items-center space-x-1 select-none">
+                    <button type="button" onclick="panDashboardMap('left')" title="Geser ke Kiri (Pan Left)" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                    <button type="button" onclick="panDashboardMap('up')" title="Geser ke Atas (Pan Up)" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+                    </button>
+                    <button type="button" onclick="panDashboardMap('down')" title="Geser ke Bawah (Pan Down)" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <button type="button" onclick="panDashboardMap('right')" title="Geser ke Kanan (Pan Right)" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                    <button type="button" onclick="panDashboardMap('reset')" title="Reset Peta" class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 active:scale-95 transition-all">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="2 2"/></svg>
+                    </button>
+                </div>
+
                 <!-- Floating Info Badge on Map (positioned top-right to preserve clear top-left zoom controls) -->
                 <div class="absolute top-2.5 right-2.5 z-20 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-xl border border-slate-200 shadow-soft-xs pointer-events-none text-[10px] font-bold text-slate-800 flex items-center space-x-1.5">
                     <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
@@ -561,6 +581,7 @@
         // Helper to draw polylines with GIS-grade antimeridian crossing interpolation (e.g. Trans-Pacific routes)
         function drawRouteSegments(targetMap, points, options) {
             if (!points || points.length < 2) return;
+            const polylineOptions = Object.assign({ interactive: false }, options || {});
             let currentSegment = [points[0]];
             for (let i = 1; i < points.length; i++) {
                 const prev = points[i - 1];
@@ -577,7 +598,7 @@
 
                         currentSegment.push([latCross, 179.9999]);
                         if (currentSegment.length >= 2) {
-                            L.polyline(currentSegment, options).addTo(targetMap);
+                            L.polyline(currentSegment, polylineOptions).addTo(targetMap);
                         }
                         currentSegment = [[latCross, -179.9999], curr];
                     } else if (prev[1] < 0 && curr[1] > 0) {
@@ -588,12 +609,12 @@
 
                         currentSegment.push([latCross, -179.9999]);
                         if (currentSegment.length >= 2) {
-                            L.polyline(currentSegment, options).addTo(targetMap);
+                            L.polyline(currentSegment, polylineOptions).addTo(targetMap);
                         }
                         currentSegment = [[latCross, 179.9999], curr];
                     } else {
                         if (currentSegment.length >= 2) {
-                            L.polyline(currentSegment, options).addTo(targetMap);
+                            L.polyline(currentSegment, polylineOptions).addTo(targetMap);
                         }
                         currentSegment = [curr];
                     }
@@ -602,7 +623,7 @@
                 }
             }
             if (currentSegment.length >= 2) {
-                L.polyline(currentSegment, options).addTo(targetMap);
+                L.polyline(currentSegment, polylineOptions).addTo(targetMap);
             }
         }
 
@@ -782,6 +803,35 @@
         // 3. WORLDWIDE SHIPMENT MAP (LEAFLET.JS + OSM)
         // ----------------------------------------------------
         const mapShipments = @json($mapShipments);
+        let dashboardMapInstance = null;
+        let dashboardBounds = [];
+
+        // 4-Way Directional Pan Controller for Dashboard Map
+        window.panDashboardMap = function (dir) {
+            if (!dashboardMapInstance) return;
+            const distance = 200;
+            switch (dir) {
+                case 'up':
+                    dashboardMapInstance.panBy([0, -distance], { animate: true, duration: 0.25 });
+                    break;
+                case 'down':
+                    dashboardMapInstance.panBy([0, distance], { animate: true, duration: 0.25 });
+                    break;
+                case 'left':
+                    dashboardMapInstance.panBy([-distance, 0], { animate: true, duration: 0.25 });
+                    break;
+                case 'right':
+                    dashboardMapInstance.panBy([distance, 0], { animate: true, duration: 0.25 });
+                    break;
+                case 'reset':
+                    if (dashboardBounds.length > 0) {
+                        dashboardMapInstance.fitBounds(dashboardBounds, { padding: [25, 25], maxZoom: 6 });
+                    } else {
+                        dashboardMapInstance.setView([20.0, 0.0], 2);
+                    }
+                    break;
+            }
+        };
 
         // Global map initialization (worldwide bounds -90..90, -180..180, deep zoom & smooth horizontal drag)
         const map = L.map('dashboardMap', {
@@ -792,9 +842,19 @@
             doubleClickZoom: true,
             touchZoom: true,
             dragging: true,
+            tap: false,
             inertia: true,
-            worldCopyJump: false
+            inertiaDeceleration: 3000,
+            worldCopyJump: true
         }).setView([20.0, 0.0], 2);
+
+        dashboardMapInstance = map;
+
+        // Explicitly activate interaction handlers
+        map.dragging.enable();
+        map.touchZoom.enable();
+        map.doubleClickZoom.enable();
+        map.scrollWheelZoom.enable();
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -807,6 +867,7 @@
         }, 200);
 
         const bounds = [];
+        dashboardBounds = bounds;
 
         mapShipments.forEach(s => {
             const originLat = s.origin.lat;
@@ -893,12 +954,13 @@
                 `);
             }
 
-            // Route Polyline with antimeridian handling
+            // Route Polyline with antimeridian handling and interactive: false
             drawRouteSegments(map, routePoints, {
                 color: s.is_delayed ? '#EF4444' : '#2563EB',
                 weight: 3,
                 opacity: 0.85,
-                dashArray: s.is_delayed ? '6, 6' : null
+                dashArray: s.is_delayed ? '6, 6' : null,
+                interactive: false
             });
         });
 

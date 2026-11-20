@@ -81,7 +81,7 @@
             </div>
             <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">{{ count($mapLocations) }} Hubs</span>
         </div>
-        <div id="worldLocationsMap" class="w-full h-80 rounded-xl border border-brand-border overflow-hidden shadow-inner"></div>
+        <div id="worldLocationsMap" class="w-full h-80 rounded-xl border border-brand-border overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab;"></div>
     </div>
 
     <!-- Locations Table -->
@@ -263,14 +263,26 @@
             doubleClickZoom: true,
             touchZoom: true,
             dragging: true,
-            worldCopyJump: false
+            tap: false,
+            inertia: true,
+            inertiaDeceleration: 3000,
+            worldCopyJump: true
         }).setView([20.0, 0.0], 2);
+
+        map.dragging.enable();
+        map.touchZoom.enable();
+        map.doubleClickZoom.enable();
+        map.scrollWheelZoom.enable();
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap',
             maxNativeZoom: 19,
             maxZoom: 20
         }).addTo(map);
+
+        setTimeout(function() {
+            map.invalidateSize();
+        }, 200);
 
         function escapeHtml(str) {
             if (str === null || str === undefined) return '';

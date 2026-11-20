@@ -685,9 +685,10 @@
             boxZoom: true,
             keyboard: true,
             dragging: true,
+            tap: false,
             inertia: true,
             inertiaDeceleration: 3000,
-            worldCopyJump: false // Continuous smooth horizontal panning sideways without rubber-banding
+            worldCopyJump: true // Continuous smooth horizontal panning sideways without rubber-banding
         }).setView([20.0, 0.0], 2);
 
         // Explicitly activate dragging and all interaction handlers
@@ -735,8 +736,6 @@
         setTimeout(function() {
             map.invalidateSize();
         }, 200);
-
-        initNativeMapDragEngine();
     });
 
     // 4-Way Directional Pan Controller (Geser Peta ke Kiri, Kanan, Atas, Bawah)
@@ -795,43 +794,6 @@
             map.panBy([0, keyStep], { animate: true, duration: 0.2 });
         }
     });
-
-    // Native mouse/touch drag engine ensuring seamless 4-way panning in any browser environment
-    function initNativeMapDragEngine() {
-        const container = document.getElementById('googleDirectionsMap');
-        if (!container) return;
-
-        let isDragging = false;
-        let lastX = 0;
-        let lastY = 0;
-
-        container.addEventListener('mousedown', function (e) {
-            if (e.button !== 0) return; // Only primary left-click
-            if (e.target.closest('button, a, input, select, .leaflet-control, .google-eta-bubble')) return;
-            isDragging = true;
-            lastX = e.clientX;
-            lastY = e.clientY;
-            container.style.cursor = 'grabbing';
-        }, { passive: true });
-
-        window.addEventListener('mousemove', function (e) {
-            if (!isDragging || !map) return;
-            const deltaX = e.clientX - lastX;
-            const deltaY = e.clientY - lastY;
-            if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
-                map.panBy([-deltaX, -deltaY], { animate: false });
-                lastX = e.clientX;
-                lastY = e.clientY;
-            }
-        }, { passive: true });
-
-        window.addEventListener('mouseup', function () {
-            if (isDragging) {
-                isDragging = false;
-                if (container) container.style.cursor = 'grab';
-            }
-        }, { passive: true });
-    }
 
     function plotRouteOnMap() {
         if (!map) return;

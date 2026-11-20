@@ -166,7 +166,7 @@
                         {{ $shipment->origin->city }} &rarr; {{ $shipment->destination->city }}
                     </span>
                 </div>
-                <div id="shipmentMap" class="w-full h-80 rounded-xl border border-brand-border z-10 overflow-hidden shadow-inner"></div>
+                <div id="shipmentMap" class="w-full h-80 rounded-xl border border-brand-border z-10 overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab;"></div>
                 <div class="flex items-center justify-between text-xs text-brand-secondary pt-1">
                     <div class="flex items-center space-x-4">
                         <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 mr-1.5 shadow-sm"></span>Origin</span>
@@ -519,6 +519,7 @@
 
         function drawRouteSegments(targetMap, points, options) {
             if (!points || points.length < 2) return;
+            const polylineOptions = Object.assign({ interactive: false }, options || {});
             let currentSegment = [points[0]];
             for (let i = 1; i < points.length; i++) {
                 const prev = points[i - 1];
@@ -534,7 +535,7 @@
 
                         currentSegment.push([latCross, 179.9999]);
                         if (currentSegment.length >= 2) {
-                            L.polyline(currentSegment, options).addTo(targetMap);
+                            L.polyline(currentSegment, polylineOptions).addTo(targetMap);
                         }
                         currentSegment = [[latCross, -179.9999], curr];
                     } else if (prev[1] < 0 && curr[1] > 0) {
@@ -544,12 +545,12 @@
 
                         currentSegment.push([latCross, -179.9999]);
                         if (currentSegment.length >= 2) {
-                            L.polyline(currentSegment, options).addTo(targetMap);
+                            L.polyline(currentSegment, polylineOptions).addTo(targetMap);
                         }
                         currentSegment = [[latCross, 179.9999], curr];
                     } else {
                         if (currentSegment.length >= 2) {
-                            L.polyline(currentSegment, options).addTo(targetMap);
+                            L.polyline(currentSegment, polylineOptions).addTo(targetMap);
                         }
                         currentSegment = [curr];
                     }
@@ -558,7 +559,7 @@
                 }
             }
             if (currentSegment.length >= 2) {
-                L.polyline(currentSegment, options).addTo(targetMap);
+                L.polyline(currentSegment, polylineOptions).addTo(targetMap);
             }
         }
 
@@ -575,8 +576,16 @@
             doubleClickZoom: true,
             touchZoom: true,
             dragging: true,
-            worldCopyJump: false
+            tap: false,
+            inertia: true,
+            inertiaDeceleration: 3000,
+            worldCopyJump: true
         }).setView([originLat, originLng], 4);
+
+        map.dragging.enable();
+        map.touchZoom.enable();
+        map.doubleClickZoom.enable();
+        map.scrollWheelZoom.enable();
 
         // OpenStreetMap Standard Tiles (Fast & 100% Guaranteed Available, deep zoom)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -584,6 +593,10 @@
             maxNativeZoom: 19,
             maxZoom: 20
         }).addTo(map);
+
+        setTimeout(function() {
+            map.invalidateSize();
+        }, 200);
 
         const routePoints = [];
         const bounds = [];

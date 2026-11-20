@@ -700,11 +700,37 @@
 
                 <!-- Leaflet Interactive Map Card -->
                 <div class="bg-white rounded-3xl border border-slate-200/90 shadow-soft-lg overflow-hidden relative">
-                    <!-- Map Canvas Container -->
-                    <div id="landingCoverageMap" class="w-full h-[460px] z-10"></div>
+                    <!-- Map Canvas Container (Touch Action None & Grab Cursor for 4-Way Smooth Panning) -->
+                    <div id="landingCoverageMap" class="w-full h-[460px] z-10" style="touch-action: none !important; cursor: grab;"></div>
+
+                    <!-- 4-Way D-Pad Pan Navigation Dock (Geser Peta: Atas, Bawah, Kiri, Kanan, Reset) -->
+                    <div class="absolute top-20 left-3.5 z-20 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 shadow-soft-md flex flex-col items-center select-none">
+                        <button type="button" onclick="panCoverageMap('up')" title="Geser ke Atas (Pan Up)" aria-label="Geser ke Atas"
+                                class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors focus:outline-none">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+                        </button>
+                        <div class="flex items-center space-x-1 my-0.5">
+                            <button type="button" onclick="panCoverageMap('left')" title="Geser ke Kiri (Pan Left)" aria-label="Geser ke Kiri"
+                                    class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors focus:outline-none">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            </button>
+                            <button type="button" onclick="panCoverageMap('center')" title="Reset Posisi Dunia" aria-label="Reset Posisi Dunia"
+                                    class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 active:scale-95 transition-all focus:outline-none">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="2 2"/></svg>
+                            </button>
+                            <button type="button" onclick="panCoverageMap('right')" title="Geser ke Kanan (Pan Right)" aria-label="Geser ke Kanan"
+                                    class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors focus:outline-none">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                        <button type="button" onclick="panCoverageMap('down')" title="Geser ke Bawah (Pan Down)" aria-label="Geser ke Bawah"
+                                class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors focus:outline-none">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                    </div>
 
                     <!-- Overlay Legend & Controls -->
-                    <div class="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-md px-4 py-3 rounded-2xl border border-slate-200 shadow-soft-xs text-xs font-bold text-slate-900">
+                    <div class="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-md px-4 py-3 rounded-2xl border border-slate-200 shadow-soft-xs text-xs font-bold text-slate-900 pointer-events-auto">
                         <div class="flex items-center space-x-4">
                             <div class="flex items-center space-x-1.5">
                                 <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
@@ -718,7 +744,7 @@
                     </div>
 
                     <!-- Top Right Projection Badge -->
-                    <div class="absolute top-4 right-4 z-20 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-slate-200 shadow-soft-xs text-[11px] font-bold text-slate-900 hidden sm:flex items-center space-x-2">
+                    <div class="absolute top-4 right-4 z-20 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-slate-200 shadow-soft-xs text-[11px] font-bold text-slate-900 hidden sm:flex items-center space-x-2 pointer-events-none">
                         <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                         <span>OpenStreetMap World Topology</span>
                     </div>
@@ -1034,27 +1060,82 @@
             }, 500);
         }
 
-        // 4. Leaflet Worldwide Network Map Initialization
+        // 4. Leaflet Worldwide Network Map & 4-Way Pan Engine
+        let coverageMap = null;
+
+        // 4-Way Directional Pan Controller (Geser Peta ke Kiri, Kanan, Atas, Bawah, dan Reset)
+        window.panCoverageMap = function (direction) {
+            if (!coverageMap) return;
+            const panDistance = 260;
+            switch (direction) {
+                case 'up':
+                    coverageMap.panBy([0, -panDistance], { animate: true, duration: 0.25 });
+                    break;
+                case 'down':
+                    coverageMap.panBy([0, panDistance], { animate: true, duration: 0.25 });
+                    break;
+                case 'left':
+                    coverageMap.panBy([-panDistance, 0], { animate: true, duration: 0.25 });
+                    break;
+                case 'right':
+                    coverageMap.panBy([panDistance, 0], { animate: true, duration: 0.25 });
+                    break;
+                case 'center':
+                    coverageMap.setView([20.0, 15.0], 2, { animate: true });
+                    break;
+            }
+        };
+
+        // Keyboard arrow navigation for smooth panning
+        window.addEventListener('keydown', function (e) {
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+            if (!coverageMap) return;
+            const step = 200;
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                coverageMap.panBy([-step, 0], { animate: true, duration: 0.2 });
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                coverageMap.panBy([step, 0], { animate: true, duration: 0.2 });
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                coverageMap.panBy([0, -step], { animate: true, duration: 0.2 });
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                coverageMap.panBy([0, step], { animate: true, duration: 0.2 });
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', function () {
             const mapContainer = document.getElementById('landingCoverageMap');
             if (!mapContainer) return;
 
-            const map = L.map('landingCoverageMap', {
+            coverageMap = L.map('landingCoverageMap', {
                 zoomControl: true,
                 minZoom: 1,
                 maxZoom: 19,
-                worldCopyJump: false,
+                worldCopyJump: true,
                 scrollWheelZoom: true,
                 doubleClickZoom: true,
                 touchZoom: true,
-                dragging: true
+                dragging: true,
+                tap: false,
+                inertia: true,
+                inertiaDeceleration: 3000,
+                keyboard: true
             }).setView([20.0, 15.0], 2);
+
+            // Explicitly enable all interaction capabilities
+            coverageMap.dragging.enable();
+            coverageMap.touchZoom.enable();
+            coverageMap.doubleClickZoom.enable();
+            coverageMap.scrollWheelZoom.enable();
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 maxNativeZoom: 19,
                 maxZoom: 19
-            }).addTo(map);
+            }).addTo(coverageMap);
 
             // International Logistics Gateway Hubs
             const hubs = [
@@ -1079,7 +1160,7 @@
             }
 
             hubs.forEach(hub => {
-                const marker = L.marker([hub.lat, hub.lon], { icon: createHubIcon() }).addTo(map);
+                const marker = L.marker([hub.lat, hub.lon], { icon: createHubIcon() }).addTo(coverageMap);
                 marker.bindPopup(`
                     <div style="font-family: 'Plus Jakarta Sans', sans-serif; padding: 4px;">
                         <span style="font-size: 10px; font-weight: 800; color: #2563EB; text-transform: uppercase;">${hub.code}</span>
@@ -1089,7 +1170,7 @@
                 `);
             });
 
-            // Maritime Trade Corridors (Polylines)
+            // Maritime Trade Corridors (Polylines with interactive: false so dragging passes through seamlessly)
             const corridors = [
                 // Asia-Europe (Tokyo -> Singapore -> Dubai -> Rotterdam)
                 [[35.6762, 139.6503], [1.3521, 103.8198]],
@@ -1109,12 +1190,13 @@
                     color: '#2563EB',
                     weight: 2,
                     dashArray: '4, 6',
-                    opacity: 0.65
-                }).addTo(map);
+                    opacity: 0.65,
+                    interactive: false // Prevents vector layer from blocking map dragging
+                }).addTo(coverageMap);
             });
 
             // Refresh size when window resizes
-            setTimeout(() => { map.invalidateSize(); }, 300);
+            setTimeout(() => { coverageMap.invalidateSize(); }, 300);
         });
     </script>
 </body>
