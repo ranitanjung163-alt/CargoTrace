@@ -265,8 +265,52 @@
                 </div>
             </div>
 
-            <!-- Leaflet Map Container -->
-            <div id="googleDirectionsMap" class="w-full h-full z-10"></div>
+            <!-- Leaflet Map Container with Smooth 4-Way Panning (Drag Ke Kiri, Kanan, Atas, Bawah) -->
+            <div id="googleDirectionsMap" class="w-full h-full relative z-10 select-none"></div>
+
+            <!-- Floating 4-Way Directional Pan Controller & Zoom Dock (Geser Peta ke Kiri, Kanan, Atas, Bawah) -->
+            <div class="absolute bottom-4 left-4 z-[400] flex flex-col items-center gap-2 pointer-events-auto">
+                <!-- 4-Way Directional Pan Compass D-Pad -->
+                <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-slate-200/90 p-1.5 flex flex-col items-center gap-1 select-none">
+                    <!-- Up / Atas -->
+                    <button type="button" onclick="panMap('up')" title="Geser Peta ke Atas (Pan Up)"
+                            class="w-7 h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+                    </button>
+                    <!-- Middle Row: Left, Center Re-fit, Right -->
+                    <div class="flex items-center gap-1">
+                        <!-- Left / Kiri -->
+                        <button type="button" onclick="panMap('left')" title="Geser Peta ke Kiri (Pan Left)"
+                                class="w-7 h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+                        <!-- Center: Fit Route / Reset View -->
+                        <button type="button" onclick="panMap('center')" title="Pusatkan Rute Pengiriman (Fit Route)"
+                                class="w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white flex items-center justify-center transition-all active:scale-95 font-bold text-xs" id="fitRouteBtn">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg>
+                        </button>
+                        <!-- Right / Kanan -->
+                        <button type="button" onclick="panMap('right')" title="Geser Peta ke Kanan (Pan Right)"
+                                class="w-7 h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                    <!-- Down / Bawah -->
+                    <button type="button" onclick="panMap('down')" title="Geser Peta ke Bawah (Pan Down)"
+                            class="w-7 h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                </div>
+
+                <!-- Zoom Controls (+ and -) -->
+                <div class="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-slate-200/90 p-0.5 flex flex-col select-none">
+                    <button type="button" onclick="map && map.zoomIn()" title="Perbesar (Zoom In)"
+                            class="w-7 h-7 hover:bg-slate-100 text-slate-700 font-bold flex items-center justify-center rounded-lg transition-all text-sm active:scale-95">+</button>
+                    <div class="w-full h-px bg-slate-200"></div>
+                    <button type="button" onclick="map && map.zoomOut()" title="Perkecil (Zoom Out)"
+                            class="w-7 h-7 hover:bg-slate-100 text-slate-700 font-bold flex items-center justify-center rounded-lg transition-all text-sm active:scale-95">&minus;</button>
+                </div>
+            </div>
 
             <!-- Floating Map Navigation Help Overlay -->
             <div class="absolute bottom-4 right-4 z-[400] bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-slate-200 shadow-md text-[11px] font-bold text-slate-700 flex items-center space-x-2">
@@ -410,6 +454,28 @@
     .destination-pin {
         filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));
     }
+
+    /* Map Canvas Drag & Pan Optimizations (Gerser Kanan, Kiri, Atas, Bawah) */
+    #googleDirectionsMap {
+        cursor: grab !important;
+        touch-action: none !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+    }
+    #googleDirectionsMap:active {
+        cursor: grabbing !important;
+    }
+    #googleDirectionsMap .leaflet-container {
+        cursor: grab !important;
+        touch-action: none !important;
+    }
+    #googleDirectionsMap .leaflet-container:active {
+        cursor: grabbing !important;
+    }
+    #googleDirectionsMap .leaflet-tile-pane img {
+        user-select: none !important;
+        -webkit-user-drag: none !important;
+    }
 </style>
 @endsection
 
@@ -437,6 +503,7 @@
     // Helper to draw polylines with GIS-grade antimeridian crossing interpolation
     function drawRouteSegments(targetMap, points, options) {
         if (!points || points.length < 2) return;
+        const polyOptions = Object.assign({ interactive: false }, options);
         let currentSegment = [points[0]];
         for (let i = 1; i < points.length; i++) {
             const prev = points[i - 1];
@@ -452,7 +519,7 @@
 
                     currentSegment.push([latCross, 179.9999]);
                     if (currentSegment.length >= 2) {
-                        L.polyline(currentSegment, options).addTo(targetMap);
+                        L.polyline(currentSegment, polyOptions).addTo(targetMap);
                     }
                     currentSegment = [[latCross, -179.9999], curr];
                 } else if (prev[1] < 0 && curr[1] > 0) {
@@ -462,12 +529,12 @@
 
                     currentSegment.push([latCross, -179.9999]);
                     if (currentSegment.length >= 2) {
-                        L.polyline(currentSegment, options).addTo(targetMap);
+                        L.polyline(currentSegment, polyOptions).addTo(targetMap);
                     }
                     currentSegment = [[latCross, 179.9999], curr];
                 } else {
                     if (currentSegment.length >= 2) {
-                        L.polyline(currentSegment, options).addTo(targetMap);
+                        L.polyline(currentSegment, polyOptions).addTo(targetMap);
                     }
                     currentSegment = [curr];
                 }
@@ -476,7 +543,7 @@
             }
         }
         if (currentSegment.length >= 2) {
-            L.polyline(currentSegment, options).addTo(targetMap);
+            L.polyline(currentSegment, polyOptions).addTo(targetMap);
         }
     }
 
@@ -607,9 +674,9 @@
     document.addEventListener('DOMContentLoaded', function () {
         renderWaypointsList();
 
-        // Initialize Map with Global Worldwide View, deep zoom (level 20) & smooth horizontal dragging
+        // Initialize Map with Global Worldwide View, deep zoom (level 20) & smooth 4-way dragging
         map = L.map('googleDirectionsMap', {
-            zoomControl: false, // Added explicitly at bottomleft so it is never obstructed by top overlays
+            zoomControl: false, // Managed by custom floating controller dock
             minZoom: 1,
             maxZoom: 20,
             scrollWheelZoom: true,
@@ -622,6 +689,14 @@
             inertiaDeceleration: 3000,
             worldCopyJump: false // Continuous smooth horizontal panning sideways without rubber-banding
         }).setView([20.0, 0.0], 2);
+
+        // Explicitly activate dragging and all interaction handlers
+        map.dragging.enable();
+        map.touchZoom.enable();
+        map.doubleClickZoom.enable();
+        map.scrollWheelZoom.enable();
+        map.boxZoom.enable();
+        map.keyboard.enable();
 
         // Base Layer 1: OpenStreetMap Detailed (Streets, villages, ports, and remote settlements)
         const osmDetailed = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -655,15 +730,108 @@
         };
         L.control.layers(baseLayers, null, { position: 'topright' }).addTo(map);
 
-        // Zoom Control (bottomleft) - fully visible and accessible
-        L.control.zoom({ position: 'bottomleft' }).addTo(map);
-
         plotRouteOnMap();
 
         setTimeout(function() {
             map.invalidateSize();
         }, 200);
+
+        initNativeMapDragEngine();
     });
+
+    // 4-Way Directional Pan Controller (Geser Peta ke Kiri, Kanan, Atas, Bawah)
+    function panMap(direction) {
+        if (!map) return;
+        const panDistance = 260;
+        switch (direction) {
+            case 'up':
+                map.panBy([0, -panDistance], { animate: true, duration: 0.25 });
+                break;
+            case 'down':
+                map.panBy([0, panDistance], { animate: true, duration: 0.25 });
+                break;
+            case 'left':
+                map.panBy([-panDistance, 0], { animate: true, duration: 0.25 });
+                break;
+            case 'right':
+                map.panBy([panDistance, 0], { animate: true, duration: 0.25 });
+                break;
+            case 'center':
+                fitActiveRoute();
+                break;
+        }
+    }
+
+    // Re-fit view smoothly to active consignment route
+    function fitActiveRoute() {
+        if (!map) return;
+        const validWaypoints = (Array.isArray(activeWaypoints) ? activeWaypoints : []).filter(wp => wp && isValidCoord(wp.lat, wp.lng));
+        if (validWaypoints.length >= 2) {
+            const latLngs = validWaypoints.map(wp => [wp.lat, wp.lng]);
+            map.fitBounds(latLngs, { padding: [50, 50], maxZoom: 10 });
+        } else if (validWaypoints.length === 1) {
+            map.setView([validWaypoints[0].lat, validWaypoints[0].lng], 8);
+        } else {
+            map.setView([20.0, 0.0], 2);
+        }
+    }
+
+    // Keyboard arrow keys navigation (ArrowUp, ArrowDown, ArrowLeft, ArrowRight)
+    document.addEventListener('keydown', function (e) {
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+        if (!map) return;
+        const keyStep = 180;
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            map.panBy([-keyStep, 0], { animate: true, duration: 0.2 });
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            map.panBy([keyStep, 0], { animate: true, duration: 0.2 });
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            map.panBy([0, -keyStep], { animate: true, duration: 0.2 });
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            map.panBy([0, keyStep], { animate: true, duration: 0.2 });
+        }
+    });
+
+    // Native mouse/touch drag engine ensuring seamless 4-way panning in any browser environment
+    function initNativeMapDragEngine() {
+        const container = document.getElementById('googleDirectionsMap');
+        if (!container) return;
+
+        let isDragging = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        container.addEventListener('mousedown', function (e) {
+            if (e.button !== 0) return; // Only primary left-click
+            if (e.target.closest('button, a, input, select, .leaflet-control, .google-eta-bubble')) return;
+            isDragging = true;
+            lastX = e.clientX;
+            lastY = e.clientY;
+            container.style.cursor = 'grabbing';
+        }, { passive: true });
+
+        window.addEventListener('mousemove', function (e) {
+            if (!isDragging || !map) return;
+            const deltaX = e.clientX - lastX;
+            const deltaY = e.clientY - lastY;
+            if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
+                map.panBy([-deltaX, -deltaY], { animate: false });
+                lastX = e.clientX;
+                lastY = e.clientY;
+            }
+        }, { passive: true });
+
+        window.addEventListener('mouseup', function () {
+            if (isDragging) {
+                isDragging = false;
+                if (container) container.style.cursor = 'grab';
+            }
+        }, { passive: true });
+    }
 
     function plotRouteOnMap() {
         if (!map) return;
@@ -839,7 +1007,7 @@
             iconAnchor: [50, 20]
         });
 
-        etaMarker = L.marker(midCoord, { icon: etaBubbleIcon, zIndexOffset: 1000 }).addTo(map);
+        etaMarker = L.marker(midCoord, { icon: etaBubbleIcon, zIndexOffset: 1000, interactive: false }).addTo(map);
 
         // Fit map bounds to view all points smoothly
         map.fitBounds(latLngs, { padding: [50, 50], maxZoom: 10 });
