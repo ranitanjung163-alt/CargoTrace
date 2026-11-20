@@ -1045,15 +1045,19 @@
 
             const map = L.map('landingCoverageMap', {
                 zoomControl: true,
-                minZoom: 2,
-                maxZoom: 10,
-                worldCopyJump: true,
-                scrollWheelZoom: false
+                minZoom: 1,
+                maxZoom: 19,
+                worldCopyJump: false,
+                scrollWheelZoom: true,
+                doubleClickZoom: true,
+                touchZoom: true,
+                dragging: true
             }).setView([20.0, 15.0], 2);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 18
+                maxNativeZoom: 19,
+                maxZoom: 19
             }).addTo(map);
 
             // International Logistics Gateway Hubs

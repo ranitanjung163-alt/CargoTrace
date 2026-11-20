@@ -264,8 +264,8 @@
             <!-- Leaflet Container -->
             <div class="relative">
                 <div id="dashboardMap" class="w-full h-60 rounded-xl border border-brand-border z-10 overflow-hidden shadow-inner"></div>
-                <!-- Floating Info Badge on Map -->
-                <div class="absolute top-2 left-2 z-20 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-brand-border shadow-soft-sm pointer-events-none text-[10px] font-bold text-brand-navy flex items-center space-x-1.5">
+                <!-- Floating Info Badge on Map (positioned top-right to preserve clear top-left zoom controls) -->
+                <div class="absolute top-2 right-2 z-20 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-brand-border shadow-soft-sm pointer-events-none text-[10px] font-bold text-brand-navy flex items-center space-x-1.5">
                     <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
                     <span>OSM Worldwide Projection</span>
                 </div>
@@ -775,17 +775,23 @@
         // ----------------------------------------------------
         const mapShipments = @json($mapShipments);
 
-        // Global map initialization (worldwide bounds -90..90, -180..180)
+        // Global map initialization (worldwide bounds -90..90, -180..180, deep zoom & smooth horizontal drag)
         const map = L.map('dashboardMap', {
             zoomControl: true,
             minZoom: 1,
-            maxZoom: 18,
-            worldCopyJump: true
+            maxZoom: 20,
+            scrollWheelZoom: true,
+            doubleClickZoom: true,
+            touchZoom: true,
+            dragging: true,
+            inertia: true,
+            worldCopyJump: false
         }).setView([20.0, 0.0], 2);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 19
+            maxNativeZoom: 19,
+            maxZoom: 20
         }).addTo(map);
 
         setTimeout(function() {

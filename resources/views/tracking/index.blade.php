@@ -233,14 +233,15 @@
         <!-- ================= 2. RIGHT MAP AREA (GOOGLE MAPS CANVAS & FLOATING POIS) ================= -->
         <div class="flex-1 relative h-full min-h-[500px] bg-slate-100">
 
-            <!-- Floating Top Search & POI Bar (Exact matching "Search along the route", "Hotels", "Petrol", "EV charging") -->
+            <!-- Floating Top Search & POI Bar (Find any place or remote region on earth) -->
             <div class="absolute top-4 left-4 right-4 z-[400] flex flex-wrap items-center gap-2 pointer-events-none">
                 <!-- Search Input Pill -->
-                <div class="pointer-events-auto bg-white rounded-full shadow-md border border-slate-200/90 px-4 py-2.5 flex items-center space-x-2 text-xs w-64 md:w-72">
+                <form onsubmit="searchRemoteLocation(event)" class="pointer-events-auto bg-white rounded-full shadow-md border border-slate-200/90 px-3.5 py-2 flex items-center space-x-2 text-xs w-72 md:w-80">
                     <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input type="text" id="routeSearchInput" placeholder="Search along the route" onkeyup="filterRoutePois(this.value)"
+                    <input type="text" id="routeSearchInput" placeholder="Cari wilayah/kota terpencil di dunia..."
                            class="bg-transparent border-none outline-none text-slate-800 placeholder-slate-400 font-medium text-xs w-full">
-                </div>
+                    <button type="submit" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 px-2 py-0.5 rounded-full bg-blue-50 hover:bg-blue-100 transition-colors shrink-0">Cari</button>
+                </form>
 
                 <!-- POI Filter Pills (Clickable) -->
                 <div class="pointer-events-auto flex items-center space-x-2 overflow-x-auto py-1">
@@ -484,6 +485,7 @@
     // -------------------------------------------------------------
     const isDemoFrance = {{ request('shipment_number') === 'DEMO-FR-NORMANDY' ? 'true' : 'false' }};
     const currentShipment = @json($shipment);
+    const locationsData = @json($locations);
 
     // EXACT ROUTE FROM SCREENSHOT: Paris -> Versailles -> Chartres -> Le Mans -> Caen -> Cherbourg
     const franceDemoWaypoints = [
@@ -605,19 +607,56 @@
     document.addEventListener('DOMContentLoaded', function () {
         renderWaypointsList();
 
-        // Initialize Map with Global Worldwide View
+        // Initialize Map with Global Worldwide View, deep zoom (level 20) & smooth horizontal dragging
         map = L.map('googleDirectionsMap', {
-            zoomControl: true,
+            zoomControl: false, // Added explicitly at bottomleft so it is never obstructed by top overlays
             minZoom: 1,
-            maxZoom: 18,
-            worldCopyJump: true
+            maxZoom: 20,
+            scrollWheelZoom: true,
+            doubleClickZoom: true,
+            touchZoom: true,
+            boxZoom: true,
+            keyboard: true,
+            dragging: true,
+            inertia: true,
+            inertiaDeceleration: 3000,
+            worldCopyJump: false // Continuous smooth horizontal panning sideways without rubber-banding
         }).setView([20.0, 0.0], 2);
 
-        // OpenStreetMap Standard Tiles (Fast, Universally Available Worldwide)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Base Layer 1: OpenStreetMap Detailed (Streets, villages, ports, and remote settlements)
+        const osmDetailed = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 19
-        }).addTo(map);
+            maxNativeZoom: 19,
+            maxZoom: 20
+        });
+
+        // Base Layer 2: High-Resolution Satellite & Aerial (Esri) - for viewing remote islands, coastlines, and terrain
+        const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
+            maxNativeZoom: 19,
+            maxZoom: 20
+        });
+
+        // Base Layer 3: Topographic Contours (OpenTopoMap)
+        const topoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
+            maxNativeZoom: 17,
+            maxZoom: 20
+        });
+
+        // Default to Detailed OSM
+        osmDetailed.addTo(map);
+
+        // Layer Switcher Control (topright)
+        const baseLayers = {
+            "🗺️ Detail Jalan & Wilayah": osmDetailed,
+            "🛰️ Satelit & Wilayah Terpencil": esriSatellite,
+            "⛰️ Kontur & Topografi": topoMap
+        };
+        L.control.layers(baseLayers, null, { position: 'topright' }).addTo(map);
+
+        // Zoom Control (bottomleft) - fully visible and accessible
+        L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
         plotRouteOnMap();
 
@@ -861,9 +900,80 @@
         }
     }
 
+    let searchMarker = null;
+
+    async function searchRemoteLocation(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const queryInput = document.getElementById('routeSearchInput');
+        const query = queryInput ? queryInput.value.trim() : '';
+        if (!query) return;
+
+        showToast(`Mencari "${query}" di peta dunia...`);
+
+        // 1. Check local hub locations first
+        if (typeof locationsData !== 'undefined' && Array.isArray(locationsData)) {
+            const matchLoc = locationsData.find(l => 
+                (l.name && l.name.toLowerCase().includes(query.toLowerCase())) ||
+                (l.city && l.city.toLowerCase().includes(query.toLowerCase())) ||
+                (l.country && l.country.toLowerCase().includes(query.toLowerCase())) ||
+                (l.code && l.code.toLowerCase().includes(query.toLowerCase()))
+            );
+
+            if (matchLoc && isValidCoord(matchLoc.latitude, matchLoc.longitude)) {
+                const lat = parseFloat(matchLoc.latitude);
+                const lng = parseFloat(matchLoc.longitude);
+                if (searchMarker) map.removeLayer(searchMarker);
+                searchMarker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        className: 'search-location-pin',
+                        html: `<div class="relative -top-7 -left-3.5"><span class="flex h-7 w-7"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-7 w-7 bg-blue-600 items-center justify-center text-white text-xs font-bold shadow-lg">📍</span></span></div>`,
+                        iconSize: [28, 28]
+                    })
+                }).addTo(map);
+                searchMarker.bindPopup(`<strong>${escapeHtml(matchLoc.name)}</strong><br>${escapeHtml(matchLoc.city)}, ${escapeHtml(matchLoc.country)}<br><span class="text-[10px] text-slate-500 font-mono">${lat.toFixed(4)}, ${lng.toFixed(4)}</span>`).openPopup();
+                map.flyTo([lat, lng], 13, { duration: 1.5 });
+                showToast(`Wilayah ditemukan: ${matchLoc.city}, ${matchLoc.country}`);
+                return;
+            }
+        }
+
+        // 2. Global OpenStreetMap Nominatim Geocoding for any remote region, village, island
+        try {
+            const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`, {
+                headers: { 'Accept': 'application/json' }
+            });
+            if (resp.ok) {
+                const results = await resp.json();
+                if (results && results.length > 0) {
+                    const item = results[0];
+                    const lat = parseFloat(item.lat);
+                    const lon = parseFloat(item.lon);
+                    if (isValidCoord(lat, lon)) {
+                        if (searchMarker) map.removeLayer(searchMarker);
+                        searchMarker = L.marker([lat, lon], {
+                            icon: L.divIcon({
+                                className: 'search-location-pin',
+                                html: `<div class="relative -top-7 -left-3.5"><span class="flex h-7 w-7"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-7 w-7 bg-blue-600 items-center justify-center text-white text-xs font-bold shadow-lg">📍</span></span></div>`,
+                                iconSize: [28, 28]
+                            })
+                        }).addTo(map);
+                        const displayName = item.display_name || query;
+                        const shortName = displayName.split(',')[0];
+                        searchMarker.bindPopup(`<strong>${escapeHtml(shortName)}</strong><br><span class="text-xs text-slate-600">${escapeHtml(displayName)}</span><br><span class="text-[10px] text-slate-500 font-mono">${lat.toFixed(4)}, ${lon.toFixed(4)}</span>`).openPopup();
+                        map.flyTo([lat, lon], 14, { duration: 1.5 });
+                        showToast(`Wilayah ditemukan: ${shortName}`);
+                        return;
+                    }
+                }
+            }
+            showToast(`Wilayah "${query}" tidak ditemukan.`);
+        } catch (err) {
+            showToast(`Pencarian wilayah selesai.`);
+        }
+    }
+
     function filterRoutePois(val) {
         if (!val) return;
-        showToast(`Searching "${val}" along transit path...`);
     }
 
     // -------------------------------------------------------------

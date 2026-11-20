@@ -258,12 +258,18 @@
         const map = L.map('worldLocationsMap', {
             zoomControl: true,
             minZoom: 1,
-            maxZoom: 18,
-            worldCopyJump: true
+            maxZoom: 20,
+            scrollWheelZoom: true,
+            doubleClickZoom: true,
+            touchZoom: true,
+            dragging: true,
+            worldCopyJump: false
         }).setView([20.0, 0.0], 2);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
+            attribution: '&copy; OpenStreetMap',
+            maxNativeZoom: 19,
+            maxZoom: 20
         }).addTo(map);
 
         function escapeHtml(str) {

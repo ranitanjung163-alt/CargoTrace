@@ -570,14 +570,19 @@
         const map = L.map('shipmentMap', {
             zoomControl: true,
             minZoom: 1,
-            maxZoom: 18,
-            worldCopyJump: true
+            maxZoom: 20,
+            scrollWheelZoom: true,
+            doubleClickZoom: true,
+            touchZoom: true,
+            dragging: true,
+            worldCopyJump: false
         }).setView([originLat, originLng], 4);
 
-        // OpenStreetMap Standard Tiles (Fast & 100% Guaranteed Available)
+        // OpenStreetMap Standard Tiles (Fast & 100% Guaranteed Available, deep zoom)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 19
+            maxNativeZoom: 19,
+            maxZoom: 20
         }).addTo(map);
 
         const routePoints = [];
