@@ -268,6 +268,59 @@
             <!-- Leaflet Map Container with Smooth 4-Way Panning (Drag Ke Kiri, Kanan, Atas, Bawah) -->
             <div id="googleDirectionsMap" class="w-full h-full relative z-10 select-none" style="background-color: #f8fafc !important;"></div>
 
+            <!-- Floating Transport Mode & Route Legend (Keterangan Warna Moda Transportasi) -->
+            <div id="transportLegendCard" class="absolute top-16 left-4 z-[400] bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-slate-200/90 p-3 select-none max-w-xs transition-all duration-200 pointer-events-auto">
+                <div class="flex items-center justify-between pb-1.5 border-b border-slate-100 mb-2">
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
+                        <span class="text-xs font-black text-slate-900 tracking-tight">Keterangan Moda &amp; Warna Rute</span>
+                    </div>
+                    <button type="button" onclick="toggleTransportLegend()" class="text-slate-400 hover:text-slate-700 text-xs px-1 font-bold" title="Minimize / Expand">&minus;</button>
+                </div>
+                <div id="legendContent" class="space-y-1.5 text-xs">
+                    <div class="flex items-center justify-between py-0.5">
+                        <span class="flex items-center space-x-1.5 font-bold text-slate-800 text-[11px]">
+                            <span>✈️</span>
+                            <span>Pesawat (Air)</span>
+                        </span>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-9 h-1 rounded-full bg-blue-600 inline-block shadow-2xs"></span>
+                            <span class="text-[10px] font-bold text-blue-700">Biru Solid</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between py-0.5">
+                        <span class="flex items-center space-x-1.5 font-bold text-slate-800 text-[11px]">
+                            <span>🚢</span>
+                            <span>Kapal Laut (Ocean)</span>
+                        </span>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-9 h-0 border-t-2 border-dashed border-emerald-500 inline-block"></span>
+                            <span class="text-[10px] font-bold text-emerald-700">Hijau Putus</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between py-0.5">
+                        <span class="flex items-center space-x-1.5 font-bold text-slate-800 text-[11px]">
+                            <span>🚚</span>
+                            <span>Truk / Darat (Road)</span>
+                        </span>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-9 h-1 rounded-full bg-amber-500 inline-block shadow-2xs"></span>
+                            <span class="text-[10px] font-bold text-amber-700">Oranye Solid</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between py-0.5">
+                        <span class="flex items-center space-x-1.5 font-bold text-slate-800 text-[11px]">
+                            <span>🚆</span>
+                            <span>Kereta Api (Rail)</span>
+                        </span>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-9 h-0 border-t-2 border-dotted border-purple-500 inline-block"></span>
+                            <span class="text-[10px] font-bold text-purple-700">Ungu Putus</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Floating 4-Way Directional Pan Controller & Zoom Dock (Geser Peta ke Kiri, Kanan, Atas, Bawah) -->
             <div class="absolute bottom-4 left-4 z-[400] flex flex-col items-center gap-2 pointer-events-auto">
                 <!-- 4-Way Directional Pan Compass D-Pad -->
@@ -562,6 +615,83 @@
     }
 
     // -------------------------------------------------------------
+    // MULTIMODAL TRANSPORT MODES CONFIGURATION & LEGEND ENGINE
+    // -------------------------------------------------------------
+    const TRANSPORT_MODES = {
+        AIR: {
+            key: 'AIR',
+            label: 'Pesawat (Air Freight)',
+            color: '#2563EB',      // Blue Solid
+            casingColor: '#1E3A8A',
+            dashArray: null,       // Solid
+            weight: 5.5,
+            icon: '✈️',
+            description: 'Penerbangan Kargo Udara Lintas Negara'
+        },
+        SEA: {
+            key: 'SEA',
+            label: 'Kapal Laut (Ocean Cargo)',
+            color: '#10B981',      // Emerald Green Dashed
+            casingColor: '#064E3B',
+            dashArray: '8, 8',     // Dashed / Putus-putus
+            weight: 5,
+            icon: '🚢',
+            description: 'Pelayaran Kontainer Samudra'
+        },
+        ROAD: {
+            key: 'ROAD',
+            label: 'Truk / Darat (Road Transport)',
+            color: '#F59E0B',      // Amber Solid
+            casingColor: '#78350F',
+            dashArray: null,       // Solid
+            weight: 5,
+            icon: '🚚',
+            description: 'Jalur Distribusi Darat & Intermodal'
+        },
+        RAIL: {
+            key: 'RAIL',
+            label: 'Kereta Api (Rail Freight)',
+            color: '#8B5CF6',      // Purple Dotted
+            casingColor: '#4C1D95',
+            dashArray: '4, 6',     // Dotted / Putus-putus
+            weight: 5,
+            icon: '🚆',
+            description: 'Koridor Kereta Api Kargo'
+        }
+    };
+
+    const MODE_SEQUENCE = [TRANSPORT_MODES.AIR, TRANSPORT_MODES.SEA, TRANSPORT_MODES.ROAD, TRANSPORT_MODES.RAIL];
+
+    function getSegmentTransportMode(wp1, wp2, index) {
+        const text = ((wp1?.name || '') + ' ' + (wp1?.event || '') + ' ' + (wp1?.label || '') + ' ' + (wp1?.type || '') + ' ' +
+                      (wp2?.name || '') + ' ' + (wp2?.event || '') + ' ' + (wp2?.label || '') + ' ' + (wp2?.type || '')).toLowerCase();
+
+        if (/pesawat|flight|air|airport|bandara|udara|aviation/.test(text)) {
+            return TRANSPORT_MODES.AIR;
+        }
+        if (/kapal|ship|vessel|ocean|port|pelabuhan|maritime|sea|laut|dock|harbor/.test(text)) {
+            return TRANSPORT_MODES.SEA;
+        }
+        if (/kereta|train|rail|railway|stasiun|station/.test(text)) {
+            return TRANSPORT_MODES.RAIL;
+        }
+        if (/truk|truck|road|darat|highway|tol|inland|van|courier|delivery/.test(text)) {
+            return TRANSPORT_MODES.ROAD;
+        }
+
+        // Sequential multimodal progression explicitly requested:
+        // Leg 0 = Pesawat (Biru Solid), Leg 1 = Kapal (Hijau Putus), Leg 2 = Truk (Oranye), Leg 3 = Kereta (Ungu)
+        return MODE_SEQUENCE[index % MODE_SEQUENCE.length];
+    }
+
+    window.toggleTransportLegend = function() {
+        const content = document.getElementById('legendContent');
+        if (content) {
+            content.classList.toggle('hidden');
+        }
+    };
+
+    // -------------------------------------------------------------
     // DATA INITIALIZATION: Loaded from Shipment DB or France Reference Demo
     // -------------------------------------------------------------
     const isDemoFrance = {{ request('shipment_number') === 'DEMO-FR-NORMANDY' ? 'true' : 'false' }};
@@ -659,9 +789,7 @@
                 // White circle with dark gray border
                 iconHtml = `
                     <div class="w-6 flex items-center justify-center shrink-0 relative">
-                        <div class="w-3.5 h-3.5 rounded-full border-2 border-slate-700 bg-white"></div>
-                        <!-- Vertical connecting line -->
-                        <div class="absolute top-4 w-0.5 h-7 border-l-2 border-dotted border-slate-400 -z-0"></div>
+                        <div class="w-3.5 h-3.5 rounded-full border-2 border-slate-700 bg-white shadow-2xs"></div>
                     </div>
                 `;
             }
@@ -674,6 +802,26 @@
                 </div>
             `;
             container.appendChild(row);
+
+            // Multimodal Leg Connector & Indicator
+            if (!isLast) {
+                const nextWp = activeWaypoints[index + 1];
+                const mode = getSegmentTransportMode(wp, nextWp, index);
+
+                const legBadge = document.createElement('div');
+                legBadge.className = 'flex items-center space-x-3 my-1 pl-1';
+                legBadge.innerHTML = `
+                    <div class="w-6 flex justify-center">
+                        <div class="w-0.5 h-6" style="border-left: 2.5px ${mode.dashArray ? 'dashed' : 'solid'} ${mode.color};"></div>
+                    </div>
+                    <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold" style="background-color: ${mode.color}15; color: ${mode.color}; border: 1px solid ${mode.color}35;">
+                        <span>${mode.icon}</span>
+                        <span>Leg ${index + 1}: ${mode.label}</span>
+                        <span class="text-[9px] opacity-80 font-medium">(${mode.dashArray ? 'Garis Putus-putus' : 'Garis Solid'})</span>
+                    </div>
+                `;
+                container.appendChild(legBadge);
+            }
         });
     }
 
@@ -948,22 +1096,33 @@
 
         const latLngs = validWaypoints.map(wp => [wp.lat, wp.lng]);
 
-        // 1. Plot the Google Maps Blue Route Line (with dark casing and antimeridian handling)
-        drawRouteSegments(map, latLngs, {
-            color: '#1557b0',
-            weight: 8,
-            opacity: 0.4,
-            lineCap: 'round',
-            lineJoin: 'round'
-        });
+        // 1. Plot the Multimodal Route Segments (Pesawat: Biru Solid, Kapal: Hijau Putus, Truk: Oranye, Kereta: Ungu)
+        for (let i = 0; i < latLngs.length - 1; i++) {
+            const pFrom = latLngs[i];
+            const pTo = latLngs[i + 1];
+            const wpFrom = validWaypoints[i];
+            const wpTo = validWaypoints[i + 1];
+            const mode = getSegmentTransportMode(wpFrom, wpTo, i);
 
-        drawRouteSegments(map, latLngs, {
-            color: '#1a73e8',
-            weight: 5.5,
-            opacity: 0.95,
-            lineCap: 'round',
-            lineJoin: 'round'
-        });
+            // High-contrast casing
+            drawRouteSegments(map, [pFrom, pTo], {
+                color: mode.casingColor,
+                weight: mode.weight + 3,
+                opacity: 0.35,
+                lineCap: 'round',
+                lineJoin: 'round'
+            });
+
+            // Foreground transport leg polyline
+            drawRouteSegments(map, [pFrom, pTo], {
+                color: mode.color,
+                weight: mode.weight,
+                opacity: 0.95,
+                dashArray: mode.dashArray,
+                lineCap: 'round',
+                lineJoin: 'round'
+            });
+        }
 
         // 2. Add Waypoint Nodes
         validWaypoints.forEach((wp, i) => {

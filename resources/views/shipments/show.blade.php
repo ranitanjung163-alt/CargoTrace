@@ -202,6 +202,32 @@
                     </div>
                     <span class="text-[11px] font-mono text-slate-400">WGS84 Worldwide</span>
                 </div>
+
+                <!-- Multimodal Transport Mode Legend (Keterangan Warna Moda Transportasi) -->
+                <div class="mt-2.5 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div class="flex items-center space-x-1.5 text-[11px] font-extrabold text-slate-700">
+                        <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+                        <span>Keterangan Moda Rute:</span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3 text-[11px] font-semibold text-slate-600">
+                        <span class="flex items-center space-x-1.5">
+                            <span class="w-6 h-1 rounded-full bg-blue-600 inline-block shadow-2xs"></span>
+                            <span>✈️ Pesawat (Biru Solid)</span>
+                        </span>
+                        <span class="flex items-center space-x-1.5">
+                            <span class="w-6 h-0 border-t-2 border-dashed border-emerald-500 inline-block"></span>
+                            <span>🚢 Kapal Laut (Hijau Putus)</span>
+                        </span>
+                        <span class="flex items-center space-x-1.5">
+                            <span class="w-6 h-1 rounded-full bg-amber-500 inline-block shadow-2xs"></span>
+                            <span>🚚 Truk / Darat (Oranye)</span>
+                        </span>
+                        <span class="flex items-center space-x-1.5">
+                            <span class="w-6 h-0 border-t-2 border-dotted border-purple-500 inline-block"></span>
+                            <span>🚆 Kereta Api (Ungu Putus)</span>
+                        </span>
+                    </div>
+                </div>
             </div>
 
             <!-- Overview Specs Card -->
@@ -590,6 +616,24 @@
             }
         }
 
+        // Multimodal Transport Modes Configuration
+        const TRANSPORT_MODES = {
+            AIR: { key: 'AIR', label: 'Pesawat (Air Freight)', color: '#2563EB', casingColor: '#1E3A8A', dashArray: null, weight: 5, icon: '✈️' },
+            SEA: { key: 'SEA', label: 'Kapal Laut (Ocean Cargo)', color: '#10B981', casingColor: '#064E3B', dashArray: '8, 8', weight: 5, icon: '🚢' },
+            ROAD: { key: 'ROAD', label: 'Truk / Darat (Road)', color: '#F59E0B', casingColor: '#78350F', dashArray: null, weight: 5, icon: '🚚' },
+            RAIL: { key: 'RAIL', label: 'Kereta Api (Rail)', color: '#8B5CF6', casingColor: '#4C1D95', dashArray: '4, 6', weight: 5, icon: '🚆' }
+        };
+        const MODE_SEQUENCE = [TRANSPORT_MODES.AIR, TRANSPORT_MODES.SEA, TRANSPORT_MODES.ROAD, TRANSPORT_MODES.RAIL];
+
+        function getSegmentTransportMode(desc1, desc2, index) {
+            const text = ((desc1 || '') + ' ' + (desc2 || '')).toLowerCase();
+            if (/pesawat|flight|air|airport|bandara|udara|aviation/.test(text)) return TRANSPORT_MODES.AIR;
+            if (/kapal|ship|vessel|ocean|port|pelabuhan|maritime|sea|laut|dock/.test(text)) return TRANSPORT_MODES.SEA;
+            if (/kereta|train|rail|railway|stasiun|station/.test(text)) return TRANSPORT_MODES.RAIL;
+            if (/truk|truck|road|darat|highway|tol|inland|van|delivery/.test(text)) return TRANSPORT_MODES.ROAD;
+            return MODE_SEQUENCE[index % MODE_SEQUENCE.length];
+        }
+
         const originLat = parseFloat("{{ $shipment->origin->latitude }}");
         const originLng = parseFloat("{{ $shipment->origin->longitude }}");
         const destLat = parseFloat("{{ $shipment->destination->latitude }}");
@@ -810,23 +854,33 @@
             L.marker([destLat, destLng], { icon: destPin }).addTo(map).bindPopup(`<strong>Destination:</strong> ${escapeHtml("{{ $shipment->destination->name }}")}<br>${escapeHtml("{{ $shipment->destination->city }}")}, ${escapeHtml("{{ $shipment->destination->country }}")}`);
         }
 
-        // Polyline Route with casing and antimeridian handling
-        drawRouteSegments(map, routePoints, {
-            color: '#1557b0',
-            weight: 7,
-            opacity: 0.35,
-            lineCap: 'round',
-            lineJoin: 'round'
-        });
+        // Multimodal Route Segments with Mode-specific Colors & Casing
+        for (let i = 0; i < routePoints.length - 1; i++) {
+            const pFrom = routePoints[i];
+            const pTo = routePoints[i + 1];
+            const pFromDesc = (i === 0 ? '{{ $shipment->origin->name }} {{ $shipment->origin->type }}' : (eventsData[i - 1]?.location_name || ''));
+            const pToDesc = (i === routePoints.length - 2 ? '{{ $shipment->destination->name }} {{ $shipment->destination->type }}' : (eventsData[i]?.location_name || ''));
+            const mode = getSegmentTransportMode(pFromDesc, pToDesc, i);
 
-        drawRouteSegments(map, routePoints, {
-            color: '{{ $shipment->is_delayed ? "#DC6262" : "#1a73e8" }}',
-            weight: 5,
-            opacity: 0.95,
-            dashArray: '{{ $shipment->is_delayed ? "6, 6" : "" }}',
-            lineCap: 'round',
-            lineJoin: 'round'
-        });
+            // Contrast casing
+            drawRouteSegments(map, [pFrom, pTo], {
+                color: mode.casingColor,
+                weight: mode.weight + 2.5,
+                opacity: 0.35,
+                lineCap: 'round',
+                lineJoin: 'round'
+            });
+
+            // Mode-specific route polyline
+            drawRouteSegments(map, [pFrom, pTo], {
+                color: '{{ $shipment->is_delayed ? "#DC2626" : "" }}' || mode.color,
+                weight: mode.weight,
+                opacity: 0.95,
+                dashArray: '{{ $shipment->is_delayed ? "6, 6" : "" }}' || mode.dashArray,
+                lineCap: 'round',
+                lineJoin: 'round'
+            });
+        }
 
         // Add Floating ETA Bubble
         if (routePoints.length >= 2) {

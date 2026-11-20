@@ -313,6 +313,15 @@
                 </div>
                 <span class="font-bold text-slate-900">Interactive Zoom</span>
             </div>
+
+            <!-- Multimodal Route Legend -->
+            <div class="mt-2 pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-1.5 text-[10px] text-slate-600">
+                <span class="font-extrabold text-slate-700 flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1"></span>Moda:</span>
+                <span class="flex items-center space-x-1"><span class="w-3.5 h-1 rounded-full bg-blue-600 inline-block"></span><span>✈️ Udara</span></span>
+                <span class="flex items-center space-x-1"><span class="w-3.5 h-0 border-t-2 border-dashed border-emerald-500 inline-block"></span><span>🚢 Laut</span></span>
+                <span class="flex items-center space-x-1"><span class="w-3.5 h-1 rounded-full bg-amber-500 inline-block"></span><span>🚚 Darat</span></span>
+                <span class="flex items-center space-x-1"><span class="w-3.5 h-0 border-t-2 border-dotted border-purple-500 inline-block"></span><span>🚆 Rel</span></span>
+            </div>
         </div>
     </div>
 
@@ -975,6 +984,24 @@
         const bounds = [];
         dashboardBounds = bounds;
 
+        // Multimodal transport mode configuration for fleet overview
+        const TRANSPORT_MODES = {
+            AIR: { key: 'AIR', label: 'Pesawat', color: '#2563EB', dashArray: null },
+            SEA: { key: 'SEA', label: 'Kapal', color: '#10B981', dashArray: '6, 6' },
+            ROAD: { key: 'ROAD', label: 'Truk', color: '#F59E0B', dashArray: null },
+            RAIL: { key: 'RAIL', label: 'Kereta', color: '#8B5CF6', dashArray: '4, 4' }
+        };
+        const MODE_SEQUENCE = [TRANSPORT_MODES.AIR, TRANSPORT_MODES.SEA, TRANSPORT_MODES.ROAD, TRANSPORT_MODES.RAIL];
+
+        function getSegmentTransportMode(desc1, desc2, index) {
+            const text = ((desc1 || '') + ' ' + (desc2 || '')).toLowerCase();
+            if (/pesawat|flight|air|airport|bandara|udara/.test(text)) return TRANSPORT_MODES.AIR;
+            if (/kapal|ship|vessel|ocean|port|pelabuhan|maritime|sea/.test(text)) return TRANSPORT_MODES.SEA;
+            if (/kereta|train|rail|railway|stasiun/.test(text)) return TRANSPORT_MODES.RAIL;
+            if (/truk|truck|road|darat|highway|tol/.test(text)) return TRANSPORT_MODES.ROAD;
+            return MODE_SEQUENCE[index % MODE_SEQUENCE.length];
+        }
+
         mapShipments.forEach(s => {
             const originLat = s.origin.lat;
             const originLng = s.origin.lng;
@@ -1060,14 +1087,18 @@
                 `);
             }
 
-            // Route Polyline with antimeridian handling and interactive: false
-            drawRouteSegments(map, routePoints, {
-                color: s.is_delayed ? '#EF4444' : '#38BDF8',
-                weight: 3,
-                opacity: 0.9,
-                dashArray: s.is_delayed ? '6, 6' : null,
-                interactive: false
-            });
+            // Multimodal Route Segments with antimeridian handling and interactive: false
+            for (let i = 0; i < routePoints.length - 1; i++) {
+                const leg = [routePoints[i], routePoints[i + 1]];
+                const mode = getSegmentTransportMode(s.origin?.name || '', s.destination?.name || '', i);
+                drawRouteSegments(map, leg, {
+                    color: s.is_delayed ? '#EF4444' : mode.color,
+                    weight: 3.5,
+                    opacity: 0.9,
+                    dashArray: s.is_delayed ? '6, 6' : mode.dashArray,
+                    interactive: false
+                });
+            }
         });
 
         if (bounds.length > 0) {

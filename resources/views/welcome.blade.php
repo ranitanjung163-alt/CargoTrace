@@ -737,14 +737,22 @@
 
                     <!-- Overlay Legend & Controls -->
                     <div class="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-md px-4 py-3 rounded-2xl border border-slate-200 shadow-soft-xs text-xs font-bold text-slate-900 pointer-events-auto">
-                        <div class="flex items-center space-x-4">
+                        <div class="flex flex-wrap items-center gap-4">
                             <div class="flex items-center space-x-1.5">
                                 <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-                                <span>International Gateway Hub</span>
+                                <span>Hub Logistik Dunia</span>
                             </div>
                             <div class="flex items-center space-x-1.5">
-                                <span class="w-4 h-0.5 border-t-2 border-dashed border-blue-500"></span>
-                                <span>Maritime Corridor</span>
+                                <span class="w-5 h-1 rounded-full bg-blue-600 inline-block shadow-2xs"></span>
+                                <span>✈️ Rute Pesawat (Biru Solid)</span>
+                            </div>
+                            <div class="flex items-center space-x-1.5">
+                                <span class="w-5 h-0 border-t-2 border-dashed border-emerald-500 inline-block"></span>
+                                <span>🚢 Koridor Kapal Laut (Hijau Putus)</span>
+                            </div>
+                            <div class="flex items-center space-x-1.5">
+                                <span class="w-5 h-1 rounded-full bg-amber-500 inline-block shadow-2xs"></span>
+                                <span>🚚 Rute Darat / Intermodal</span>
                             </div>
                         </div>
                     </div>
@@ -1295,31 +1303,57 @@
                 });
             });
 
-            // Maritime Trade Corridors (Luminous Sky Blue with interactive: false so dragging passes through seamlessly)
-            const corridors = [
-                // Asia-Europe (Tokyo -> Singapore -> Dubai -> Rotterdam)
-                [[35.6762, 139.6503], [1.3521, 103.8198]],
-                [[1.3521, 103.8198], [25.2048, 55.2708]],
-                [[25.2048, 55.2708], [51.9244, 4.4777]],
-                // Trans-Atlantic (Rotterdam -> Santos)
-                [[51.9244, 4.4777], [-23.9608, -46.3336]],
-                // Americas Intermodal (Santos -> Los Angeles)
-                [[-23.9608, -46.3336], [34.0522, -118.2437]],
-                // Indo-Pacific (Singapore -> Jakarta -> Sydney)
-                [[1.3521, 103.8198], [-6.2088, 106.8456]],
-                [[-6.2088, 106.8456], [-33.8688, 151.2093]]
+            // Multimodal Trade Corridors: Pesawat (Biru Solid), Kapal Laut (Hijau Putus), Truk/Intermodal (Oranye Solid)
+            const multimodalCorridors = [
+                // Kapal Laut (Maritime Corridors: Asia-Europe & Indo-Pacific)
+                {
+                    mode: 'SEA',
+                    color: '#10B981',
+                    dashArray: '8, 8',
+                    weight: 3,
+                    points: [
+                        [[35.6762, 139.6503], [1.3521, 103.8198]],
+                        [[1.3521, 103.8198], [25.2048, 55.2708]],
+                        [[25.2048, 55.2708], [51.9244, 4.4777]],
+                        [[1.3521, 103.8198], [-6.2088, 106.8456]],
+                        [[-6.2088, 106.8456], [-33.8688, 151.2093]]
+                    ]
+                },
+                // Pesawat (Air Freight Links: Trans-Atlantic & Trans-Pacific)
+                {
+                    mode: 'AIR',
+                    color: '#2563EB',
+                    dashArray: null,
+                    weight: 3.5,
+                    points: [
+                        [[51.9244, 4.4777], [-23.9608, -46.3336]],
+                        [[34.0522, -118.2437], [35.6762, 139.6503]]
+                    ]
+                },
+                // Truk / Darat (Americas Intermodal Highway)
+                {
+                    mode: 'ROAD',
+                    color: '#F59E0B',
+                    dashArray: null,
+                    weight: 3,
+                    points: [
+                        [[-23.9608, -46.3336], [34.0522, -118.2437]]
+                    ]
+                }
             ];
 
             worldOffsets.forEach(offset => {
-                corridors.forEach(corridor => {
-                    const shiftedCorridor = corridor.map(pt => [pt[0], pt[1] + offset]);
-                    L.polyline(shiftedCorridor, {
-                        color: '#38BDF8',
-                        weight: 2.5,
-                        dashArray: '5, 8',
-                        opacity: 0.85,
-                        interactive: false // Prevents vector layer from blocking map dragging
-                    }).addTo(coverageMap);
+                multimodalCorridors.forEach(group => {
+                    group.points.forEach(segment => {
+                        const shiftedSegment = segment.map(pt => [pt[0], pt[1] + offset]);
+                        L.polyline(shiftedSegment, {
+                            color: group.color,
+                            weight: group.weight,
+                            dashArray: group.dashArray,
+                            opacity: 0.9,
+                            interactive: false
+                        }).addTo(coverageMap);
+                    });
                 });
             });
 
