@@ -97,6 +97,7 @@
             animation: radar-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
         }
     </style>
+    @stack('styles')
 </head>
 <body class="bg-[#F8FAFC] min-h-screen flex flex-col antialiased selection:bg-brand-primary selection:text-white">
 

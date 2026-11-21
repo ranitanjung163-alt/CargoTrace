@@ -1,6 +1,64 @@
 @extends('layouts.app', ['title' => 'Locations & Geocoding'])
 
 @section('content')
+<style>
+/* Authentic Google Maps Place Popup */
+.google-maps-place-popup .leaflet-popup-content-wrapper {
+    padding: 0 !important;
+    border-radius: 1rem !important;
+    overflow: hidden !important;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25), 0 8px 10px -6px rgba(0,0,0,0.15) !important;
+    border: 1px solid rgba(226, 232, 240, 0.95) !important;
+    background: #ffffff !important;
+}
+.google-maps-place-popup .leaflet-popup-content {
+    margin: 0 !important;
+    line-height: normal !important;
+}
+.google-maps-place-popup .leaflet-popup-tip-container {
+    margin-top: -1px;
+}
+.google-maps-place-popup .leaflet-popup-tip {
+    background: #ffffff !important;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1) !important;
+}
+.google-maps-place-popup .leaflet-popup-close-button {
+    color: #ffffff !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-radius: 9999px !important;
+    width: 22px !important;
+    height: 22px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    top: 8px !important;
+    right: 8px !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    z-index: 20 !important;
+    padding: 0 !important;
+    transition: background 0.2s ease;
+}
+.google-maps-place-popup .leaflet-popup-close-button:hover {
+    background: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Custom Google Maps Pins */
+.custom-hub-pin, .custom-country-pin {
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Hide scrollbar for horizontal chips */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+</style>
+
 <div class="space-y-6">
 
     <!-- Header & Action -->
@@ -33,7 +91,7 @@
                 </div>
                 <div>
                     <h3 class="text-sm font-extrabold text-brand-navy">International Geocoding Service (OpenStreetMap Nominatim API)</h3>
-                    <p class="text-xs text-brand-secondary">Query any global port, airport, or city to resolve exact GPS coordinates with 30-day caching & fail-safe fallbacks</p>
+                    <p class="text-xs text-brand-secondary">Query any global port, airport, country, or city to resolve exact GPS coordinates with 30-day caching & fail-safe fallbacks</p>
                 </div>
             </div>
             <span class="text-[10px] font-extrabold uppercase bg-white border border-blue-200 text-brand-primary px-3 py-1 rounded-full shadow-xs self-start sm:self-auto">
@@ -46,7 +104,7 @@
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
-                <input type="text" id="geocodeInput" placeholder="e.g. Hamburg Port, Tokyo Narita Airport, Port of Durban, Santos Brazil, Dubai Jebel Ali..."
+                <input type="text" id="geocodeInput" placeholder="e.g. Islamabad Pakistan, Hamburg Port, Tokyo Narita Airport, Port of Durban, Santos Brazil, Dubai Jebel Ali..."
                        class="w-full pl-10 pr-4 py-2.5 bg-white border border-blue-200 rounded-xl text-xs font-semibold text-brand-navy focus:outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 shadow-xs">
             </div>
             <button type="button" onclick="searchGeocode()" id="geocodeBtn"
@@ -72,18 +130,118 @@
         </div>
     </div>
 
-    <!-- Worldwide Interactive Map (All Hubs) -->
+    <!-- Worldwide Interactive Map (All Hubs & Global Explorer) -->
     <div class="bg-white p-6 rounded-2xl border border-brand-border shadow-soft-sm space-y-3">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-                <h3 class="text-sm font-extrabold text-brand-navy">Global Network Coverage Map</h3>
-                <p class="text-xs text-brand-secondary">Live spatial distribution of international logistics nodes</p>
+                <h3 class="text-sm font-extrabold text-brand-navy flex items-center gap-2">
+                    <span>Global Network Coverage Map</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">1 Dunia Lengkap</span>
+                </h3>
+                <p class="text-xs text-brand-secondary">Jelajahi negara dan simpul logistik internasional seluruh dunia tanpa batas pengulangan peta</p>
             </div>
-            <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">{{ count($mapLocations) }} Hubs</span>
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">{{ count($mapLocations) }} Hubs</span>
+                <span class="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">195+ Negara Tersedia</span>
+            </div>
         </div>
+
+        <!-- Quick Country Explorer Bar (Pilihan Cepat Negara 1 Dunia untuk Dosen & Penguji) -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar select-none pt-1">
+            <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                Jelajahi Negara:
+            </span>
+            <button type="button" onclick="exploreCountryByName('pakistan')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇵🇰 <span>Pakistan (Islamabad)</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('indonesia')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇮🇩 <span>Indonesia</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('jerman')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇩🇪 <span>Jerman</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('jepang')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇯🇵 <span>Jepang</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('amerika serikat')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇺🇸 <span>Amerika Serikat</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('arab saudi')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇸🇦 <span>Arab Saudi</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('tiongkok')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇨🇳 <span>Tiongkok</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('belanda')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇳🇱 <span>Belanda</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('uni emirat arab')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇦🇪 <span>UAE</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('australia')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇦🇺 <span>Australia</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('inggris')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇬🇧 <span>Inggris</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('brasil')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇧🇷 <span>Brasil</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('afrika selatan')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇿🇦 <span>Afrika Selatan</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('india')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇮🇳 <span>India</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('prancis')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇫🇷 <span>Prancis</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('korea selatan')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇰🇷 <span>Korsel</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('turki')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇹🇷 <span>Turki</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('mesir')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇪🇬 <span>Mesir</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('kanada')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇨🇦 <span>Kanada</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('singapura')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇸🇬 <span>Singapura</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('italia')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇮🇹 <span>Italia</span>
+            </button>
+            <button type="button" onclick="exploreCountryByName('rusia')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇷🇺 <span>Rusia</span>
+            </button>
+        </div>
+
         <div class="relative rounded-2xl overflow-hidden border border-brand-border shadow-inner bg-slate-900">
             <!-- Leaflet Interactive Canvas (Google Maps Style Height & Touch Navigation) -->
             <div id="worldLocationsMap" class="w-full h-[520px] sm:h-[580px] z-10" style="touch-action: none !important; cursor: grab; background-color: #0f172a !important;"></div>
+
+            <!-- Floating Google Maps Country & City Search Bar (Top Left) -->
+            <div class="absolute top-3 left-3 z-[460] w-72 sm:w-96 select-none" id="mapSearchContainer">
+                <div class="relative bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/90 flex items-center p-1.5 transition-all focus-within:ring-2 focus-within:ring-blue-500/30">
+                    <div class="pl-2 text-slate-400">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+                    <input type="text" id="mapSearchInput" placeholder="Cari negara / kota dunia (contoh: Pakistan, Jerman, Jepang)..."
+                           autocomplete="off"
+                           class="w-full pl-2.5 pr-2 py-1 text-xs font-semibold text-slate-800 placeholder-slate-400 bg-transparent focus:outline-none">
+                    <button type="button" id="clearMapSearchBtn" onclick="clearMapSearch()" class="hidden p-1 text-slate-400 hover:text-slate-700 text-xs font-bold mr-1">&times;</button>
+                    <button type="button" onclick="executeMapSearch()" id="mapSearchBtn" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold rounded-xl shadow-xs transition-colors shrink-0">
+                        Cari
+                    </button>
+                </div>
+                <!-- Auto-suggest Dropdown -->
+                <div id="mapSearchSuggestions" class="hidden mt-1.5 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-slate-200/90 overflow-hidden divide-y divide-slate-100 max-h-60 overflow-y-auto">
+                </div>
+            </div>
 
             <!-- Google Maps Place Detail Sidebar Drawer (Exact Match to Image 2) -->
             <div id="placeDetailDrawer" class="hidden absolute top-3 left-3 bottom-3 w-80 sm:w-96 z-[500] bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/90 overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto select-none">
@@ -232,7 +390,7 @@
                         <button type="button" onclick="map && map.zoomOut()" title="Perkecil (Zoom Out)"
                                 class="w-7 h-7 hover:bg-slate-100 text-slate-700 font-bold flex items-center justify-center rounded-lg transition-all text-sm active:scale-95">&minus;</button>
                         <div class="w-full h-px bg-slate-200"></div>
-                        <button type="button" onclick="panLocationsMap('world')" title="Kembali ke Tampilan Seluruh Dunia (World View)"
+                        <button type="button" onclick="panLocationsMap('world')" title="Kembali ke Tampilan 1 Dunia Lengkap (World View)"
                                 class="w-7 h-7 hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center rounded-lg transition-all text-xs active:scale-95">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                         </button>
@@ -436,59 +594,19 @@
 @endif
 @endsection
 
-@push('styles')
-<style>
-/* Authentic Google Maps Place Popup */
-.google-maps-place-popup .leaflet-popup-content-wrapper {
-    padding: 0 !important;
-    border-radius: 1rem !important;
-    overflow: hidden !important;
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25), 0 8px 10px -6px rgba(0,0,0,0.15) !important;
-    border: 1px solid rgba(226, 232, 240, 0.95) !important;
-    background: #ffffff !important;
-}
-.google-maps-place-popup .leaflet-popup-content {
-    margin: 0 !important;
-    line-height: normal !important;
-}
-.google-maps-place-popup .leaflet-popup-tip-container {
-    margin-top: -1px;
-}
-.google-maps-place-popup .leaflet-popup-tip {
-    background: #ffffff !important;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1) !important;
-}
-.google-maps-place-popup .leaflet-popup-close-button {
-    color: #ffffff !important;
-    background: rgba(0, 0, 0, 0.5) !important;
-    border-radius: 9999px !important;
-    width: 22px !important;
-    height: 22px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    top: 8px !important;
-    right: 8px !important;
-    font-size: 14px !important;
-    font-weight: bold !important;
-    z-index: 20 !important;
-    padding: 0 !important;
-    transition: background 0.2s ease;
-}
-.google-maps-place-popup .leaflet-popup-close-button:hover {
-    background: rgba(0, 0, 0, 0.8) !important;
-}
-
-/* Custom Google Maps Pin */
-.custom-hub-pin {
-    background: transparent !important;
-    border: none !important;
-}
-</style>
-@endpush
-
 @push('scripts')
 <script>
+    // Universal HTML Escaper (Defined at root to prevent ReferenceErrors)
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
     let lastGeocodeData = null;
     let map = null;
     let activeMarkers = {};
@@ -496,11 +614,14 @@
     let searchHighlightMarker = null;
     let currentSelectedCoords = null;
 
-    // Comprehensive Database of authentic high-res photographs & Indonesian factual descriptions
+    // Comprehensive Database of authentic high-res photographs & Indonesian factual descriptions for 1 World Explorer
     const PLACE_DATABASE = {
-        'islamabad': {
+        'pakistan': {
             city: 'Islamabad',
             country: 'Pakistan',
+            lat: 33.6844,
+            lng: 73.0479,
+            zoom: 6,
             photo: 'https://images.unsplash.com/photo-1622546758596-f1f06ba11f58?w=800&q=80',
             weather: 'Cerah • 12 °C',
             weatherIcon: '☀️',
@@ -508,39 +629,51 @@
             facts: 'Islamabad adalah ibukota Pakistan yang terletak di dalam Wilayah Ibukota Islamabad. Dengan populasi dua juta jiwa, ini adalah kota terbesar ke-10 di Pakistan dan merupakan pusat pemerintahan, diplomasi, serta koridor logistik terpadu CPEC yang menghubungkan pelabuhan selatan dengan Asia Tengah.',
             type: 'CAPITAL_LOGISTICS_HUB'
         },
-        'rotterdam': {
-            city: 'Rotterdam',
-            country: 'Netherlands',
-            photo: 'https://images.unsplash.com/photo-1517737211229-bbd45764f734?w=800&q=80',
-            weather: 'Sebagian Berawan • 11 °C',
-            weatherIcon: '⛅',
-            timeOffset: 1,
-            facts: 'Rotterdam adalah pelabuhan peti kemas terbesar di Eropa dan simpul logistik maritim dunia. Berlokasi strategis di delta sungai Rhine dan Meuse, pelabuhan ini melayani lebih dari 470 juta ton kargo per tahun menuju pusat industri Eropa Barat.',
-            type: 'PORT'
+        'islamabad': {
+            city: 'Islamabad',
+            country: 'Pakistan',
+            lat: 33.6844,
+            lng: 73.0479,
+            zoom: 9,
+            photo: 'https://images.unsplash.com/photo-1622546758596-f1f06ba11f58?w=800&q=80',
+            weather: 'Cerah • 12 °C',
+            weatherIcon: '☀️',
+            timeOffset: 5,
+            facts: 'Islamabad adalah ibukota Pakistan yang terletak di dalam Wilayah Ibukota Islamabad. Dengan populasi dua juta jiwa, ini adalah kota terbesar ke-10 di Pakistan dan merupakan pusat pemerintahan, diplomasi, serta koridor logistik terpadu CPEC yang menghubungkan pelabuhan selatan dengan Asia Tengah.',
+            type: 'CAPITAL_LOGISTICS_HUB'
         },
-        'shanghai': {
-            city: 'Shanghai',
-            country: 'China',
-            photo: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80',
-            weather: 'Cerah Berawan • 16 °C',
-            weatherIcon: '🌤️',
-            timeOffset: 8,
-            facts: 'Shanghai adalah kota metropolitan terpadat di Tiongkok dan pelabuhan kontainer tersibuk di dunia dengan kompleks Pelabuhan Air Dalam Yangshan. Menghubungkan jalur perdagangan global dengan jaringan industri Sungai Yangtze.',
-            type: 'PORT'
-        },
-        'jakarta': {
+        'indonesia': {
             city: 'Jakarta',
             country: 'Indonesia',
+            lat: -6.2088,
+            lng: 106.8456,
+            zoom: 5,
             photo: 'https://images.unsplash.com/photo-1555899434-94d1338eb352?w=800&q=80',
             weather: 'Cerah Berawan • 31 °C',
             weatherIcon: '⛅',
             timeOffset: 7,
-            facts: 'Jakarta adalah pusat perekonomian dan logistik maritim terbesar di Indonesia dengan Pelabuhan Tanjung Priok sebagai simpul utama perdagangan kargo internasional dan tol laut nusantara.',
+            facts: 'Indonesia adalah negara kepulauan terbesar di dunia dengan posisi maritim amat strategis di antara Samudra Hindia dan Pasifik. Simpul logistik utama berpusat di Pelabuhan Tanjung Priok (Jakarta) dan Tanjung Perak (Surabaya), serta tol laut nusantara.',
+            type: 'MARITIME_NATION_HUB'
+        },
+        'jakarta': {
+            city: 'Jakarta',
+            country: 'Indonesia',
+            lat: -6.2088,
+            lng: 106.8456,
+            zoom: 9,
+            photo: 'https://images.unsplash.com/photo-1555899434-94d1338eb352?w=800&q=80',
+            weather: 'Cerah Berawan • 31 °C',
+            weatherIcon: '⛅',
+            timeOffset: 7,
+            facts: 'Jakarta adalah pusat perekonomian dan logistik maritim terbesar di Indonesia dengan Pelabuhan Tanjung Priok sebagai simpul utama perdagangan kargo internasional dan distribusi logistik nasional.',
             type: 'PORT'
         },
         'surabaya': {
             city: 'Surabaya',
             country: 'Indonesia',
+            lat: -7.2575,
+            lng: 112.7521,
+            zoom: 9,
             photo: 'https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?w=800&q=80',
             weather: 'Cerah • 32 °C',
             weatherIcon: '☀️',
@@ -548,39 +681,38 @@
             facts: 'Surabaya adalah kota metropolitan terbesar kedua di Indonesia. Pelabuhan Tanjung Perak berfungsi sebagai hub maritim dan gerbang logistik utama untuk wilayah Indonesia bagian Timur.',
             type: 'PORT'
         },
-        'singapore': {
-            city: 'Singapore',
-            country: 'Singapore',
-            photo: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&q=80',
-            weather: 'Hujan Ringan • 28 °C',
-            weatherIcon: '🌦️',
-            timeOffset: 8,
-            facts: 'Singapura adalah hub transshipment tersibuk di dunia yang berlokasi strategis di Selat Malaka, menghubungkan rute pelayaran maritim antar-benua dengan efisiensi otomatisasi pelabuhan termaju di dunia.',
-            type: 'PORT'
+        'jerman': {
+            city: 'Frankfurt',
+            country: 'Jerman',
+            lat: 51.1657,
+            lng: 10.4515,
+            zoom: 6,
+            photo: 'https://images.unsplash.com/photo-1587330979470-3595ac045ab0?w=800&q=80',
+            weather: 'Berawan • 9 °C',
+            weatherIcon: '☁️',
+            timeOffset: 1,
+            facts: 'Jerman adalah kekuatan industri manufaktur dan ekonomi terbesar di Uni Eropa. Memiliki konektivitas logistik global kelas dunia lewat Pelabuhan Hamburg dan Bandara Kargo Frankfurt CargoCity.',
+            type: 'GLOBAL_LOGISTICS_HUB'
         },
-        'dubai': {
-            city: 'Dubai',
-            country: 'United Arab Emirates',
-            photo: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&q=80',
-            weather: 'Cerah • 29 °C',
-            weatherIcon: '☀️',
-            timeOffset: 4,
-            facts: 'Dubai adalah gerbang perdagangan Timur Tengah yang menaungi Pelabuhan Jebel Ali, pelabuhan buatan terbesar di dunia dan hub kargo laut-udara terintegrasi terbesar antara Asia, Afrika, dan Eropa.',
-            type: 'PORT'
-        },
-        'tokyo': {
-            city: 'Tokyo',
-            country: 'Japan',
-            photo: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80',
-            weather: 'Cerah Dingin • 14 °C',
-            weatherIcon: '🌤️',
-            timeOffset: 9,
-            facts: 'Tokyo adalah megapolitan dan pusat ekonomi terbesar Jepang. Pelabuhan Tokyo di Teluk Tokyo melayani arus kargo peti kemas untuk kawasan industri manufaktur berteknologi tinggi dan konsumsi Kanto.',
-            type: 'PORT'
+        'germany': {
+            city: 'Frankfurt',
+            country: 'Germany',
+            lat: 51.1657,
+            lng: 10.4515,
+            zoom: 6,
+            photo: 'https://images.unsplash.com/photo-1587330979470-3595ac045ab0?w=800&q=80',
+            weather: 'Berawan • 9 °C',
+            weatherIcon: '☁️',
+            timeOffset: 1,
+            facts: 'Germany is Europe\'s industrial and economic powerhouse, home to Frankfurt CargoCity and Port of Hamburg.',
+            type: 'GLOBAL_LOGISTICS_HUB'
         },
         'frankfurt': {
             city: 'Frankfurt',
             country: 'Germany',
+            lat: 50.1109,
+            lng: 8.6821,
+            zoom: 9,
             photo: 'https://images.unsplash.com/photo-1587330979470-3595ac045ab0?w=800&q=80',
             weather: 'Berawan • 9 °C',
             weatherIcon: '☁️',
@@ -588,9 +720,402 @@
             facts: 'Frankfurt am Main adalah gerbang kargo udara terbesar di Eropa melalui fasilitas Frankfurt CargoCity South di Bandara Frankfurt, menangani lebih dari dua juta ton kargo udara ekspres per tahun.',
             type: 'AIRPORT'
         },
+        'jepang': {
+            city: 'Tokyo',
+            country: 'Jepang',
+            lat: 36.2048,
+            lng: 138.2529,
+            zoom: 5,
+            photo: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80',
+            weather: 'Cerah Dingin • 14 °C',
+            weatherIcon: '🌤️',
+            timeOffset: 9,
+            facts: 'Jepang adalah pionir teknologi manufaktur presisi dunia dengan jaringan logistik maritim modern di Pelabuhan Tokyo, Yokohama, dan hub udara Narita yang menggerakkan ekspor berteknologi tinggi.',
+            type: 'GLOBAL_TECH_HUB'
+        },
+        'japan': {
+            city: 'Tokyo',
+            country: 'Japan',
+            lat: 36.2048,
+            lng: 138.2529,
+            zoom: 5,
+            photo: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80',
+            weather: 'Cerah Dingin • 14 °C',
+            weatherIcon: '🌤️',
+            timeOffset: 9,
+            facts: 'Japan is a global leader in high-tech manufacturing with advanced maritime hubs at Port of Tokyo and Yokohama.',
+            type: 'GLOBAL_TECH_HUB'
+        },
+        'tokyo': {
+            city: 'Tokyo',
+            country: 'Japan',
+            lat: 35.6762,
+            lng: 139.6503,
+            zoom: 9,
+            photo: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80',
+            weather: 'Cerah Dingin • 14 °C',
+            weatherIcon: '🌤️',
+            timeOffset: 9,
+            facts: 'Tokyo adalah megapolitan dan pusat ekonomi terbesar Jepang. Pelabuhan Tokyo di Teluk Tokyo melayani arus kargo peti kemas untuk kawasan industri manufaktur berteknologi tinggi dan konsumsi Kanto.',
+            type: 'PORT'
+        },
+        'amerika serikat': {
+            city: 'Washington DC / New York',
+            country: 'Amerika Serikat',
+            lat: 37.0902,
+            lng: -95.7129,
+            zoom: 4,
+            photo: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800&q=80',
+            weather: 'Cerah Sejuk • 15 °C',
+            weatherIcon: '☀️',
+            timeOffset: -5,
+            facts: 'Amerika Serikat memiliki jaringan logistik terpadu terbesar di dunia, menghubungkan Pantai Barat Pasifik (Port of Los Angeles) ke Pantai Timur Atlantik (New York) via koridor kereta rel dan jalan raya Interstate.',
+            type: 'CONTINENTAL_LOGISTICS_NETWORK'
+        },
+        'united states': {
+            city: 'New York / Los Angeles',
+            country: 'United States',
+            lat: 37.0902,
+            lng: -95.7129,
+            zoom: 4,
+            photo: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800&q=80',
+            weather: 'Cerah Sejuk • 15 °C',
+            weatherIcon: '☀️',
+            timeOffset: -5,
+            facts: 'The United States features the world\'s largest freight network bridging the Pacific and Atlantic oceans.',
+            type: 'CONTINENTAL_LOGISTICS_NETWORK'
+        },
+        'arab saudi': {
+            city: 'Riyadh',
+            country: 'Arab Saudi',
+            lat: 23.8859,
+            lng: 45.0792,
+            zoom: 5,
+            photo: 'https://images.unsplash.com/photo-1586724237569-f3d0c1dee8c6?w=800&q=80',
+            weather: 'Cerah Terik • 28 °C',
+            weatherIcon: '☀️',
+            timeOffset: 3,
+            facts: 'Arab Saudi adalah simpul energi dan perdagangan maritim di Laut Merah (Jeddah Islamic Port) dan Teluk Arab (King Abdulaziz Port Dammam), menghubungkan benua Asia, Afrika, dan Eropa.',
+            type: 'MIDDLE_EAST_GATEWAY'
+        },
+        'saudi arabia': {
+            city: 'Riyadh',
+            country: 'Saudi Arabia',
+            lat: 23.8859,
+            lng: 45.0792,
+            zoom: 5,
+            photo: 'https://images.unsplash.com/photo-1586724237569-f3d0c1dee8c6?w=800&q=80',
+            weather: 'Cerah Terik • 28 °C',
+            weatherIcon: '☀️',
+            timeOffset: 3,
+            facts: 'Saudi Arabia serves as the vital maritime trade bridge between Asia, Africa, and Europe.',
+            type: 'MIDDLE_EAST_GATEWAY'
+        },
+        'tiongkok': {
+            city: 'Shanghai / Beijing',
+            country: 'Tiongkok',
+            lat: 35.8617,
+            lng: 104.1954,
+            zoom: 4,
+            photo: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80',
+            weather: 'Cerah Berawan • 16 °C',
+            weatherIcon: '🌤️',
+            timeOffset: 8,
+            facts: 'Tiongkok adalah raksasa manufaktur global dengan 7 dari 10 pelabuhan kontainer tersibuk di dunia termasuk Shanghai Yangshan, Ningbo-Zhoushan, dan Shenzhen.',
+            type: 'MANUFACTURING_SUPERHUB'
+        },
+        'china': {
+            city: 'Shanghai',
+            country: 'China',
+            lat: 31.2304,
+            lng: 121.4737,
+            zoom: 5,
+            photo: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80',
+            weather: 'Cerah Berawan • 16 °C',
+            weatherIcon: '🌤️',
+            timeOffset: 8,
+            facts: 'Shanghai adalah pelabuhan kontainer tersibuk di dunia dengan kompleks Pelabuhan Air Dalam Yangshan.',
+            type: 'PORT'
+        },
+        'shanghai': {
+            city: 'Shanghai',
+            country: 'China',
+            lat: 31.2304,
+            lng: 121.4737,
+            zoom: 9,
+            photo: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80',
+            weather: 'Cerah Berawan • 16 °C',
+            weatherIcon: '🌤️',
+            timeOffset: 8,
+            facts: 'Shanghai adalah kota metropolitan terpadat di Tiongkok dan pelabuhan kontainer tersibuk di dunia dengan kompleks Pelabuhan Air Dalam Yangshan.',
+            type: 'PORT'
+        },
+        'belanda': {
+            city: 'Rotterdam',
+            country: 'Belanda',
+            lat: 52.1326,
+            lng: 5.2913,
+            zoom: 7,
+            photo: 'https://images.unsplash.com/photo-1517737211229-bbd45764f734?w=800&q=80',
+            weather: 'Sebagian Berawan • 11 °C',
+            weatherIcon: '⛅',
+            timeOffset: 1,
+            facts: 'Belanda dikenal sebagai "Gerbang Eropa". Pelabuhan Rotterdam adalah pelabuhan peti kemas terbesar di Eropa yang melayani arus kargo maritim menuju pusat industri Eropa Barat.',
+            type: 'PORT'
+        },
+        'netherlands': {
+            city: 'Rotterdam',
+            country: 'Netherlands',
+            lat: 51.9244,
+            lng: 4.4777,
+            zoom: 7,
+            photo: 'https://images.unsplash.com/photo-1517737211229-bbd45764f734?w=800&q=80',
+            weather: 'Sebagian Berawan • 11 °C',
+            weatherIcon: '⛅',
+            timeOffset: 1,
+            facts: 'Rotterdam adalah pelabuhan peti kemas terbesar di Eropa dan simpul logistik maritim dunia di delta sungai Rhine dan Meuse.',
+            type: 'PORT'
+        },
+        'rotterdam': {
+            city: 'Rotterdam',
+            country: 'Netherlands',
+            lat: 51.9244,
+            lng: 4.4777,
+            zoom: 9,
+            photo: 'https://images.unsplash.com/photo-1517737211229-bbd45764f734?w=800&q=80',
+            weather: 'Sebagian Berawan • 11 °C',
+            weatherIcon: '⛅',
+            timeOffset: 1,
+            facts: 'Rotterdam adalah pelabuhan peti kemas terbesar di Eropa dan simpul logistik maritim dunia di delta sungai Rhine dan Meuse.',
+            type: 'PORT'
+        },
+        'uni emirat arab': {
+            city: 'Dubai',
+            country: 'Uni Emirat Arab',
+            lat: 23.4241,
+            lng: 53.8478,
+            zoom: 6,
+            photo: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&q=80',
+            weather: 'Cerah • 29 °C',
+            weatherIcon: '☀️',
+            timeOffset: 4,
+            facts: 'Uni Emirat Arab adalah pusat transit kargo laut-udara terbesar di kawasan Teluk. Pelabuhan Jebel Ali Dubai adalah pelabuhan buatan terbesar di dunia.',
+            type: 'INTERMODAL_GATEWAY'
+        },
+        'dubai': {
+            city: 'Dubai',
+            country: 'United Arab Emirates',
+            lat: 25.2048,
+            lng: 55.2708,
+            zoom: 9,
+            photo: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&q=80',
+            weather: 'Cerah • 29 °C',
+            weatherIcon: '☀️',
+            timeOffset: 4,
+            facts: 'Dubai adalah gerbang perdagangan Timur Tengah yang menaungi Pelabuhan Jebel Ali, pelabuhan buatan terbesar di dunia dan hub kargo laut-udara terintegrasi.',
+            type: 'PORT'
+        },
+        'australia': {
+            city: 'Sydney',
+            country: 'Australia',
+            lat: -25.2744,
+            lng: 133.7751,
+            zoom: 4,
+            photo: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=800&q=80',
+            weather: 'Cerah Menyenangkan • 22 °C',
+            weatherIcon: '☀️',
+            timeOffset: 11,
+            facts: 'Australia adalah benua maritim strategis dengan simpul kargo utama di Port Botany Sydney dan Pelabuhan Melbourne, melayani ekspor sumber daya alam dan komoditas global.',
+            type: 'OCEANIA_LOGISTICS_HUB'
+        },
+        'sydney': {
+            city: 'Sydney',
+            country: 'Australia',
+            lat: -33.8688,
+            lng: 151.2093,
+            zoom: 9,
+            photo: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=800&q=80',
+            weather: 'Cerah Menyenangkan • 22 °C',
+            weatherIcon: '☀️',
+            timeOffset: 11,
+            facts: 'Sydney adalah gerbang utama perdagangan kargo internasional Australia melalui Port Botany dan Bandara Internasional Kingsford Smith.',
+            type: 'PORT'
+        },
+        'inggris': {
+            city: 'London',
+            country: 'Inggris',
+            lat: 55.3781,
+            lng: -3.4360,
+            zoom: 5,
+            photo: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&q=80',
+            weather: 'Berawan Sejuk • 12 °C',
+            weatherIcon: '⛅',
+            timeOffset: 0,
+            facts: 'Britania Raya memiliki pelabuhan peti kemas modern seperti Felixstowe, Southampton, dan London Gateway yang mengendalikan arus impor dan ekspor Atlantik.',
+            type: 'MARITIME_GATEWAY'
+        },
+        'brasil': {
+            city: 'Santos / São Paulo',
+            country: 'Brasil',
+            lat: -14.2350,
+            lng: -51.9253,
+            zoom: 4,
+            photo: 'https://images.unsplash.com/photo-1516306580123-e6e52b1b7b5f?w=800&q=80',
+            weather: 'Cerah Tropis • 26 °C',
+            weatherIcon: '🌤️',
+            timeOffset: -3,
+            facts: 'Brasil adalah raksasa ekonomi Amerika Selatan. Port of Santos merupakan kompleks pelabuhan peti kemas terbesar di Amerika Latin.',
+            type: 'PORT'
+        },
+        'santos': {
+            city: 'Santos',
+            country: 'Brazil',
+            lat: -23.9618,
+            lng: -46.3322,
+            zoom: 9,
+            photo: 'https://images.unsplash.com/photo-1516306580123-e6e52b1b7b5f?w=800&q=80',
+            weather: 'Cerah Tropis • 26 °C',
+            weatherIcon: '🌤️',
+            timeOffset: -3,
+            facts: 'Port of Santos adalah kompleks pelabuhan peti kemas terbesar di Amerika Latin, melayani ekspor komoditas utama dan produk industri Brasil.',
+            type: 'PORT'
+        },
+        'afrika selatan': {
+            city: 'Durban',
+            country: 'Afrika Selatan',
+            lat: -30.5595,
+            lng: 22.9375,
+            zoom: 5,
+            photo: 'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=800&q=80',
+            weather: 'Cerah Hangat • 24 °C',
+            weatherIcon: '☀️',
+            timeOffset: 2,
+            facts: 'Afrika Selatan menempati posisi maritim strategis di Tanjung Harapan. Pelabuhan Durban adalah pelabuhan peti kemas tersibuk di Afrika Sub-Sahara.',
+            type: 'PORT'
+        },
+        'durban': {
+            city: 'Durban',
+            country: 'South Africa',
+            lat: -29.8587,
+            lng: 31.0218,
+            zoom: 9,
+            photo: 'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=800&q=80',
+            weather: 'Cerah Hangat • 24 °C',
+            weatherIcon: '☀️',
+            timeOffset: 2,
+            facts: 'Durban adalah pelabuhan peti kemas tersibuk di Afrika Sub-Sahara yang menghubungkan rute maritim Samudra Hindia dengan kawasan industri Gauteng.',
+            type: 'PORT'
+        },
+        'india': {
+            city: 'New Delhi / Mumbai',
+            country: 'India',
+            lat: 20.5937,
+            lng: 78.9629,
+            zoom: 4,
+            photo: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&q=80',
+            weather: 'Cerah Hangat • 27 °C',
+            weatherIcon: '☀️',
+            timeOffset: 5.5,
+            facts: 'India adalah negara berpenduduk terbesar di dunia dengan jaringan maritim yang berkembang cepat melalui JNPT Mumbai dan koridor Samudra Hindia.',
+            type: 'SOUTH_ASIA_HUB'
+        },
+        'prancis': {
+            city: 'Paris / Le Havre',
+            country: 'Prancis',
+            lat: 46.2276,
+            lng: 2.2137,
+            zoom: 5,
+            photo: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&q=80',
+            weather: 'Cerah Sejuk • 13 °C',
+            weatherIcon: '🌤️',
+            timeOffset: 1,
+            facts: 'Prancis menghubungkan jalur logistik Atlantik dan Laut Mediterania melalui kompleks pelabuhan Le Havre (HAROPA) dan Marseille-Fos.',
+            type: 'EUROPE_WEST_GATEWAY'
+        },
+        'korea selatan': {
+            city: 'Seoul / Busan',
+            country: 'Korea Selatan',
+            lat: 35.9078,
+            lng: 127.7669,
+            zoom: 6,
+            photo: 'https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800&q=80',
+            weather: 'Cerah Berangin • 12 °C',
+            weatherIcon: '🌤️',
+            timeOffset: 9,
+            facts: 'Korea Selatan adalah raksasa semikonduktor dan galangan kapal dunia. Pelabuhan Busan merupakan pelabuhan transshipment terbesar ke-6 di dunia.',
+            type: 'EAST_ASIA_HUB'
+        },
+        'turki': {
+            city: 'Istanbul / Ankara',
+            country: 'Turki',
+            lat: 38.9637,
+            lng: 35.2433,
+            zoom: 5,
+            photo: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=800&q=80',
+            weather: 'Cerah • 17 °C',
+            weatherIcon: '☀️',
+            timeOffset: 3,
+            facts: 'Turki adalah jembatan penghubung antara Eropa dan Asia via Selat Bosporus, memainkan peran krusial dalam koridor perdagangan sutra modern.',
+            type: 'EURASIAN_CROSSROAD'
+        },
+        'mesir': {
+            city: 'Kairo / Port Said',
+            country: 'Mesir',
+            lat: 26.8206,
+            lng: 30.8025,
+            zoom: 5,
+            photo: 'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?w=800&q=80',
+            weather: 'Cerah Kering • 25 °C',
+            weatherIcon: '☀️',
+            timeOffset: 2,
+            facts: 'Mesir mengendalikan Terusan Suez yang dilalui oleh 12% total volume perdagangan maritim dunia, memangkas jarak navigasi rute Asia ke Eropa.',
+            type: 'SUEZ_CANAL_GATEWAY'
+        },
+        'kanada': {
+            city: 'Toronto / Vancouver',
+            country: 'Kanada',
+            lat: 56.1304,
+            lng: -106.3468,
+            zoom: 3,
+            photo: 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=800&q=80',
+            weather: 'Dingin • 4 °C',
+            weatherIcon: '❄️',
+            timeOffset: -5,
+            facts: 'Kanada adalah negara terluas kedua di dunia dengan gerbang kargo Pasifik utama di Pelabuhan Vancouver dan koridor rel kargo trans-Kanada.',
+            type: 'NORTH_AMERICA_GATEWAY'
+        },
+        'singapura': {
+            city: 'Singapore',
+            country: 'Singapura',
+            lat: 1.3521,
+            lng: 103.8198,
+            zoom: 11,
+            photo: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&q=80',
+            weather: 'Hujan Ringan • 28 °C',
+            weatherIcon: '🌦️',
+            timeOffset: 8,
+            facts: 'Singapura adalah hub transshipment tersibuk di dunia di Selat Malaka, menghubungkan rute pelayaran maritim antar-benua dengan otomatisasi pelabuhan termaju di dunia.',
+            type: 'PORT'
+        },
+        'singapore': {
+            city: 'Singapore',
+            country: 'Singapore',
+            lat: 1.3521,
+            lng: 103.8198,
+            zoom: 11,
+            photo: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&q=80',
+            weather: 'Hujan Ringan • 28 °C',
+            weatherIcon: '🌦️',
+            timeOffset: 8,
+            facts: 'Singapura adalah hub transshipment tersibuk di dunia yang berlokasi strategis di Selat Malaka.',
+            type: 'PORT'
+        },
         'los angeles': {
             city: 'Los Angeles',
             country: 'United States',
+            lat: 34.0522,
+            lng: -118.2437,
+            zoom: 9,
             photo: 'https://images.unsplash.com/photo-1580655653885-65763b2597d0?w=800&q=80',
             weather: 'Cerah Berangin • 21 °C',
             weatherIcon: '☀️',
@@ -601,6 +1126,9 @@
         'new york': {
             city: 'New York',
             country: 'United States',
+            lat: 40.7128,
+            lng: -74.0060,
+            zoom: 9,
             photo: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800&q=80',
             weather: 'Cerah Sejuk • 13 °C',
             weatherIcon: '🌤️',
@@ -611,6 +1139,9 @@
         'chicago': {
             city: 'Chicago',
             country: 'United States',
+            lat: 41.8781,
+            lng: -87.6298,
+            zoom: 9,
             photo: 'https://images.unsplash.com/photo-1494522855154-9297ac14b55f?w=800&q=80',
             weather: 'Berawan Dingin • 7 °C',
             weatherIcon: '☁️',
@@ -621,6 +1152,9 @@
         'san francisco': {
             city: 'San Francisco',
             country: 'United States',
+            lat: 37.7749,
+            lng: -122.4194,
+            zoom: 9,
             photo: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800&q=80',
             weather: 'Berkabut • 15 °C',
             weatherIcon: '🌫️',
@@ -631,6 +1165,9 @@
         'dallas': {
             city: 'Dallas',
             country: 'United States',
+            lat: 32.7767,
+            lng: -96.7970,
+            zoom: 9,
             photo: 'https://images.unsplash.com/photo-1545153996-e01b50d6f272?w=800&q=80',
             weather: 'Cerah • 23 °C',
             weatherIcon: '☀️',
@@ -641,16 +1178,22 @@
         'miami': {
             city: 'Miami',
             country: 'United States',
+            lat: 25.7617,
+            lng: -80.1918,
+            zoom: 9,
             photo: 'https://images.unsplash.com/photo-1506953823976-52e1fdc0149a?w=800&q=80',
             weather: 'Cerah Hangat • 27 °C',
             weatherIcon: '☀️',
             timeOffset: -5,
-            facts: 'Miami dikenal sebagai "Gerbang Benua Amerika" (Gateway of the Americas) yang menghubungkan rantai pasok antara Amerika Utara, Karibia, dan Amerika Latin.',
+            facts: 'Miami dikenal sebagai "Gerbang Benua Amerika" yang menghubungkan rantai pasok antara Amerika Utara, Karibia, dan Amerika Latin.',
             type: 'PORT'
         },
         'seattle': {
             city: 'Seattle',
             country: 'United States',
+            lat: 47.6062,
+            lng: -122.3321,
+            zoom: 9,
             photo: 'https://images.unsplash.com/photo-1502175353174-a7a70e73b362?w=800&q=80',
             weather: 'Gerimis • 10 °C',
             weatherIcon: '🌧️',
@@ -661,26 +1204,35 @@
         'detroit': {
             city: 'Detroit',
             country: 'United States',
+            lat: 42.3314,
+            lng: -83.0458,
+            zoom: 9,
             photo: 'https://images.unsplash.com/photo-1596484552834-6a58f850e0a1?w=800&q=80',
             weather: 'Cerah Sejuk • 8 °C',
             weatherIcon: '🌤️',
             timeOffset: -5,
-            facts: 'Detroit adalah simpul logistik manufaktur otomotif utama dan gerbang perdagangan darat tersibuk antara Amerika Serikat dan Kanada via Ambassador Bridge.',
+            facts: 'Detroit adalah simpul logistik manufaktur otomotif utama dan gerbang perdagangan darat tersibuk antara AS dan Kanada via Ambassador Bridge.',
             type: 'WAREHOUSE'
         },
         'austin': {
             city: 'Austin',
             country: 'United States',
+            lat: 30.2672,
+            lng: -97.7431,
+            zoom: 9,
             photo: 'https://images.unsplash.com/photo-1531218150217-54595bc2b934?w=800&q=80',
             weather: 'Cerah • 24 °C',
             weatherIcon: '☀️',
             timeOffset: -6,
-            facts: 'Austin adalah kawasan industri teknologi dan semikonduktor "Silicon Hills" dengan jaringan distribusi kargo ekspres yang terus berkembang pesat.',
+            facts: 'Austin adalah kawasan industri teknologi dan semikonduktor "Silicon Hills" dengan jaringan distribusi kargo ekspres yang terus berkembang.',
             type: 'DISTRIBUTION_CENTER'
         },
         'denver': {
             city: 'Denver',
             country: 'United States',
+            lat: 39.7392,
+            lng: -104.9903,
+            zoom: 9,
             photo: 'https://images.unsplash.com/photo-1546955870-9f3796d13bd6?w=800&q=80',
             weather: 'Cerah Dingin • 6 °C',
             weatherIcon: '☀️',
@@ -688,49 +1240,48 @@
             facts: 'Denver adalah pusat distribusi utama kawasan Rocky Mountain yang melayani konektivitas logistik antara kawasan Midwest dan Barat AS.',
             type: 'WAREHOUSE'
         },
-        'sydney': {
-            city: 'Sydney',
-            country: 'Australia',
-            photo: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=800&q=80',
-            weather: 'Cerah Menyenangkan • 22 °C',
+        'italia': {
+            city: 'Roma',
+            country: 'Italia',
+            lat: 41.8719,
+            lng: 12.5674,
+            zoom: 5,
+            photo: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&q=80',
+            weather: 'Cerah Hangat • 18 °C',
             weatherIcon: '☀️',
-            timeOffset: 11,
-            facts: 'Sydney adalah gerbang utama perdagangan kargo internasional Australia melalui Port Botany dan Bandara Internasional Kingsford Smith.',
-            type: 'PORT'
+            timeOffset: 1,
+            facts: 'Italia adalah semenanjung strategis Mediterania dengan pelabuhan utama Genoa dan Trieste yang menghubungkan pasar Eropa Selatan dan Tengah.',
+            type: 'MEDITERRANEAN_HUB'
         },
-        'santos': {
-            city: 'Santos',
-            country: 'Brazil',
-            photo: 'https://images.unsplash.com/photo-1516306580123-e6e52b1b7b5f?w=800&q=80',
-            weather: 'Cerah Tropis • 26 °C',
-            weatherIcon: '🌤️',
-            timeOffset: -3,
-            facts: 'Port of Santos adalah kompleks pelabuhan peti kemas terbesar di Amerika Latin, melayani ekspor komoditas utama dan produk industri negara bagian São Paulo, Brasil.',
-            type: 'PORT'
-        },
-        'durban': {
-            city: 'Durban',
-            country: 'South Africa',
-            photo: 'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=800&q=80',
-            weather: 'Cerah Hangat • 24 °C',
-            weatherIcon: '☀️',
-            timeOffset: 2,
-            facts: 'Durban adalah pelabuhan peti kemas tersibuk di Afrika Sub-Sahara yang menghubungkan rute maritim Samudra Hindia dengan kawasan industri Gauteng.',
-            type: 'PORT'
+        'rusia': {
+            city: 'Moskwa',
+            country: 'Rusia',
+            lat: 61.5240,
+            lng: 105.3188,
+            zoom: 3,
+            photo: 'https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?w=800&q=80',
+            weather: 'Dingin • -2 °C',
+            weatherIcon: '❄️',
+            timeOffset: 3,
+            facts: 'Rusia adalah negara terluas di dunia yang membentang melintasi Eropa Timur dan Asia Utara, menghubungkan rute kereta api Trans-Siberia dan jalur maritim Arktik.',
+            type: 'EURASIAN_TERRITORY'
         }
     };
 
     function getPlaceDetails(city, country, type, lat, lng) {
         const key = (city || '').toLowerCase().trim();
-        if (PLACE_DATABASE[key]) {
-            return PLACE_DATABASE[key];
-        }
+        const cKey = (country || '').toLowerCase().trim();
+
+        if (PLACE_DATABASE[key]) return PLACE_DATABASE[key];
+        if (PLACE_DATABASE[cKey]) return PLACE_DATABASE[cKey];
+
         for (const [k, v] of Object.entries(PLACE_DATABASE)) {
-            if (key.includes(k) || k.includes(key)) {
+            if (key.includes(k) || k.includes(key) || cKey.includes(k) || k.includes(cKey)) {
                 return v;
             }
         }
-        // Fallback for any international location
+
+        // Dynamic fallback for any international country or location on Earth
         const fallbackPhotos = [
             'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=800&q=80',
             'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&q=80',
@@ -745,10 +1296,13 @@
         return {
             city: city || 'Global Hub',
             country: country || 'International',
+            lat: lat,
+            lng: lng,
             photo: photo,
             weather: `Cerah • ${temp} °C`,
             weatherIcon: temp < 10 ? '🌤️' : '☀️',
-            facts: `${city || 'Kawasan ini'} adalah simpul logistik internasional di ${country || 'wilayah terhubung'}, terintegrasi langsung dalam jaringan pemantauan kargo global WorldCargo 360 untuk menghubungkan rantai pasok perdagangan dunia secara aman dan terpercaya.`,
+            timeOffset: Math.round((Number(lng) || 0) / 15),
+            facts: `${city || 'Kawasan ini'} adalah bagian penting dalam peta geografis dunia di ${country || 'wilayah terhubung'}, terintegrasi langsung dalam jaringan pemantauan kargo global WorldCargo 360 untuk menghubungkan perdagangan internasional secara akurat dan transparan.`,
             type: type || 'LOGISTICS_NODE'
         };
     }
@@ -763,20 +1317,39 @@
         return `${hours}:${mins}`;
     }
 
+    // High-visibility Google Maps Logistics Hub Pin (Blue with drop shadow)
     function createHubPinIcon(cityName) {
         return L.divIcon({
             className: 'custom-hub-pin',
             html: `
                 <div class="relative group cursor-pointer" title="${escapeHtml(cityName)}">
-                    <div class="w-8 h-8 rounded-full bg-blue-600 border-2 border-white shadow-lg flex items-center justify-center text-white transform group-hover:scale-125 transition-transform duration-200">
+                    <div class="w-8 h-8 rounded-full bg-blue-600 border-2 border-white shadow-xl flex items-center justify-center text-white transform group-hover:scale-125 transition-transform duration-200">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg>
                     </div>
-                    <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-blue-600 rotate-45 border-r border-b border-white"></div>
+                    <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-blue-600 rotate-45 border-r-2 border-b-2 border-white"></div>
                 </div>
             `,
             iconSize: [32, 38],
             iconAnchor: [16, 38],
             popupAnchor: [0, -36]
+        });
+    }
+
+    // High-visibility Google Maps Country Search Pin (Red with bounce animation)
+    function createCountryPinIcon(placeName) {
+        return L.divIcon({
+            className: 'custom-country-pin',
+            html: `
+                <div class="relative group cursor-pointer" title="${escapeHtml(placeName)}">
+                    <div class="w-9 h-9 rounded-full bg-red-600 border-2 border-white shadow-2xl flex items-center justify-center text-white transform group-hover:scale-125 transition-transform duration-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </div>
+                    <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-red-600 rotate-45 border-r-2 border-b-2 border-white"></div>
+                </div>
+            `,
+            iconSize: [36, 42],
+            iconAnchor: [18, 42],
+            popupAnchor: [0, -40]
         });
     }
 
@@ -818,9 +1391,9 @@
         document.getElementById('drawerWeatherIcon').textContent = placeInfo.weatherIcon || '☀️';
         document.getElementById('drawerLocalTime').textContent = getLocalTimeForLng(lng);
         document.getElementById('drawerPlaceFacts').textContent = placeInfo.facts;
-        document.getElementById('drawerHubCode').textContent = String(id).startsWith('search') ? 'GEO-NODE' : `HUB-${id}`;
+        document.getElementById('drawerHubCode').textContent = String(id).startsWith('country') ? 'GLOBAL-NODE' : (String(id).startsWith('search') ? 'GEO-SEARCH' : `HUB-${id}`);
         document.getElementById('drawerHubCoords').textContent = `${Number(lat).toFixed(5)}° Lat, ${Number(lng).toFixed(5)}° Lng`;
-        
+
         drawer.classList.remove('hidden');
     };
 
@@ -842,9 +1415,9 @@
         const targetMarker = activeMarkers[locId];
         if (targetMarker) {
             const latLng = targetMarker.getLatLng();
-            map.flyTo(latLng, 9, { duration: 1.0 });
+            map.flyTo(latLng, 8, { duration: 1.0 });
             targetMarker.openPopup();
-            
+
             const loc = mapLocationsData.find(l => String(l.id) === String(locId));
             if (loc) {
                 const placeInfo = getPlaceDetails(loc.city, loc.country, loc.type, loc.lat, loc.lng);
@@ -852,6 +1425,151 @@
             }
         }
     };
+
+    // Explore any country by Name / Alias (Smooth Fly-to & Photo Presentation)
+    window.exploreCountryByName = function(countryKey) {
+        const key = (countryKey || '').toLowerCase().trim();
+        const data = PLACE_DATABASE[key];
+        if (!data || !map) return;
+
+        const lat = data.lat;
+        const lng = data.lng;
+        const zoom = data.zoom || 6;
+
+        map.flyTo([lat, lng], zoom, { duration: 1.2 });
+
+        if (searchHighlightMarker) {
+            map.removeLayer(searchHighlightMarker);
+        }
+
+        searchHighlightMarker = L.marker([lat, lng], {
+            icon: createCountryPinIcon(data.country)
+        }).addTo(map);
+
+        const popupContent = buildPlacePopupHtml(data.city, data.country, data, {
+            id: `country_${key}`,
+            lat: lat,
+            lng: lng,
+            code: 'COUNTRY',
+            type: data.type
+        });
+
+        searchHighlightMarker.bindPopup(popupContent, {
+            maxWidth: 280,
+            minWidth: 260,
+            className: 'google-maps-place-popup',
+            autoPanPadding: [20, 20]
+        }).openPopup();
+
+        openPlaceDetailDrawer(`country_${key}`, data.city, data.country, data.type, lat, lng, data);
+
+        // Update search input to match
+        const searchInput = document.getElementById('mapSearchInput');
+        if (searchInput) {
+            searchInput.value = `${data.city}, ${data.country}`;
+            const clearBtn = document.getElementById('clearMapSearchBtn');
+            if (clearBtn) clearBtn.classList.remove('hidden');
+        }
+    };
+
+    // Google Maps Search Bar Execution (Instant Database + Worldwide OpenStreetMap Fallback)
+    window.executeMapSearch = async function() {
+        const input = document.getElementById('mapSearchInput');
+        if (!input) return;
+        const query = input.value.trim();
+        if (!query) {
+            input.focus();
+            return;
+        }
+
+        // 1. Check local rich database first
+        const qLower = query.toLowerCase();
+        for (const [k, v] of Object.entries(PLACE_DATABASE)) {
+            if (qLower === k || qLower.includes(k) || k.includes(qLower) ||
+                (v.country && v.country.toLowerCase().includes(qLower)) ||
+                (v.city && v.city.toLowerCase().includes(qLower))) {
+                exploreCountryByName(k);
+                closeMapSearchSuggestions();
+                return;
+            }
+        }
+
+        // 2. Query Nominatim Geocoding API for any city, village, or island in the world
+        const btn = document.getElementById('mapSearchBtn');
+        const originalText = btn ? btn.textContent : 'Cari';
+        if (btn) {
+            btn.textContent = '...';
+            btn.disabled = true;
+        }
+
+        try {
+            const res = await fetch(`/locations/geocode?query=${encodeURIComponent(query)}`);
+            const json = await res.json();
+
+            if (json.success && json.data) {
+                const lat = Number(json.data.lat);
+                const lon = Number(json.data.lon);
+                if (map && Number.isFinite(lat) && Number.isFinite(lon)) {
+                    map.flyTo([lat, lon], 8, { duration: 1.2 });
+
+                    if (searchHighlightMarker) {
+                        map.removeLayer(searchHighlightMarker);
+                    }
+
+                    const city = json.data.city || query.split(',')[0].trim();
+                    const country = json.data.country || 'Global';
+                    const placeInfo = getPlaceDetails(city, country, 'GEOCODE_RESULT', lat, lon);
+
+                    searchHighlightMarker = L.marker([lat, lon], {
+                        icon: createCountryPinIcon(city)
+                    }).addTo(map);
+
+                    const popupContent = buildPlacePopupHtml(city, country, placeInfo, {
+                        id: 'search',
+                        lat: lat,
+                        lng: lon,
+                        code: 'SEARCH',
+                        type: 'GEOCODED'
+                    });
+
+                    searchHighlightMarker.bindPopup(popupContent, {
+                        maxWidth: 280,
+                        minWidth: 260,
+                        className: 'google-maps-place-popup',
+                        autoPanPadding: [20, 20]
+                    }).openPopup();
+
+                    openPlaceDetailDrawer('search', city, country, 'GEOCODED NODE', lat, lon, placeInfo);
+                }
+            } else {
+                alert(`Lokasi "${query}" tidak ditemukan. Silakan coba nama negara atau kota lain.`);
+            }
+        } catch (e) {
+            alert('Pencarian peta gagal: ' + e.message);
+        } finally {
+            if (btn) {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+            closeMapSearchSuggestions();
+        }
+    };
+
+    window.clearMapSearch = function() {
+        const input = document.getElementById('mapSearchInput');
+        if (input) {
+            input.value = '';
+            input.focus();
+        }
+        const clearBtn = document.getElementById('clearMapSearchBtn');
+        if (clearBtn) clearBtn.classList.add('hidden');
+        closeMapSearchSuggestions();
+    };
+
+    function closeMapSearchSuggestions() {
+        const sug = document.getElementById('mapSearchSuggestions');
+        if (sug) sug.classList.add('hidden');
+    }
 
     window.copyPlaceCoords = function() {
         if (!currentSelectedCoords) return;
@@ -903,7 +1621,7 @@
                 const lat = Number(json.data.lat);
                 const lon = Number(json.data.lon);
                 if (map && Number.isFinite(lat) && Number.isFinite(lon)) {
-                    map.flyTo([lat, lon], 10, { duration: 1.2 });
+                    map.flyTo([lat, lon], 8, { duration: 1.2 });
 
                     if (searchHighlightMarker) {
                         map.removeLayer(searchHighlightMarker);
@@ -914,10 +1632,17 @@
                     const placeInfo = getPlaceDetails(city, country, 'GEOCODE_RESULT', lat, lon);
 
                     searchHighlightMarker = L.marker([lat, lon], {
-                        icon: createHubPinIcon(city)
+                        icon: createCountryPinIcon(city)
                     }).addTo(map);
 
-                    const popupContent = buildPlacePopupHtml(city, country, placeInfo, { id: 'search', lat: lat, lng: lon, code: 'SEARCH', type: 'GEOCODED' });
+                    const popupContent = buildPlacePopupHtml(city, country, placeInfo, {
+                        id: 'search',
+                        lat: lat,
+                        lng: lon,
+                        code: 'SEARCH',
+                        type: 'GEOCODED'
+                    });
+
                     searchHighlightMarker.bindPopup(popupContent, {
                         maxWidth: 280,
                         minWidth: 260,
@@ -947,76 +1672,35 @@
         document.getElementById('newLocationModal').classList.remove('hidden');
     }
 
-    // Initialize Map with all hubs & Google Maps Navigation
+    // Initialize Map with all hubs, 1 World Bounds & Google Maps Navigation
     document.addEventListener('DOMContentLoaded', function () {
         const mapLocations = @json($mapLocations);
         mapLocationsData = mapLocations;
 
-        // Continuity Enforcement: Clamps vertical movement smoothly
-        function enforceGoogleMapsContinuity(mapInstance) {
-            if (!mapInstance) return;
-            let isAdjusting = false;
-
-            function keepInVerticalBounds() {
-                if (isAdjusting) return;
-                const size = mapInstance.getSize();
-                if (!size || size.y <= 0) return;
-
-                const zoom = mapInstance.getZoom();
-                const worldHeight = 256 * Math.pow(2, zoom);
-                const viewHalfY = size.y / 2;
-                const center = mapInstance.getCenter();
-                const centerPoint = mapInstance.project(center, zoom);
-
-                let targetY = centerPoint.y;
-                if (worldHeight <= size.y) {
-                    targetY = worldHeight / 2;
-                } else {
-                    if (targetY - viewHalfY < 0) {
-                        targetY = viewHalfY;
-                    } else if (targetY + viewHalfY > worldHeight) {
-                        targetY = worldHeight - viewHalfY;
-                    }
-                }
-
-                if (Math.abs(targetY - centerPoint.y) > 0.5) {
-                    isAdjusting = true;
-                    try {
-                        const clampedCenter = mapInstance.unproject(L.point(centerPoint.x, targetY), zoom);
-                        mapInstance.setView([clampedCenter.lat, center.lng], zoom, { animate: false });
-                    } finally {
-                        isAdjusting = false;
-                    }
-                }
-            }
-
-            mapInstance.on('drag move zoomend', keepInVerticalBounds);
-        }
-
         let locationsBounds = [];
+
+        // Dynamic minZoom calculation to ensure 1 single continuous world fills the container without repeating
+        function getOptimalWorldZoom() {
+            const container = document.getElementById('worldLocationsMap');
+            if (!container) return 2;
+            const width = container.clientWidth || 1000;
+            // Width of 1 world at zoom Z is 256 * 2^Z
+            // If width is 1200, 256 * 2^2 = 1024 (repeats), but at zoom 2.2+ or 2.5 it spans completely
+            // At zoom 2.5 or 3 it fits cleanly
+            return width > 1100 ? 2 : 2;
+        }
 
         // 4-Way Directional Pan Controller & Quick Actions for Hub Network Map
         window.panLocationsMap = function (dir) {
             if (!map) return;
             const distance = 260;
-            const size = map.getSize();
-            const zoom = map.getZoom();
-            const worldHeight = 256 * Math.pow(2, zoom);
-            const viewHalfY = size.y / 2;
-            const centerPoint = map.project(map.getCenter(), zoom);
 
             switch (dir) {
                 case 'up':
-                    if (centerPoint.y - viewHalfY > 2) {
-                        const dist = Math.min(distance, centerPoint.y - viewHalfY);
-                        map.panBy([0, -dist], { animate: true, duration: 0.25 });
-                    }
+                    map.panBy([0, -distance], { animate: true, duration: 0.25 });
                     break;
                 case 'down':
-                    if (centerPoint.y + viewHalfY < worldHeight - 2) {
-                        const dist = Math.min(distance, worldHeight - (centerPoint.y + viewHalfY));
-                        map.panBy([0, dist], { animate: true, duration: 0.25 });
-                    }
+                    map.panBy([0, distance], { animate: true, duration: 0.25 });
                     break;
                 case 'left':
                     map.panBy([-distance, 0], { animate: true, duration: 0.25 });
@@ -1025,23 +1709,29 @@
                     map.panBy([distance, 0], { animate: true, duration: 0.25 });
                     break;
                 case 'world':
-                    map.setView([20.0, 0.0], 2, { animate: true });
+                    map.fitBounds([[-55, -170], [70, 175]], { padding: [15, 15] });
                     break;
                 case 'focus':
                 case 'reset':
                     if (locationsBounds.length > 0) {
-                        map.fitBounds(locationsBounds, { padding: [50, 50], maxZoom: 6 });
+                        map.fitBounds(locationsBounds, { padding: [40, 40], maxZoom: 6 });
                     } else {
-                        map.setView([20.0, 0.0], 2, { animate: true });
+                        map.fitBounds([[-55, -170], [70, 175]], { padding: [15, 15] });
                     }
                     break;
             }
         };
 
+        // Strict 1 World Geodetic Bounds (-85 to 85 lat, -180 to 180 lng) to PREVENT horizontal repetition
+        const worldBounds = L.latLngBounds(L.latLng(-85, -180), L.latLng(85, 180));
+
         map = L.map('worldLocationsMap', {
             zoomControl: false, // Managed by custom floating dock
             minZoom: 2,
             maxZoom: 22, // Deep zoom level 22 to view individual houses, rooftops & parcels
+            maxBounds: worldBounds, // Clamps pan strictly to single world geometry
+            maxBoundsViscosity: 1.0, // Stiff boundary: cannot be dragged past earth edges
+            worldCopyJump: false, // Prevents jumping/duplicating continents horizontally
             scrollWheelZoom: true,
             wheelDebounceTime: 40,
             wheelPxPerZoomLevel: 60,
@@ -1051,15 +1741,8 @@
             dragging: true,
             tap: false,
             inertia: true,
-            inertiaDeceleration: 3000,
-            worldCopyJump: true
-        }).setView([20.0, 0.0], 2);
-
-        map.dragging.enable();
-        map.touchZoom.enable();
-        map.doubleClickZoom.enable();
-        map.scrollWheelZoom.enable();
-        enforceGoogleMapsContinuity(map);
+            inertiaDeceleration: 3000
+        });
 
         // Mode 1: Google Maps Standard Roadmap (Bright Clean Road Network, Street & Village Detail)
         const googleRoadmap = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
@@ -1067,7 +1750,8 @@
             maxNativeZoom: 20,
             maxZoom: 22,
             subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-            noWrap: false
+            noWrap: true, // Crucial: Prevents repeating duplicate Americas on right side!
+            bounds: worldBounds
         });
 
         // Mode 2: Google Maps Satellite Hybrid (Photorealistic Satellite Imagery with Roads, Labels & Individual Houses/Rooftops)
@@ -1076,7 +1760,8 @@
             maxNativeZoom: 20,
             maxZoom: 22,
             subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-            noWrap: false
+            noWrap: true, // Crucial: Prevents repeating duplicate Americas on right side!
+            bounds: worldBounds
         });
 
         // Base Layer 3: OpenStreetMap Standard
@@ -1084,7 +1769,8 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Leaflet',
             maxNativeZoom: 19,
             maxZoom: 22,
-            noWrap: false
+            noWrap: true,
+            bounds: worldBounds
         });
 
         // Default to Google Maps Standard Roadmap
@@ -1176,21 +1862,80 @@
             if (container && !container.contains(e.target)) {
                 closeLocationsModeMenu();
             }
+            const searchContainer = document.getElementById('mapSearchContainer');
+            if (searchContainer && !searchContainer.contains(e.target)) {
+                closeMapSearchSuggestions();
+            }
         });
+
+        // Search Input Interactive Auto-suggestions
+        const searchInput = document.getElementById('mapSearchInput');
+        const clearBtn = document.getElementById('clearMapSearchBtn');
+        const suggestionsBox = document.getElementById('mapSearchSuggestions');
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const val = this.value.trim().toLowerCase();
+                if (clearBtn) {
+                    if (val.length > 0) clearBtn.classList.remove('hidden');
+                    else clearBtn.classList.add('hidden');
+                }
+
+                if (!suggestionsBox) return;
+
+                if (val.length < 1) {
+                    suggestionsBox.classList.add('hidden');
+                    suggestionsBox.innerHTML = '';
+                    return;
+                }
+
+                const matches = [];
+                for (const [k, v] of Object.entries(PLACE_DATABASE)) {
+                    if (k.includes(val) || (v.country && v.country.toLowerCase().includes(val)) || (v.city && v.city.toLowerCase().includes(val))) {
+                        matches.push({ key: k, data: v });
+                        if (matches.length >= 6) break;
+                    }
+                }
+
+                if (matches.length > 0) {
+                    suggestionsBox.innerHTML = matches.map(m => `
+                        <div onclick="exploreCountryByName('${m.key}'); closeMapSearchSuggestions();"
+                             class="px-3.5 py-2 hover:bg-blue-50 cursor-pointer flex items-center justify-between text-xs transition-colors">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-blue-600 font-bold">📍</span>
+                                <div>
+                                    <p class="font-extrabold text-slate-800">${escapeHtml(m.data.city)}, ${escapeHtml(m.data.country)}</p>
+                                    <p class="text-[10px] text-slate-400 capitalize">${escapeHtml(m.data.type || 'Simpul Dunia')}</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-mono text-slate-400 font-bold">&rarr;</span>
+                        </div>
+                    `).join('');
+                    suggestionsBox.classList.remove('hidden');
+                } else {
+                    suggestionsBox.innerHTML = `
+                        <div onclick="executeMapSearch()" class="px-3.5 py-2 hover:bg-blue-50 cursor-pointer text-xs text-blue-600 font-bold flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <span>Telusuri "${escapeHtml(this.value)}" di seluruh dunia via Geocoding Nominatim...</span>
+                        </div>
+                    `;
+                    suggestionsBox.classList.remove('hidden');
+                }
+            });
+
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    executeMapSearch();
+                } else if (e.key === 'Escape') {
+                    closeMapSearchSuggestions();
+                }
+            });
+        }
 
         setTimeout(function() {
             map.invalidateSize();
         }, 200);
-
-        function escapeHtml(str) {
-            if (str === null || str === undefined) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        }
 
         function isValidCoord(lat, lng) {
             if (lat === null || lat === undefined || lat === '' || lng === null || lng === undefined || lng === '') return false;
@@ -1202,6 +1947,7 @@
         const bounds = [];
         locationsBounds = bounds;
 
+        // Render all 21 logistics hubs with high-contrast Google Maps blue pins
         mapLocations.forEach(loc => {
             if (!isValidCoord(loc.lat, loc.lng)) return;
 
@@ -1227,7 +1973,7 @@
             bounds.push([loc.lat, loc.lng]);
         });
 
-        // Also add Islamabad as a highlighted explore pin on the map
+        // Add Islamabad as prominent highlighted explore pin on the map
         const islamabadInfo = PLACE_DATABASE['islamabad'];
         const isbMarker = L.marker([33.6844, 73.0479], {
             icon: createHubPinIcon('Islamabad')
@@ -1264,15 +2010,18 @@
 
         bounds.push([33.6844, 73.0479]);
 
+        // Fit initial view gracefully to 1 complete world containing all nodes without duplicate Americas
         if (bounds.length > 0) {
-            map.fitBounds(bounds, { padding: [50, 50], maxZoom: 5 });
+            map.fitBounds(bounds, { padding: [40, 40], maxZoom: 5 });
+        } else {
+            map.fitBounds([[-55, -170], [70, 175]], { padding: [15, 15] });
         }
 
-        // Clicking anywhere on map explores that location
+        // Clicking anywhere on the map explores that exact location
         map.on('click', function(e) {
             const lat = e.latlng.lat;
             const lng = e.latlng.lng;
-            
+
             // Check if clicked close to an existing hub
             let closest = null;
             let closestDist = Infinity;
