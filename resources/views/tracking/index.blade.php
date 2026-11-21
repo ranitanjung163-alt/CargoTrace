@@ -321,60 +321,133 @@
                 </div>
             </div>
 
-            <!-- Floating 4-Way Directional Pan Controller & Zoom Dock (Geser Peta ke Kiri, Kanan, Atas, Bawah) -->
-            <div class="absolute bottom-4 left-4 z-[400] flex flex-col items-center gap-2 pointer-events-auto">
-                <!-- 4-Way Directional Pan Compass D-Pad -->
-                <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-slate-200/90 p-1.5 flex flex-col items-center gap-1 select-none">
-                    <!-- Up / Atas -->
-                    <button type="button" onclick="panMap('up')" title="Geser Peta ke Atas (Pan Up)"
-                            class="w-7 h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
-                    </button>
-                    <!-- Middle Row: Left, Center Re-fit, Right -->
-                    <div class="flex items-center gap-1">
-                        <!-- Left / Kiri -->
-                        <button type="button" onclick="panMap('left')" title="Geser Peta ke Kiri (Pan Left)"
+            <!-- Floating Controls Dock: Directional Pan Controller, Zoom, and Google Maps Signature "Lapisan" (Dual Mode) Widget -->
+            <div class="absolute bottom-4 left-4 z-[400] flex items-end gap-2.5 pointer-events-auto">
+                <!-- 4-Way Directional Pan Compass D-Pad & Zoom Controls -->
+                <div class="flex flex-col items-center gap-2">
+                    <!-- 4-Way Directional Pan Compass D-Pad -->
+                    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-slate-200/90 p-1.5 flex flex-col items-center gap-1 select-none">
+                        <!-- Up / Atas -->
+                        <button type="button" onclick="panMap('up')" title="Geser Peta ke Atas (Pan Up)"
                                 class="w-7 h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
                         </button>
-                        <!-- Center: Fit Route / Reset View -->
-                        <button type="button" onclick="panMap('center')" title="Fokuskan ke Rute Pengiriman (Focus Consignment Route)"
-                                class="w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white flex items-center justify-center transition-all active:scale-95 font-bold text-xs" id="fitRouteBtn">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg>
-                        </button>
-                        <!-- Right / Kanan -->
-                        <button type="button" onclick="panMap('right')" title="Geser Peta ke Kanan (Pan Right)"
+                        <!-- Middle Row: Left, Center Re-fit, Right -->
+                        <div class="flex items-center gap-1">
+                            <!-- Left / Kiri -->
+                            <button type="button" onclick="panMap('left')" title="Geser Peta ke Kiri (Pan Left)"
+                                    class="w-7 h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                            </button>
+                            <!-- Center: Fit Route / Reset View -->
+                            <button type="button" onclick="panMap('center')" title="Fokuskan ke Rute Pengiriman (Focus Consignment Route)"
+                                    class="w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white flex items-center justify-center transition-all active:scale-95 font-bold text-xs" id="fitRouteBtn">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg>
+                            </button>
+                            <!-- Right / Kanan -->
+                            <button type="button" onclick="panMap('right')" title="Geser Peta ke Kanan (Pan Right)"
+                                    class="w-7 h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                        <!-- Down / Bawah -->
+                        <button type="button" onclick="panMap('down')" title="Geser Peta ke Bawah (Pan Down)"
                                 class="w-7 h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                     </div>
-                    <!-- Down / Bawah -->
-                    <button type="button" onclick="panMap('down')" title="Geser Peta ke Bawah (Pan Down)"
-                            class="w-7 h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
+
+                    <!-- Navigation Quick Actions (World View & Fit Consignment) & Zoom Controls (+ and -) -->
+                    <div class="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-slate-200/90 p-0.5 flex flex-col items-center select-none">
+                        <!-- Zoom In -->
+                        <button type="button" onclick="map && map.zoomIn()" title="Perbesar (Zoom In)"
+                                class="w-7 h-7 hover:bg-slate-100 text-slate-700 font-bold flex items-center justify-center rounded-lg transition-all text-sm active:scale-95">+</button>
+                        <div class="w-full h-px bg-slate-200"></div>
+                        <!-- Zoom Out -->
+                        <button type="button" onclick="map && map.zoomOut()" title="Perkecil (Zoom Out)"
+                                class="w-7 h-7 hover:bg-slate-100 text-slate-700 font-bold flex items-center justify-center rounded-lg transition-all text-sm active:scale-95">&minus;</button>
+                        <div class="w-full h-px bg-slate-200"></div>
+                        <!-- World View (Kembali ke Tampilan Seluruh Dunia) -->
+                        <button type="button" onclick="panMap('world')" title="Kembali ke Tampilan Seluruh Dunia (World View)"
+                                class="w-7 h-7 hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center rounded-lg transition-all text-xs active:scale-95">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        </button>
+                        <div class="w-full h-px bg-slate-200"></div>
+                        <!-- Focus Consignment (Kembali ke Lokasi/Area Shipment) -->
+                        <button type="button" onclick="panMap('center')" title="Fokus ke Area Shipment Terpilih (Focus Consignment)"
+                                class="w-7 h-7 hover:bg-emerald-50 text-slate-700 hover:text-emerald-600 flex items-center justify-center rounded-lg transition-all text-xs active:scale-95">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Navigation Quick Actions (World View & Fit Consignment) & Zoom Controls (+ and -) -->
-                <div class="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-slate-200/90 p-0.5 flex flex-col items-center select-none">
-                    <!-- Zoom In -->
-                    <button type="button" onclick="map && map.zoomIn()" title="Perbesar (Zoom In)"
-                            class="w-7 h-7 hover:bg-slate-100 text-slate-700 font-bold flex items-center justify-center rounded-lg transition-all text-sm active:scale-95">+</button>
-                    <div class="w-full h-px bg-slate-200"></div>
-                    <!-- Zoom Out -->
-                    <button type="button" onclick="map && map.zoomOut()" title="Perkecil (Zoom Out)"
-                            class="w-7 h-7 hover:bg-slate-100 text-slate-700 font-bold flex items-center justify-center rounded-lg transition-all text-sm active:scale-95">&minus;</button>
-                    <div class="w-full h-px bg-slate-200"></div>
-                    <!-- World View (Kembali ke Tampilan Seluruh Dunia) -->
-                    <button type="button" onclick="panMap('world')" title="Kembali ke Tampilan Seluruh Dunia (World View)"
-                            class="w-7 h-7 hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center rounded-lg transition-all text-xs active:scale-95">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <!-- Google Maps Signature "Lapisan" Toggle Button & Mode Drawer -->
+                <div class="relative select-none" id="mapModeContainer">
+                    <!-- Drawer Popup Menu (Jenis Peta: Default & Satelit) -->
+                    <div id="mapModeMenu" class="hidden absolute bottom-16 left-0 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/90 p-3 w-56 z-[450] select-none transition-all duration-200">
+                        <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                            <span class="text-xs font-black text-slate-800 tracking-tight flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                                Jenis peta
+                            </span>
+                            <button type="button" onclick="closeMapModeMenu()" class="text-slate-400 hover:text-slate-700 text-sm font-bold px-1">&times;</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <!-- Option 1: Default Mode -->
+                            <button type="button" onclick="setMapDisplayMode('default')" id="btnModeDefault"
+                                    class="group flex flex-col items-center p-1.5 rounded-xl border border-slate-200 hover:border-blue-500 transition-all text-center">
+                                <div class="w-full h-14 rounded-lg overflow-hidden border border-slate-200 mb-1 relative bg-slate-100 flex items-center justify-center">
+                                    <svg viewBox="0 0 60 60" class="w-full h-full object-cover">
+                                        <rect width="60" height="60" fill="#f2efe9"/>
+                                        <path d="M0 20 Q 30 15 60 25 L 60 60 L 0 60 Z" fill="#aad3df" opacity="0.7"/>
+                                        <path d="M10 0 L 15 60 M 35 0 L 30 60 M 0 35 L 60 30" stroke="#ffffff" stroke-width="3"/>
+                                        <path d="M0 15 L 60 45" stroke="#fbd364" stroke-width="2.5"/>
+                                        <circle cx="30" cy="30" r="3.5" fill="#ea4335"/>
+                                    </svg>
+                                </div>
+                                <span class="text-[11px] font-bold text-slate-800 group-hover:text-blue-600">Default</span>
+                                <span class="text-[9px] text-slate-400">Peta Jalan</span>
+                            </button>
+
+                            <!-- Option 2: Satelit Mode -->
+                            <button type="button" onclick="setMapDisplayMode('satellite')" id="btnModeSatellite"
+                                    class="group flex flex-col items-center p-1.5 rounded-xl border border-slate-200 hover:border-blue-500 transition-all text-center">
+                                <div class="w-full h-14 rounded-lg overflow-hidden border border-slate-200 mb-1 relative bg-slate-800 flex items-center justify-center">
+                                    <svg viewBox="0 0 60 60" class="w-full h-full object-cover">
+                                        <rect width="60" height="60" fill="#142838"/>
+                                        <path d="M0 25 Q 25 15 60 35 L 60 60 L 0 60 Z" fill="#2d4a22"/>
+                                        <path d="M15 10 Q 35 30 50 15" fill="#4d5336"/>
+                                        <path d="M0 18 L 60 42" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.8"/>
+                                        <path d="M20 0 L 25 60" stroke="#fbd364" stroke-width="1.2" stroke-opacity="0.8"/>
+                                        <rect x="22" y="24" width="4" height="4" fill="#ffffff" opacity="0.9"/>
+                                        <rect x="30" y="28" width="5" height="3" fill="#ffffff" opacity="0.9"/>
+                                        <rect x="28" y="20" width="3" height="4" fill="#ffffff" opacity="0.9"/>
+                                        <circle cx="28" cy="26" r="2.5" fill="#ea4335"/>
+                                    </svg>
+                                </div>
+                                <span class="text-[11px] font-bold text-slate-800 group-hover:text-blue-600">Satelit</span>
+                                <span class="text-[9px] text-slate-400">Rumah Warga</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Main "Lapisan" Square Thumbnail Button -->
+                    <button type="button" onclick="toggleMapMode()" oncontextmenu="event.preventDefault(); toggleMapModeMenu();"
+                            id="mapModeToggleBtn" title="Ganti Mode Peta (Default / Satelit) - Klik untuk beralih mode, klik menu untuk memilih"
+                            class="group relative w-14 h-14 rounded-xl overflow-hidden shadow-lg border-2 border-white hover:border-blue-500 transition-all duration-200 flex flex-col justify-end bg-slate-900 active:scale-95">
+                        <div id="mapModeThumbnail" class="absolute inset-0 w-full h-full pointer-events-none">
+                            <!-- In default mode, thumbnail shows satellite image encouraging user to switch -->
+                        </div>
+                        <div class="relative z-10 w-full bg-gradient-to-t from-black/80 via-black/50 to-transparent py-0.5 px-0.5 text-center pointer-events-none">
+                            <span class="text-[10px] font-extrabold text-white tracking-tight flex items-center justify-center">
+                                <span id="mapModeBtnLabel">Lapisan</span>
+                            </span>
+                        </div>
                     </button>
-                    <div class="w-full h-px bg-slate-200"></div>
-                    <!-- Focus Consignment (Kembali ke Lokasi/Area Shipment) -->
-                    <button type="button" onclick="panMap('center')" title="Fokus ke Area Shipment Terpilih (Focus Consignment)"
-                            class="w-7 h-7 hover:bg-emerald-50 text-slate-700 hover:text-emerald-600 flex items-center justify-center rounded-lg transition-all text-xs active:scale-95">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <!-- Small Menu Trigger Dot / Icon on button corner -->
+                    <button type="button" onclick="toggleMapModeMenu()" title="Pilih Jenis Peta"
+                            class="absolute -top-1.5 -right-1.5 z-20 w-5 h-5 rounded-full bg-white shadow-md border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center text-[10px] font-bold">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                     </button>
                 </div>
             </div>
@@ -950,14 +1023,85 @@
         mapInstance.on('zoomend', keepInVerticalBounds);
     }
 
+    // -------------------------------------------------------------
+    // DUAL MAP MODE CONTROLLER: DEFAULT (ROADMAP) & SATELIT (HYBRID)
+    // -------------------------------------------------------------
+    let currentMapMode = 'default';
+    let googleRoadmapLayer = null;
+    let googleSatelliteLayer = null;
+    let osmDetailedLayer = null;
+
+    const SATELLITE_THUMB_SVG = `<svg viewBox="0 0 60 60" class="w-full h-full object-cover"><rect width="60" height="60" fill="#142838"/><path d="M0 25 Q 25 15 60 35 L 60 60 L 0 60 Z" fill="#2d4a22"/><path d="M15 10 Q 35 30 50 15" fill="#4d5336"/><path d="M0 18 L 60 42" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.8"/><path d="M20 0 L 25 60" stroke="#fbd364" stroke-width="1.2" stroke-opacity="0.8"/><rect x="22" y="24" width="4" height="4" fill="#ffffff" opacity="0.9"/><rect x="30" y="28" width="5" height="3" fill="#ffffff" opacity="0.9"/><rect x="28" y="20" width="3" height="4" fill="#ffffff" opacity="0.9"/><circle cx="28" cy="26" r="2.5" fill="#ea4335"/></svg>`;
+
+    const ROADMAP_THUMB_SVG = `<svg viewBox="0 0 60 60" class="w-full h-full object-cover"><rect width="60" height="60" fill="#f2efe9"/><path d="M0 20 Q 30 15 60 25 L 60 60 L 0 60 Z" fill="#aad3df" opacity="0.7"/><path d="M10 0 L 15 60 M 35 0 L 30 60 M 0 35 L 60 30" stroke="#ffffff" stroke-width="3"/><path d="M0 15 L 60 45" stroke="#fbd364" stroke-width="2.5"/><circle cx="30" cy="30" r="3.5" fill="#ea4335"/></svg>`;
+
+    window.setMapDisplayMode = function(mode) {
+        if (!map || !googleRoadmapLayer || !googleSatelliteLayer) return;
+        currentMapMode = mode;
+
+        if (mode === 'satellite') {
+            if (map.hasLayer(googleRoadmapLayer)) map.removeLayer(googleRoadmapLayer);
+            if (osmDetailedLayer && map.hasLayer(osmDetailedLayer)) map.removeLayer(osmDetailedLayer);
+            if (!map.hasLayer(googleSatelliteLayer)) googleSatelliteLayer.addTo(map);
+        } else {
+            if (map.hasLayer(googleSatelliteLayer)) map.removeLayer(googleSatelliteLayer);
+            if (osmDetailedLayer && map.hasLayer(osmDetailedLayer)) map.removeLayer(osmDetailedLayer);
+            if (!map.hasLayer(googleRoadmapLayer)) googleRoadmapLayer.addTo(map);
+        }
+
+        updateMapModeUI(mode);
+    };
+
+    window.toggleMapMode = function() {
+        const nextMode = (currentMapMode === 'default') ? 'satellite' : 'default';
+        window.setMapDisplayMode(nextMode);
+    };
+
+    window.toggleMapModeMenu = function() {
+        const menu = document.getElementById('mapModeMenu');
+        if (menu) menu.classList.toggle('hidden');
+    };
+
+    window.closeMapModeMenu = function() {
+        const menu = document.getElementById('mapModeMenu');
+        if (menu) menu.classList.add('hidden');
+    };
+
+    function updateMapModeUI(mode) {
+        const thumb = document.getElementById('mapModeThumbnail');
+        const label = document.getElementById('mapModeBtnLabel');
+        const btnDef = document.getElementById('btnModeDefault');
+        const btnSat = document.getElementById('btnModeSatellite');
+
+        if (mode === 'satellite') {
+            if (thumb) thumb.innerHTML = ROADMAP_THUMB_SVG;
+            if (label) label.textContent = 'Default';
+            if (btnSat) {
+                btnSat.className = 'group flex flex-col items-center p-1.5 rounded-xl border-2 border-blue-600 bg-blue-50/60 ring-2 ring-blue-500/30 transition-all text-center';
+            }
+            if (btnDef) {
+                btnDef.className = 'group flex flex-col items-center p-1.5 rounded-xl border border-slate-200 hover:border-blue-500 transition-all text-center';
+            }
+        } else {
+            if (thumb) thumb.innerHTML = SATELLITE_THUMB_SVG;
+            if (label) label.textContent = 'Satelit';
+            if (btnDef) {
+                btnDef.className = 'group flex flex-col items-center p-1.5 rounded-xl border-2 border-blue-600 bg-blue-50/60 ring-2 ring-blue-500/30 transition-all text-center';
+            }
+            if (btnSat) {
+                btnSat.className = 'group flex flex-col items-center p-1.5 rounded-xl border border-slate-200 hover:border-blue-500 transition-all text-center';
+            }
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         renderWaypointsList();
 
-        // Initialize Map with Global Worldwide View, deep zoom (level 20) & smooth 4-way dragging
+        // Initialize Map with Global Worldwide View, deep zoom (level 22) & smooth 4-way dragging
         map = L.map('googleDirectionsMap', {
             zoomControl: false, // Managed by custom floating controller dock
             minZoom: 2,
-            maxZoom: 20,
+            maxZoom: 22, // Deep zoom level 22 to view individual houses, rooftops, alleys & parcels
             scrollWheelZoom: true,
             wheelDebounceTime: 40,
             wheelPxPerZoomLevel: 60,
@@ -981,50 +1125,62 @@
         map.keyboard.enable();
         enforceGoogleMapsContinuity(map);
 
-        // Base Layer 1: OpenStreetMap Standard (Full Global Coverage, Street & Village Level Detail)
-        const osmDetailed = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Leaflet / OpenStreetMap',
-            maxNativeZoom: 19,
-            maxZoom: 20,
-            noWrap: false
-        });
-
-        // Base Layer 2: CartoDB Voyager (Modern High-Detail OpenStreetMap Vector-Style)
-        const cartoVoyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; <a href="https://carto.com/attributions">CARTO</a> &bull; Leaflet / OpenStreetMap',
-            maxNativeZoom: 19,
-            maxZoom: 20,
-            subdomains: 'abcd',
-            noWrap: false
-        });
-
-        // Base Layer 3: Google Maps Standard Roadmap (Bright Clean Road Network)
-        const googleRoadmap = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-            attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
-            maxZoom: 20,
+        // Mode 1: Google Maps Standard Roadmap (Bright Clean Road Network, Street & Village Detail, Building Footprints)
+        googleRoadmapLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            attribution: '&copy; Google Maps &bull; Leaflet',
+            maxNativeZoom: 20,
+            maxZoom: 22,
             subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
             noWrap: false
         });
 
-        // Base Layer 4: Google Maps Satellite Hybrid (Photorealistic Satellite Imagery with Roads & Country Labels)
-        const googleSatelliteHybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
-            attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
-            maxZoom: 20,
+        // Mode 2: Google Maps Satellite Hybrid (Photorealistic Satellite Imagery with Roads, Labels & Individual Houses/Rooftops)
+        googleSatelliteLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            attribution: '&copy; Google Maps Satellite &bull; Leaflet',
+            maxNativeZoom: 20,
+            maxZoom: 22,
             subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
             noWrap: false
         });
 
-        // Default to OpenStreetMap Detailed (Bright, clean, and full street/village level coverage)
-        osmDetailed.addTo(map);
+        // Mode 3: OpenStreetMap Standard (Community Ground-Truth Detail)
+        osmDetailedLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Leaflet',
+            maxNativeZoom: 19,
+            maxZoom: 22,
+            noWrap: false
+        });
+
+        // Default to Google Maps Standard Roadmap (Clean, bright, street-level coverage)
+        googleRoadmapLayer.addTo(map);
 
         // Layer Switcher Control (topright)
         const baseLayers = {
-            "🌐 OpenStreetMap (Peta Jalan & Desa)": osmDetailed,
-            "🏙️ CartoDB Voyager (OSM Modern)": cartoVoyager,
-            "🗺️ Google Roadmap (Peta Jalan Bersih)": googleRoadmap,
-            "🛰️ Google Satellite (Citra Satelit)": googleSatelliteHybrid
+            "🗺️ Default (Peta Standar)": googleRoadmapLayer,
+            "🛰️ Satelit (Citra Satelit & Rumah Warga)": googleSatelliteLayer,
+            "🌐 OpenStreetMap (Peta Jalan & Desa)": osmDetailedLayer
         };
         L.control.layers(baseLayers, null, { position: 'topright' }).addTo(map);
+
+        map.on('baselayerchange', function(e) {
+            if (e.layer === googleSatelliteLayer) {
+                currentMapMode = 'satellite';
+                updateMapModeUI('satellite');
+            } else if (e.layer === googleRoadmapLayer) {
+                currentMapMode = 'default';
+                updateMapModeUI('default');
+            }
+        });
+
+        updateMapModeUI('default');
+
+        // Dismiss mode menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const container = document.getElementById('mapModeContainer');
+            if (container && !container.contains(e.target)) {
+                closeMapModeMenu();
+            }
+        });
 
         plotRouteOnMap();
 

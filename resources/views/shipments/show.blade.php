@@ -169,6 +169,20 @@
                 <div class="relative">
                     <div id="shipmentMap" class="w-full h-80 rounded-xl border border-brand-border z-10 overflow-hidden shadow-inner" style="touch-action: none !important; cursor: grab; background-color: #f8fafc !important;"></div>
 
+                    <!-- Google Maps Signature "Lapisan" (Dual Mode) Toggle Button -->
+                    <div class="absolute bottom-2.5 left-2.5 z-20 select-none">
+                        <button type="button" onclick="toggleShipmentMapMode()" id="shipmentMapModeBtn"
+                                title="Ganti Mode Peta (Default / Satelit) - Zoom hingga rumah warga"
+                                class="w-11 h-11 rounded-xl overflow-hidden shadow-md border-2 border-white hover:border-blue-500 transition-all flex flex-col justify-end bg-slate-900 active:scale-95">
+                            <div id="shipmentMapModeThumb" class="absolute inset-0 w-full h-full pointer-events-none">
+                                <svg viewBox="0 0 60 60" class="w-full h-full object-cover"><rect width="60" height="60" fill="#142838"/><path d="M0 25 Q 25 15 60 35 L 60 60 L 0 60 Z" fill="#2d4a22"/><path d="M15 10 Q 35 30 50 15" fill="#4d5336"/><path d="M0 18 L 60 42" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.8"/><path d="M20 0 L 25 60" stroke="#fbd364" stroke-width="1.2" stroke-opacity="0.8"/><rect x="22" y="24" width="4" height="4" fill="#ffffff" opacity="0.9"/><rect x="30" y="28" width="5" height="3" fill="#ffffff" opacity="0.9"/><circle cx="28" cy="26" r="2.5" fill="#ea4335"/></svg>
+                            </div>
+                            <div class="relative z-10 w-full bg-gradient-to-t from-black/80 to-transparent py-0.5 text-center pointer-events-none">
+                                <span class="text-[9px] font-extrabold text-white tracking-tight leading-none" id="shipmentMapModeLabel">Satelit</span>
+                            </div>
+                        </button>
+                    </div>
+
                     <!-- 4-Way Directional Pan Dock & Navigation Actions -->
                     <div class="absolute bottom-2.5 right-2.5 z-20 bg-white/95 backdrop-blur-md p-1 rounded-xl border border-slate-200 shadow-soft-xs flex items-center space-x-1 select-none">
                         <button type="button" onclick="panShipmentMap('left')" title="Geser ke Kiri (Pan Left)" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors">
@@ -752,7 +766,7 @@
         const map = L.map('shipmentMap', {
             zoomControl: true,
             minZoom: 2,
-            maxZoom: 20,
+            maxZoom: 22, // Deep zoom level 22 to view individual houses, rooftops & parcels
             scrollWheelZoom: true,
             wheelDebounceTime: 40,
             wheelPxPerZoomLevel: 60,
@@ -772,48 +786,75 @@
         map.scrollWheelZoom.enable();
         enforceGoogleMapsContinuity(map);
 
-        // Base Layer 1: OpenStreetMap Standard (Full Street & Village Level Detail)
-        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Leaflet / OpenStreetMap',
-            maxNativeZoom: 19,
-            maxZoom: 20,
-            noWrap: false
-        });
-
-        // Base Layer 2: CartoDB Voyager (Modern High-Detail OpenStreetMap Vector-Style)
-        const cartoVoyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; <a href="https://carto.com/attributions">CARTO</a> &bull; Leaflet / OpenStreetMap',
-            maxNativeZoom: 19,
-            maxZoom: 20,
-            subdomains: 'abcd',
-            noWrap: false
-        });
-
-        // Base Layer 3: Google Maps Standard Roadmap (Bright Clean Road Network)
+        // Mode 1: Google Maps Standard Roadmap (Bright Clean Road Network, Street & Village Detail)
         const googleRoadmap = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-            attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
-            maxZoom: 20,
+            attribution: '&copy; Google Maps &bull; Leaflet',
+            maxNativeZoom: 20,
+            maxZoom: 22,
             subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
             noWrap: false
         });
 
-        // Base Layer 4: Google Maps Satellite Hybrid (Photorealistic Satellite Imagery)
+        // Mode 2: Google Maps Satellite Hybrid (Photorealistic Satellite Imagery with Roads, Labels & Individual Houses/Rooftops)
         const googleSatellite = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
-            attribution: '&copy; Google Maps &bull; Leaflet / OpenStreetMap contributors',
-            maxZoom: 20,
+            attribution: '&copy; Google Maps Satellite &bull; Leaflet',
+            maxNativeZoom: 20,
+            maxZoom: 22,
             subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
             noWrap: false
         });
 
-        // Default to OpenStreetMap Layer
-        osmLayer.addTo(map);
+        // Base Layer 3: OpenStreetMap Standard
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Leaflet',
+            maxNativeZoom: 19,
+            maxZoom: 22,
+            noWrap: false
+        });
 
-        L.control.layers({
-            "🌐 OpenStreetMap": osmLayer,
-            "🏙️ CartoDB Voyager": cartoVoyager,
-            "🗺️ Google Roadmap": googleRoadmap,
-            "🛰️ Google Satellite": googleSatellite
-        }, null, { position: 'topright' }).addTo(map);
+        // Default to Google Maps Roadmap
+        googleRoadmap.addTo(map);
+
+        const baseLayers = {
+            "🗺️ Default (Peta Standar)": googleRoadmap,
+            "🛰️ Satelit (Citra Satelit & Rumah Warga)": googleSatellite,
+            "🌐 OpenStreetMap": osmLayer
+        };
+        L.control.layers(baseLayers, null, { position: 'topright' }).addTo(map);
+
+        let currentShipmentMode = 'default';
+        const SAT_SVG = `<svg viewBox="0 0 60 60" class="w-full h-full object-cover"><rect width="60" height="60" fill="#142838"/><path d="M0 25 Q 25 15 60 35 L 60 60 L 0 60 Z" fill="#2d4a22"/><path d="M15 10 Q 35 30 50 15" fill="#4d5336"/><path d="M0 18 L 60 42" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.8"/><path d="M20 0 L 25 60" stroke="#fbd364" stroke-width="1.2" stroke-opacity="0.8"/><rect x="22" y="24" width="4" height="4" fill="#ffffff" opacity="0.9"/><rect x="30" y="28" width="5" height="3" fill="#ffffff" opacity="0.9"/><rect x="28" y="20" width="3" height="4" fill="#ffffff" opacity="0.9"/><circle cx="28" cy="26" r="2.5" fill="#ea4335"/></svg>`;
+        const ROAD_SVG = `<svg viewBox="0 0 60 60" class="w-full h-full object-cover"><rect width="60" height="60" fill="#f2efe9"/><path d="M0 20 Q 30 15 60 25 L 60 60 L 0 60 Z" fill="#aad3df" opacity="0.7"/><path d="M10 0 L 15 60 M 35 0 L 30 60 M 0 35 L 60 30" stroke="#ffffff" stroke-width="3"/><path d="M0 15 L 60 45" stroke="#fbd364" stroke-width="2.5"/><circle cx="30" cy="30" r="3.5" fill="#ea4335"/></svg>`;
+
+        window.toggleShipmentMapMode = function() {
+            if (currentShipmentMode === 'default') {
+                if (map.hasLayer(googleRoadmap)) map.removeLayer(googleRoadmap);
+                if (map.hasLayer(osmLayer)) map.removeLayer(osmLayer);
+                if (!map.hasLayer(googleSatellite)) googleSatellite.addTo(map);
+                currentShipmentMode = 'satellite';
+                document.getElementById('shipmentMapModeThumb').innerHTML = ROAD_SVG;
+                document.getElementById('shipmentMapModeLabel').textContent = 'Default';
+            } else {
+                if (map.hasLayer(googleSatellite)) map.removeLayer(googleSatellite);
+                if (map.hasLayer(osmLayer)) map.removeLayer(osmLayer);
+                if (!map.hasLayer(googleRoadmap)) googleRoadmap.addTo(map);
+                currentShipmentMode = 'default';
+                document.getElementById('shipmentMapModeThumb').innerHTML = SAT_SVG;
+                document.getElementById('shipmentMapModeLabel').textContent = 'Satelit';
+            }
+        };
+
+        map.on('baselayerchange', function(e) {
+            if (e.layer === googleSatellite) {
+                currentShipmentMode = 'satellite';
+                document.getElementById('shipmentMapModeThumb').innerHTML = ROAD_SVG;
+                document.getElementById('shipmentMapModeLabel').textContent = 'Default';
+            } else if (e.layer === googleRoadmap) {
+                currentShipmentMode = 'default';
+                document.getElementById('shipmentMapModeThumb').innerHTML = SAT_SVG;
+                document.getElementById('shipmentMapModeLabel').textContent = 'Satelit';
+            }
+        });
 
         setTimeout(function() {
             map.invalidateSize();
