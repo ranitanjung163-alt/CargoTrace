@@ -96,6 +96,10 @@
         .radar-pulse {
             animation: radar-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
         }
+        /* Clean Google Translate Integration (Seamless Multilingual Experience) */
+        body { top: 0px !important; position: static !important; }
+        .goog-te-banner-frame, #goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
+        .goog-text-highlight { background: none !important; box-shadow: none !important; }
     </style>
     @stack('styles')
 </head>
@@ -271,6 +275,116 @@
                         <span class="absolute right-2.5 top-2 px-1.5 py-0.5 text-[10px] font-mono font-bold text-slate-400 bg-white border border-slate-200 rounded-md shadow-xs pointer-events-none">/</span>
                     </form>
 
+                    <!-- Language Translation Switcher (Fitur Penerjemah Bahasa) -->
+                    <div class="relative notranslate" id="langDropdownContainer">
+                        <button type="button" id="langDropdownBtn" title="Translate / Terjemahkan Bahasa"
+                                class="flex items-center space-x-1.5 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 shadow-soft-xs transition-all hover:border-brand-primary/50 focus:outline-none">
+                            <span class="text-sm">🌐</span>
+                            <span id="currentLangFlag">🇺🇸</span>
+                            <span id="currentLangLabel" class="hidden sm:inline">English</span>
+                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+
+                        <!-- Language Dropdown Menu -->
+                        <div id="langDropdownMenu" class="hidden absolute right-0 mt-2.5 w-60 bg-white border border-slate-200 rounded-2xl shadow-soft-lg py-2.5 z-50 animate-in fade-in zoom-in-95 duration-100 select-none">
+                            <div class="px-3.5 pb-2 border-b border-slate-100 flex items-center justify-between">
+                                <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                    Translate / Terjemahkan
+                                </span>
+                                <span class="text-[9px] font-mono text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded">14+ Bahasa</span>
+                            </div>
+                            <div class="max-h-64 overflow-y-auto divide-y divide-slate-50 py-1" id="langListOptions">
+                                <button type="button" onclick="changeAppLanguage('en')" class="w-full text-left px-3.5 py-2 hover:bg-blue-50 flex items-center justify-between text-xs transition-colors group">
+                                    <span class="flex items-center gap-2 font-bold text-slate-800 group-hover:text-blue-700">
+                                        <span>🇺🇸</span>
+                                        <span>English</span>
+                                    </span>
+                                    <span class="text-[10px] text-slate-400 font-medium">Default</span>
+                                </button>
+                                <button type="button" onclick="changeAppLanguage('id')" class="w-full text-left px-3.5 py-2 hover:bg-blue-50 flex items-center justify-between text-xs transition-colors group">
+                                    <span class="flex items-center gap-2 font-bold text-slate-800 group-hover:text-blue-700">
+                                        <span>🇮🇩</span>
+                                        <span>Bahasa Indonesia</span>
+                                    </span>
+                                    <span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">Lokal</span>
+                                </button>
+                                <button type="button" onclick="changeAppLanguage('zh-CN')" class="w-full text-left px-3.5 py-2 hover:bg-blue-50 flex items-center justify-between text-xs transition-colors group">
+                                    <span class="flex items-center gap-2 font-bold text-slate-800 group-hover:text-blue-700">
+                                        <span>🇨🇳</span>
+                                        <span>简体中文 (Chinese)</span>
+                                    </span>
+                                </button>
+                                <button type="button" onclick="changeAppLanguage('ja')" class="w-full text-left px-3.5 py-2 hover:bg-blue-50 flex items-center justify-between text-xs transition-colors group">
+                                    <span class="flex items-center gap-2 font-bold text-slate-800 group-hover:text-blue-700">
+                                        <span>🇯🇵</span>
+                                        <span>日本語 (Japanese)</span>
+                                    </span>
+                                </button>
+                                <button type="button" onclick="changeAppLanguage('ar')" class="w-full text-left px-3.5 py-2 hover:bg-blue-50 flex items-center justify-between text-xs transition-colors group">
+                                    <span class="flex items-center gap-2 font-bold text-slate-800 group-hover:text-blue-700">
+                                        <span>🇸🇦</span>
+                                        <span>العربية (Arabic)</span>
+                                    </span>
+                                </button>
+                                <button type="button" onclick="changeAppLanguage('de')" class="w-full text-left px-3.5 py-2 hover:bg-blue-50 flex items-center justify-between text-xs transition-colors group">
+                                    <span class="flex items-center gap-2 font-bold text-slate-800 group-hover:text-blue-700">
+                                        <span>🇩🇪</span>
+                                        <span>Deutsch (German)</span>
+                                    </span>
+                                </button>
+                                <button type="button" onclick="changeAppLanguage('fr')" class="w-full text-left px-3.5 py-2 hover:bg-blue-50 flex items-center justify-between text-xs transition-colors group">
+                                    <span class="flex items-center gap-2 font-bold text-slate-800 group-hover:text-blue-700">
+                                        <span>🇫🇷</span>
+                                        <span>Français (French)</span>
+                                    </span>
+                                </button>
+                                <button type="button" onclick="changeAppLanguage('es')" class="w-full text-left px-3.5 py-2 hover:bg-blue-50 flex items-center justify-between text-xs transition-colors group">
+                                    <span class="flex items-center gap-2 font-bold text-slate-800 group-hover:text-blue-700">
+                                        <span>🇪🇸</span>
+                                        <span>Español (Spanish)</span>
+                                    </span>
+                                </button>
+                                <button type="button" onclick="changeAppLanguage('pt')" class="w-full text-left px-3.5 py-2 hover:bg-blue-50 flex items-center justify-between text-xs transition-colors group">
+                                    <span class="flex items-center gap-2 font-bold text-slate-800 group-hover:text-blue-700">
+                                        <span>🇧🇷</span>
+                                        <span>Português (Portuguese)</span>
+                                    </span>
+                                </button>
+                                <button type="button" onclick="changeAppLanguage('ru')" class="w-full text-left px-3.5 py-2 hover:bg-blue-50 flex items-center justify-between text-xs transition-colors group">
+                                    <span class="flex items-center gap-2 font-bold text-slate-800 group-hover:text-blue-700">
+                                        <span>🇷🇺</span>
+                                        <span>Русский (Russian)</span>
+                                    </span>
+                                </button>
+                                <button type="button" onclick="changeAppLanguage('ko')" class="w-full text-left px-3.5 py-2 hover:bg-blue-50 flex items-center justify-between text-xs transition-colors group">
+                                    <span class="flex items-center gap-2 font-bold text-slate-800 group-hover:text-blue-700">
+                                        <span>🇰🇷</span>
+                                        <span>한국어 (Korean)</span>
+                                    </span>
+                                </button>
+                                <button type="button" onclick="changeAppLanguage('nl')" class="w-full text-left px-3.5 py-2 hover:bg-blue-50 flex items-center justify-between text-xs transition-colors group">
+                                    <span class="flex items-center gap-2 font-bold text-slate-800 group-hover:text-blue-700">
+                                        <span>🇳🇱</span>
+                                        <span>Nederlands (Dutch)</span>
+                                    </span>
+                                </button>
+                                <button type="button" onclick="changeAppLanguage('it')" class="w-full text-left px-3.5 py-2 hover:bg-blue-50 flex items-center justify-between text-xs transition-colors group">
+                                    <span class="flex items-center gap-2 font-bold text-slate-800 group-hover:text-blue-700">
+                                        <span>🇮🇹</span>
+                                        <span>Italiano (Italian)</span>
+                                    </span>
+                                </button>
+                                <button type="button" onclick="changeAppLanguage('tr')" class="w-full text-left px-3.5 py-2 hover:bg-blue-50 flex items-center justify-between text-xs transition-colors group">
+                                    <span class="flex items-center gap-2 font-bold text-slate-800 group-hover:text-blue-700">
+                                        <span>🇹🇷</span>
+                                        <span>Türkçe (Turkish)</span>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Notifications Bell Icon with Badge -->
                     @php
                         $unreadCount = auth()->user()->notifications()->where('is_read', false)->count();
@@ -421,6 +535,99 @@
             });
         }
     </script>
+
+    <!-- Google Translate Element & Dynamic Multilingual Engine -->
+    <div id="google_translate_element" style="position:absolute; left:-9999px; top:-9999px; opacity:0; pointer-events:none;"></div>
+    <script type="text/javascript">
+        const WC360_LANGS = {
+            'en': { name: 'English', flag: '🇺🇸' },
+            'id': { name: 'Indonesia', flag: '🇮🇩' },
+            'zh-CN': { name: '中文', flag: '🇨🇳' },
+            'ja': { name: '日本語', flag: '🇯🇵' },
+            'ar': { name: 'العربية', flag: '🇸🇦' },
+            'de': { name: 'Deutsch', flag: '🇩🇪' },
+            'fr': { name: 'Français', flag: '🇫🇷' },
+            'es': { name: 'Español', flag: '🇪🇸' },
+            'pt': { name: 'Português', flag: '🇧🇷' },
+            'ru': { name: 'Русский', flag: '🇷🇺' },
+            'ko': { name: '한국어', flag: '🇰🇷' },
+            'nl': { name: 'Nederlands', flag: '🇳🇱' },
+            'it': { name: 'Italiano', flag: '🇮🇹' },
+            'tr': { name: 'Türkçe', flag: '🇹🇷' }
+        };
+
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,id,zh-CN,ja,ar,de,fr,es,pt,ru,ko,nl,it,tr',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+
+        function changeAppLanguage(langCode) {
+            if (!langCode || langCode === 'en') {
+                document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + window.location.hostname + ";";
+                document.cookie = "googtrans=/en/en; path=/;";
+                document.cookie = "googtrans=/en/en; path=/; domain=" + window.location.hostname + ";";
+                localStorage.setItem('wc360_selected_lang', 'en');
+            } else {
+                document.cookie = "googtrans=/en/" + langCode + "; path=/;";
+                document.cookie = "googtrans=/en/" + langCode + "; path=/; domain=" + window.location.hostname + ";";
+                localStorage.setItem('wc360_selected_lang', langCode);
+            }
+
+            // Sync with Google Translate DOM combo if ready, or reload
+            const combo = document.querySelector('.goog-te-combo');
+            if (combo) {
+                combo.value = langCode;
+                combo.dispatchEvent(new Event('change'));
+            } else {
+                window.location.reload();
+            }
+
+            updateLangDropdownUI(langCode);
+            const dropdown = document.getElementById('langDropdownMenu');
+            if (dropdown) dropdown.classList.add('hidden');
+        }
+
+        function updateLangDropdownUI(langCode) {
+            const info = WC360_LANGS[langCode] || WC360_LANGS['en'];
+            const flagEl = document.getElementById('currentLangFlag');
+            const labelEl = document.getElementById('currentLangLabel');
+            if (flagEl) flagEl.textContent = info.flag;
+            if (labelEl) labelEl.textContent = info.name;
+        }
+
+        // Toggle Language Dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            const langBtn = document.getElementById('langDropdownBtn');
+            const langMenu = document.getElementById('langDropdownMenu');
+            if (langBtn && langMenu) {
+                langBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    langMenu.classList.toggle('hidden');
+                });
+                document.addEventListener('click', function(e) {
+                    if (!langBtn.contains(e.target) && !langMenu.contains(e.target)) {
+                        langMenu.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Restore saved language selection
+            const savedLang = localStorage.getItem('wc360_selected_lang') || getCookieVal('googtrans')?.split('/')[2] || 'en';
+            if (savedLang && WC360_LANGS[savedLang]) {
+                updateLangDropdownUI(savedLang);
+            }
+        });
+
+        function getCookieVal(name) {
+            const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+            return v ? v[2] : null;
+        }
+    </script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
     @stack('scripts')
 </body>
