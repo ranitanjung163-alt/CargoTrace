@@ -22,6 +22,10 @@
   ],
   "env": {
     "APP_ENV": "production",
+    "APP_KEY": "base64:gGzqRanpRf5esjBlu4NFERHdtGgrLPW+Ba4zeo3RAzc=",
+    "APP_URL": "https://cargo-trace-coral.vercel.app",
+    "DB_CONNECTION": "sqlite",
+    "DB_DATABASE": "/tmp/database.sqlite",
     "APP_CONFIG_CACHE": "/tmp/config.php",
     "APP_EVENTS_CACHE": "/tmp/events.php",
     "APP_PACKAGES_CACHE": "/tmp/packages.php",

@@ -16,5 +16,14 @@ foreach ($dirs as $dir) {
     }
 }
 
+// Copy starter SQLite database with all demo data to writable /tmp
+if (!file_exists('/tmp/database.sqlite')) {
+    if (file_exists(__DIR__ . '/../database/database.sqlite')) {
+        @copy(__DIR__ . '/../database/database.sqlite', '/tmp/database.sqlite');
+    } else {
+        @touch('/tmp/database.sqlite');
+    }
+}
+
 // Forward request to Laravel public/index.php
 require __DIR__ . '/../public/index.php';
