@@ -1,7 +1,7 @@
 <!-- Language Translation Switcher (Fitur Penerjemah Bahasa - Semua Negara 130+ Bahasa) -->
 <div class="relative notranslate" data-lang-container id="{{ $containerId ?? 'langDropdownContainer' }}">
     <button type="button" data-lang-btn id="{{ $btnId ?? 'langDropdownBtn' }}" title="Translate / Terjemahkan Bahasa"
-            class="flex items-center space-x-1.5 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 shadow-soft-xs transition-all hover:border-brand-primary/50 focus:outline-none">
+            class="flex items-center space-x-1.5 px-2 py-1.5 sm:px-3 sm:py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 shadow-soft-xs transition-all hover:border-brand-primary/50 focus:outline-none">
         <span class="text-sm">🌐</span>
         <span data-lang-flag id="{{ $flagId ?? 'currentLangFlag' }}">🇺🇸</span>
         <span data-lang-label id="{{ $labelId ?? 'currentLangLabel' }}" class="{{ $labelClass ?? 'hidden sm:inline' }}">English</span>
@@ -9,7 +9,7 @@
     </button>
 
     <!-- Language Dropdown Menu -->
-    <div data-lang-menu id="{{ $menuId ?? 'langDropdownMenu' }}" class="hidden absolute right-0 mt-2.5 w-72 sm:w-80 bg-white border border-slate-200 rounded-2xl shadow-soft-lg py-2.5 z-50 animate-in fade-in zoom-in-95 duration-100 select-none">
+    <div data-lang-menu id="{{ $menuId ?? 'langDropdownMenu' }}" class="hidden absolute right-0 mt-2.5 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] bg-white border border-slate-200 rounded-2xl shadow-soft-lg py-2.5 z-50 animate-in fade-in zoom-in-95 duration-100 select-none">
         <div class="px-3.5 pb-2 border-b border-slate-100 flex items-center justify-between">
             <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                 <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1 4-10z"/></svg>

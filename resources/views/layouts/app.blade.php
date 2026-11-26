@@ -123,12 +123,15 @@
 </head>
 <body class="bg-[#F8FAFC] min-h-screen flex flex-col antialiased selection:bg-brand-primary selection:text-white">
 
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-screen overflow-hidden relative">
+        <!-- Mobile Sidebar Backdrop Overlay -->
+        <div id="sidebarBackdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden md:hidden transition-opacity duration-300"></div>
+
         <!-- ================= SIDEBAR ================= -->
-        <aside id="sidebar" class="w-64 bg-white border-r border-slate-200/90 flex flex-col justify-between transition-all duration-300 z-30 shrink-0 shadow-soft-sm">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200/90 flex flex-col justify-between transition-transform duration-300 ease-in-out transform -translate-x-full md:translate-x-0 md:static md:z-30 shrink-0 shadow-soft-lg md:shadow-soft-sm">
             <div>
                 <!-- Brand Logo: WorldCargo 360 -->
-                <div class="h-20 flex items-center px-6 border-b border-slate-100">
+                <div class="h-20 flex items-center justify-between px-6 border-b border-slate-100">
                     <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 group">
                         <!-- Custom Globe + Cargo Package SVG Logo -->
                         <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-700 via-brand-primary to-sky-400 flex items-center justify-center text-white shadow-glow-primary transform group-hover:scale-105 transition-transform duration-200 relative overflow-hidden shrink-0">
@@ -148,6 +151,12 @@
                             <span class="block text-[8px] uppercase font-black tracking-widest text-slate-400 mt-0.5">Global Logistics System</span>
                         </div>
                     </a>
+                    <!-- Mobile Close Drawer Button (×) -->
+                    <button id="closeSidebarBtn" type="button" class="md:hidden text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 transition-colors" aria-label="Close Navigation Menu">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
                 </div>
 
                 <!-- Navigation Links -->
@@ -267,21 +276,21 @@
         </aside>
 
         <!-- ================= MAIN VIEWPORT ================= -->
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="flex-1 flex flex-col overflow-hidden min-w-0 w-full">
             <!-- Header (Polished Glass Aesthetic) -->
-            <header class="h-20 bg-white/85 backdrop-blur-xl border-b border-slate-200/90 px-8 flex items-center justify-between shrink-0 z-20 shadow-soft-xs">
+            <header class="h-16 sm:h-20 bg-white/85 backdrop-blur-xl border-b border-slate-200/90 px-3 sm:px-6 md:px-8 flex items-center justify-between shrink-0 z-20 shadow-soft-xs">
                 <!-- Page Title -->
-                <div class="flex items-center space-x-4">
-                    <button id="mobileMenuBtn" class="md:hidden text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition-colors">
+                <div class="flex items-center space-x-2 sm:space-x-4 min-w-0">
+                    <button id="mobileMenuBtn" type="button" class="md:hidden text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition-colors shrink-0" aria-label="Open Navigation Menu">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
-                    <div>
-                        <h1 class="text-2xl font-black text-slate-900 tracking-tight">{{ $title ?? 'Dashboard' }}</h1>
+                    <div class="min-w-0">
+                        <h1 class="text-base sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight truncate">{{ $title ?? 'Dashboard' }}</h1>
                     </div>
                 </div>
 
                 <!-- Right Header Elements: Search Bar, Notification, Profile Avatar Pill -->
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-4 shrink-0">
                     <!-- Global Search with Keyboard Hint -->
                     <form action="{{ route('shipments.index') }}" method="GET" class="relative hidden sm:block">
                         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -300,7 +309,7 @@
                     @php
                         $unreadCount = auth()->user()->notifications()->where('is_read', false)->count();
                     @endphp
-                    <a href="{{ route('notifications.index') }}" class="relative p-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors border border-transparent hover:border-slate-200">
+                    <a href="{{ route('notifications.index') }}" class="relative p-2 sm:p-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors border border-transparent hover:border-slate-200">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                         </svg>
@@ -313,7 +322,7 @@
 
                     <!-- Profile Avatar Pill (Refined Sarah Johnson / SJ Style) -->
                     <div class="relative" x-data="{ open: false }" id="userMenuContainer">
-                        <button id="userMenuBtn" class="flex items-center space-x-3 p-1.5 pr-3.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-full shadow-soft-xs transition-all hover:shadow-soft-sm">
+                        <button id="userMenuBtn" class="flex items-center space-x-2 md:space-x-3 p-1.5 sm:pr-3.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-full shadow-soft-xs transition-all hover:shadow-soft-sm">
                             <div class="relative">
                                 <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-primary to-indigo-600 text-white font-bold text-xs flex items-center justify-center uppercase shadow-sm">
                                     {{ substr(auth()->user()->name, 0, 2) }}
@@ -366,7 +375,7 @@
             </header>
 
             <!-- Main Content Area -->
-            <main class="flex-1 overflow-y-auto p-8">
+            <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
                 <!-- Flash Messages -->
                 @if(session('success'))
                     <div class="mb-6 p-4 bg-emerald-50/90 border border-emerald-200/80 text-emerald-900 text-xs font-semibold rounded-2xl flex items-center justify-between shadow-soft-sm">
@@ -438,13 +447,60 @@
             });
         }
 
+        // Mobile Drawer Controller (Smooth Off-Canvas with Backdrop)
         const mobileBtn = document.getElementById('mobileMenuBtn');
+        const closeSidebarBtn = document.getElementById('closeSidebarBtn');
         const sidebar = document.getElementById('sidebar');
-        if (mobileBtn && sidebar) {
-            mobileBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('-translate-x-full');
+        const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+
+        function openSidebar() {
+            if (!sidebar) return;
+            sidebar.classList.remove('-translate-x-full');
+            if (sidebarBackdrop) sidebarBackdrop.classList.remove('hidden');
+        }
+
+        function closeSidebar() {
+            if (!sidebar) return;
+            sidebar.classList.add('-translate-x-full');
+            if (sidebarBackdrop) sidebarBackdrop.classList.add('hidden');
+        }
+
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (sidebar && sidebar.classList.contains('-translate-x-full')) {
+                    openSidebar();
+                } else {
+                    closeSidebar();
+                }
             });
         }
+
+        if (closeSidebarBtn) {
+            closeSidebarBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeSidebar();
+            });
+        }
+
+        if (sidebarBackdrop) {
+            sidebarBackdrop.addEventListener('click', closeSidebar);
+        }
+
+        // Close drawer on link navigation on mobile
+        if (sidebar) {
+            sidebar.querySelectorAll('nav a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth < 768) {
+                        closeSidebar();
+                    }
+                });
+            });
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeSidebar();
+        });
     </script>
 
     <!-- Google Translate Element & Dynamic Multilingual Engine (Semua Negara 130+ Bahasa) -->

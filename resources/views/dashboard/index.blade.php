@@ -4,20 +4,20 @@
 <div class="space-y-6">
 
     <!-- ================= 0. WELCOME / SYSTEM STATUS HERO BANNER ================= -->
-    <div class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 text-white p-6 lg:p-7 rounded-3xl shadow-xl shadow-blue-950/20 flex flex-col md:flex-row md:items-center justify-between gap-5 border border-slate-800/80">
+    <div class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 text-white p-5 sm:p-6 lg:p-7 rounded-3xl shadow-xl shadow-blue-950/20 flex flex-col md:flex-row md:items-center justify-between gap-5 border border-slate-800/80">
         <!-- Ambient corner glows -->
         <div class="absolute -right-12 -bottom-12 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute -left-12 -top-12 w-64 h-64 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div class="relative z-10 flex items-center space-x-4">
-            <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-blue-500 via-indigo-500 to-sky-400 text-white flex items-center justify-center shadow-lg shadow-blue-500/30 shrink-0 ring-4 ring-white/10">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+        <div class="relative z-10 flex items-center space-x-3 sm:space-x-4">
+            <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-blue-500 via-indigo-500 to-sky-400 text-white flex items-center justify-center shadow-lg shadow-blue-500/30 shrink-0 ring-4 ring-white/10">
+                <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
             </div>
             <div>
-                <div class="flex items-center space-x-2.5">
-                    <h2 class="text-xl font-black text-white tracking-tight">Welcome back, {{ auth()->user()->name }}</h2>
+                <div class="flex flex-wrap items-center gap-2">
+                    <h2 class="text-lg sm:text-xl font-black text-white tracking-tight">Welcome back, {{ auth()->user()->name }}</h2>
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase bg-blue-500/30 text-blue-200 border border-blue-400/40 backdrop-blur-sm shadow-xs">
                         {{ auth()->user()->role }}
                     </span>

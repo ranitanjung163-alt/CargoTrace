@@ -225,7 +225,7 @@
             <div id="worldLocationsMap" class="w-full h-[520px] sm:h-[580px] z-10" style="touch-action: none !important; cursor: grab; background-color: #0f172a !important;"></div>
 
             <!-- Floating Google Maps Country & City Search Bar (Top Left) -->
-            <div class="absolute top-3 left-3 z-[460] w-72 sm:w-96 select-none" id="mapSearchContainer">
+            <div class="absolute top-3 left-3 z-[460] w-72 sm:w-96 max-w-[calc(100%-1.5rem)] select-none" id="mapSearchContainer">
                 <div class="relative bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/90 flex items-center p-1.5 transition-all focus-within:ring-2 focus-within:ring-blue-500/30">
                     <div class="pl-2 text-slate-400">
                         <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -244,7 +244,7 @@
             </div>
 
             <!-- Google Maps Place Detail Sidebar Drawer (Exact Match to Image 2) -->
-            <div id="placeDetailDrawer" class="hidden absolute top-3 left-3 bottom-3 w-80 sm:w-96 z-[500] bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/90 overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto select-none">
+            <div id="placeDetailDrawer" class="hidden absolute top-3 left-3 bottom-3 w-80 sm:w-96 max-w-[calc(100%-1.5rem)] z-[500] bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/90 overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto select-none">
                 <!-- Top Header Bar with Search Query & Close -->
                 <div class="p-3 border-b border-slate-100 flex items-center justify-between bg-white/90">
                     <div class="flex items-center space-x-2 truncate">
