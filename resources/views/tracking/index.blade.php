@@ -55,11 +55,30 @@
         </div>
     </div>
 
+    <!-- Mobile View Mode Switcher (Peta Rute Besar vs Rincian Waypoint vs Keduanya) -->
+    <div class="lg:hidden bg-white p-1 rounded-2xl border border-brand-border shadow-soft-sm flex items-center justify-between gap-1 text-xs font-bold select-none">
+        <button type="button" onclick="setMobileTrackingView('map')" id="mobileViewBtn-map"
+                class="flex-1 py-2 px-2.5 rounded-xl text-center transition-all bg-brand-primary text-white shadow-soft-xs flex items-center justify-center space-x-1.5 focus:outline-none">
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+            <span>Peta Rute</span>
+        </button>
+        <button type="button" onclick="setMobileTrackingView('details')" id="mobileViewBtn-details"
+                class="flex-1 py-2 px-2.5 rounded-xl text-center transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-50 flex items-center justify-center space-x-1.5 focus:outline-none">
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            <span>Rincian Rute</span>
+        </button>
+        <button type="button" onclick="setMobileTrackingView('both')" id="mobileViewBtn-both"
+                class="flex-1 py-2 px-2.5 rounded-xl text-center transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-50 flex items-center justify-center space-x-1.5 focus:outline-none">
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7"/></svg>
+            <span>Keduanya</span>
+        </button>
+    </div>
+
     <!-- Main Google Maps Directions Workstation (Exact layout matching the reference image) -->
-    <div class="h-[calc(100vh-13.5rem)] min-h-[640px] bg-white rounded-3xl border border-brand-border shadow-soft-lg flex flex-col lg:flex-row overflow-hidden relative">
+    <div id="trackingWorkstationContainer" class="tracking-mobile-map h-auto lg:h-[calc(100vh-13.5rem)] lg:min-h-[640px] bg-white rounded-3xl border border-brand-border shadow-soft-lg flex flex-col lg:flex-row overflow-hidden relative">
 
         <!-- ================= 1. LEFT DIRECTIONS DRAWER / PANEL ================= -->
-        <div class="w-full lg:w-[410px] xl:w-[430px] shrink-0 bg-white border-r border-slate-200/90 flex flex-col justify-between overflow-y-auto z-20 shadow-soft-md">
+        <div id="trackingDirectionsDrawer" class="w-full lg:w-[410px] xl:w-[430px] shrink-0 bg-white border-t lg:border-t-0 lg:border-r border-slate-200/90 flex flex-col justify-between overflow-y-auto z-20 shadow-soft-md order-2 lg:order-1">
             <div>
                 <!-- Top Transport Modes Navigation Bar (Exact matching icons and layout) -->
                 <div class="px-4 pt-4 pb-3 border-b border-slate-200/80 bg-white">
@@ -231,12 +250,12 @@
         </div>
 
         <!-- ================= 2. RIGHT MAP AREA (GOOGLE MAPS CANVAS & FLOATING POIS) ================= -->
-        <div class="flex-1 relative h-full min-h-[500px] bg-slate-100">
+        <div id="trackingMapArea" class="flex-1 relative w-full h-[70vh] min-h-[440px] max-h-[780px] lg:h-full lg:min-h-0 bg-slate-100 order-1 lg:order-2">
 
             <!-- Floating Top Search & POI Bar (Find any place or remote region on earth) -->
-            <div class="absolute top-4 left-4 right-4 z-[400] flex flex-wrap items-center gap-2 pointer-events-none">
+            <div class="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 z-[400] flex flex-wrap items-center gap-2 pointer-events-none">
                 <!-- Search Input Pill -->
-                <form onsubmit="searchRemoteLocation(event)" class="pointer-events-auto bg-white rounded-full shadow-md border border-slate-200/90 px-3.5 py-2 flex items-center space-x-2 text-xs w-72 md:w-80">
+                <form onsubmit="searchRemoteLocation(event)" class="pointer-events-auto bg-white rounded-full shadow-md border border-slate-200/90 px-3 py-1.5 sm:px-3.5 sm:py-2 flex items-center space-x-2 text-xs w-full max-w-xs sm:w-80">
                     <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     <input type="text" id="routeSearchInput" placeholder="Cari wilayah/kota terpencil di dunia..."
                            class="bg-transparent border-none outline-none text-slate-800 placeholder-slate-400 font-medium text-xs w-full">
@@ -244,21 +263,21 @@
                 </form>
 
                 <!-- POI Filter Pills (Clickable) -->
-                <div class="pointer-events-auto flex items-center space-x-2 overflow-x-auto py-1">
+                <div class="pointer-events-auto flex items-center space-x-2 overflow-x-auto py-1 max-w-full">
                     <button type="button" onclick="togglePoi('hotels')" id="poi-hotels"
-                            class="poi-btn px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-full text-xs font-semibold text-slate-700 shadow-md flex items-center space-x-1.5 transition-all">
+                            class="poi-btn px-3 py-1.5 sm:px-3.5 sm:py-2 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-full text-xs font-semibold text-slate-700 shadow-md flex items-center space-x-1.5 transition-all shrink-0">
                         <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                         <span>Hotels</span>
                     </button>
 
                     <button type="button" onclick="togglePoi('petrol')" id="poi-petrol"
-                            class="poi-btn px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-full text-xs font-semibold text-slate-700 shadow-md flex items-center space-x-1.5 transition-all">
+                            class="poi-btn px-3 py-1.5 sm:px-3.5 sm:py-2 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-full text-xs font-semibold text-slate-700 shadow-md flex items-center space-x-1.5 transition-all shrink-0">
                         <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                         <span>Petrol</span>
                     </button>
 
                     <button type="button" onclick="togglePoi('ev')" id="poi-ev"
-                            class="poi-btn px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-full text-xs font-semibold text-slate-700 shadow-md flex items-center space-x-1.5 transition-all">
+                            class="poi-btn px-3 py-1.5 sm:px-3.5 sm:py-2 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-full text-xs font-semibold text-slate-700 shadow-md flex items-center space-x-1.5 transition-all shrink-0">
                         <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                         <span>EV charging</span>
                     </button>
@@ -266,10 +285,10 @@
             </div>
 
             <!-- Leaflet Map Container with Smooth 4-Way Panning (Drag Ke Kiri, Kanan, Atas, Bawah) -->
-            <div id="googleDirectionsMap" class="w-full h-full relative z-10 select-none" style="background-color: #f8fafc !important;"></div>
+            <div id="googleDirectionsMap" class="w-full h-full relative z-10 select-none" style="touch-action: none !important; cursor: grab; background-color: #f8fafc !important;"></div>
 
             <!-- Floating Transport Mode & Route Legend (Keterangan Warna Moda Transportasi) -->
-            <div id="transportLegendCard" class="absolute top-16 left-4 z-[400] bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-slate-200/90 p-3 select-none max-w-xs transition-all duration-200 pointer-events-auto">
+            <div id="transportLegendCard" class="absolute top-16 left-3 sm:left-4 z-[400] bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-slate-200/90 p-2.5 sm:p-3 select-none max-w-[calc(100%-1.5rem)] sm:max-w-xs transition-all duration-200 pointer-events-auto">
                 <div class="flex items-center justify-between pb-1.5 border-b border-slate-100 mb-2">
                     <div class="flex items-center space-x-1.5">
                         <span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
@@ -322,7 +341,7 @@
             </div>
 
             <!-- Floating Controls Dock: Directional Pan Controller, Zoom, and Google Maps Signature "Lapisan" (Dual Mode) Widget -->
-            <div class="absolute bottom-4 left-4 z-[400] flex items-end gap-2.5 pointer-events-auto">
+            <div class="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 z-[400] flex items-end gap-2 sm:gap-2.5 pointer-events-auto">
                 <!-- 4-Way Directional Pan Compass D-Pad & Zoom Controls -->
                 <div class="flex flex-col items-center gap-2">
                     <!-- 4-Way Directional Pan Compass D-Pad -->
@@ -453,7 +472,7 @@
             </div>
 
             <!-- Floating Map Navigation Help Overlay -->
-            <div class="absolute bottom-4 right-4 z-[400] bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-slate-200 shadow-md text-[11px] font-bold text-slate-700 flex items-center space-x-2">
+            <div class="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 z-[400] bg-white/90 backdrop-blur-sm px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-slate-200 shadow-md text-[10px] sm:text-[11px] font-bold text-slate-700 flex items-center space-x-1.5 sm:space-x-2 max-w-[200px] truncate select-none">
                 <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
                 <span id="routeDistanceStatus">912 km &bull; 10 hr 12 min</span>
             </div>
@@ -615,6 +634,38 @@
     #googleDirectionsMap .leaflet-tile-pane img {
         user-select: none !important;
         -webkit-user-drag: none !important;
+    }
+
+    /* Mobile Responsive View Modes for Tracking Workstation (Large Map Matching Homepage Experience) */
+    @media (max-width: 1023px) {
+        .tracking-mobile-map #trackingDirectionsDrawer {
+            display: none !important;
+        }
+        .tracking-mobile-map #trackingMapArea {
+            display: block !important;
+            height: 72vh !important;
+            min-height: 460px !important;
+            max-height: 780px !important;
+        }
+
+        .tracking-mobile-details #trackingMapArea {
+            display: none !important;
+        }
+        .tracking-mobile-details #trackingDirectionsDrawer {
+            display: flex !important;
+            width: 100% !important;
+        }
+
+        .tracking-mobile-both #trackingMapArea {
+            display: block !important;
+            height: 65vh !important;
+            min-height: 420px !important;
+            max-height: 720px !important;
+        }
+        .tracking-mobile-both #trackingDirectionsDrawer {
+            display: flex !important;
+            width: 100% !important;
+        }
     }
 </style>
 @endsection
@@ -1193,11 +1244,67 @@
             }
         });
 
+        // Restore mobile view mode preference from sessionStorage (default to 'map' on mobile for large prominent map view)
+        try {
+            const savedMobileView = sessionStorage.getItem('cargotrace_mobile_tracking_view');
+            if (savedMobileView && ['map', 'details', 'both'].includes(savedMobileView)) {
+                setMobileTrackingView(savedMobileView);
+            } else if (window.innerWidth < 1024) {
+                setMobileTrackingView('map');
+            }
+        } catch (e) {}
+
         plotRouteOnMap();
 
         setTimeout(function() {
             map.invalidateSize();
         }, 200);
+    });
+
+    // Mobile Tracking View Switcher (Map vs Details vs Both)
+    window.setMobileTrackingView = function(view) {
+        const container = document.getElementById('trackingWorkstationContainer');
+        const btnMap = document.getElementById('mobileViewBtn-map');
+        const btnDetails = document.getElementById('mobileViewBtn-details');
+        const btnBoth = document.getElementById('mobileViewBtn-both');
+        if (!container) return;
+
+        try {
+            sessionStorage.setItem('cargotrace_mobile_tracking_view', view);
+        } catch (e) {}
+
+        container.classList.remove('tracking-mobile-map', 'tracking-mobile-details', 'tracking-mobile-both');
+        container.classList.add('tracking-mobile-' + view);
+
+        const buttons = {
+            map: btnMap,
+            details: btnDetails,
+            both: btnBoth
+        };
+
+        Object.keys(buttons).forEach(k => {
+            const btn = buttons[k];
+            if (!btn) return;
+            if (k === view) {
+                btn.classList.remove('text-slate-600', 'hover:bg-slate-50');
+                btn.classList.add('bg-brand-primary', 'text-white', 'shadow-soft-xs');
+            } else {
+                btn.classList.remove('bg-brand-primary', 'text-white', 'shadow-soft-xs');
+                btn.classList.add('text-slate-600', 'hover:bg-slate-50');
+            }
+        });
+
+        setTimeout(function() {
+            if (map) {
+                map.invalidateSize();
+            }
+        }, 120);
+    };
+
+    window.addEventListener('resize', function() {
+        if (map) {
+            map.invalidateSize();
+        }
     });
 
     // 4-Way Directional Pan Controller (Geser Peta ke Kiri, Kanan, Atas, Bawah, Reset, dan Fokus)
