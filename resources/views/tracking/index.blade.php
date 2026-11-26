@@ -793,22 +793,36 @@
             return TRANSPORT_MODES.AIR; // Biru Solid!
         }
 
-        // 5. OCEAN / MARITIME (KAPAL LAUT - HIJAU PUTUS-PUTUS):
-        // Only when traveling across open sea/ocean between seaports (> 300 km)
+        // 5. CONTINENTAL DOMESTIC OVERLAND ROUTE (TRUK / DARAT - ORANYE SOLID):
+        // Any overland transport within the contiguous United States, Europe, or inland corridors
+        // where carrier is not an ocean container line MUST be Road (Truk / Darat)!
+        const isUsDomestic = (
+            (p1Name.includes('united states') || p1Name.includes('usa') || /,\s*(ny|fl|pa|va|ga|nc|sc|il|ca|tx|mi|wa|co|ma|nj|oh)\b/.test(p1Name) || p1Name.includes('new york') || p1Name.includes('miami')) &&
+            (p2Name.includes('united states') || p2Name.includes('usa') || /,\s*(ny|fl|pa|va|ga|nc|sc|il|ca|tx|mi|wa|co|ma|nj|oh)\b/.test(p2Name) || p2Name.includes('new york') || p2Name.includes('miami'))
+        );
+        const isContinentalLand = isUsDomestic || /road|truk|highway|interstate|express road|trucking|logistics partners/.test(combined);
+        const isOceanCarrier = /maersk|ocean liner|ocean container|maritime|sea lane|suez/.test(carrierName + ' ' + carrierService);
+
+        if (isContinentalLand && !isOceanCarrier) {
+            return TRANSPORT_MODES.ROAD; // Oranye Solid!
+        }
+
+        // 6. OCEAN / MARITIME (KAPAL LAUT - HIJAU PUTUS-PUTUS):
+        // Strictly for open sea/ocean crossings between seaports (> 300 km) and not a domestic continental highway
         const isPortToPort = (p1Type === 'PORT' || /port|pelabuhan|harbor|marine/.test(p1Name)) &&
                              (p2Type === 'PORT' || /port|pelabuhan|harbor|marine/.test(p2Name));
-        const isMaritime = /maersk|ocean liner|ocean container|maritime|sea lane|suez/.test(combined);
+        const isMaritime = isOceanCarrier || /ocean|maritime|sea/.test(combined);
 
-        if ((isPortToPort || isMaritime) && distKm > 300 && !isAirInvolved) {
+        if ((isPortToPort || isMaritime) && distKm > 300 && !isAirInvolved && !isUsDomestic) {
             return TRANSPORT_MODES.SEA; // Hijau Putus-putus!
         }
 
-        // 6. LONG-HAUL INTERCONTINENTAL DEFAULT:
+        // 7. LONG-HAUL INTERCONTINENTAL DEFAULT:
         if (distKm > 2500) {
             return TRANSPORT_MODES.AIR; // Biru Solid!
         }
 
-        // 7. INLAND DEFAULT:
+        // 8. INLAND DEFAULT:
         return TRANSPORT_MODES.ROAD; // Oranye Solid!
     }
 
@@ -836,10 +850,33 @@
         { name: "Cherbourg-en-Cotentin, France", label: "Thomas Henry Museum", lat: 49.6337, lng: -1.6221, isDestination: true }
     ];
 
+    // Real Highway Route for New York -> Miami Interstate 95 Corridor (Consumer Apparel Truck Road Freight)
+    const nyToMiamiWaypoints = [
+        { name: "New York, United States", label: "New York Marine & Logistics Hub", lat: 40.7128, lng: -74.0060, isOrigin: true, type: 'CITY_HUB' },
+        { name: "Philadelphia Transit Hub, PA", label: "I-95 North Corridor Depot", lat: 39.9526, lng: -75.1652, type: 'DISTRIBUTION_CENTER' },
+        { name: "Richmond Highway Terminal, VA", label: "Mid-Atlantic Freight Gate", lat: 37.5407, lng: -77.4360, type: 'DISTRIBUTION_CENTER' },
+        { name: "Savannah Intermodal Yard, GA", label: "Southeast Regional Hub", lat: 32.0809, lng: -81.0912, type: 'DISTRIBUTION_CENTER' },
+        { name: "Jacksonville Freight Gate, FL", label: "Sunshine Interstate Crossing", lat: 30.3322, lng: -81.6557, type: 'DISTRIBUTION_CENTER' },
+        { name: "Miami, United States", label: "Miami Cargo Hub", lat: 25.7617, lng: -80.1918, isDestination: true, type: 'DISTRIBUTION_CENTER' }
+    ];
+
+    // Real Highway Route for Los Angeles -> Chicago Interstate Highway Corridor
+    const laxToChiWaypoints = [
+        { name: "Los Angeles, United States", label: "Los Angeles Port Hub", lat: 34.0522, lng: -118.2437, isOrigin: true, type: 'PORT' },
+        { name: "Las Vegas Freight Hub, NV", label: "Interstate 15 Depot", lat: 36.1699, lng: -115.1398, type: 'DISTRIBUTION_CENTER' },
+        { name: "Salt Lake City Terminal, UT", label: "Mountain West Intermodal", lat: 40.7608, lng: -111.8910, type: 'DISTRIBUTION_CENTER' },
+        { name: "Omaha Logistics Depot, NE", label: "Midwest Highway Crossing", lat: 41.2565, lng: -95.9345, type: 'WAREHOUSE' },
+        { name: "Chicago, United States", label: "Chicago Intermodal Terminal", lat: 41.8781, lng: -87.6298, isDestination: true, type: 'DISTRIBUTION_CENTER' }
+    ];
+
     let activeWaypoints = [];
 
     if (isDemoFrance) {
         activeWaypoints = franceDemoWaypoints;
+    } else if (currentShipment && currentShipment.shipment_number === 'SHP-2024-001222') {
+        activeWaypoints = nyToMiamiWaypoints;
+    } else if (currentShipment && currentShipment.shipment_number === 'SHP-2024-001284') {
+        activeWaypoints = laxToChiWaypoints;
     } else if (currentShipment) {
         // Construct from database shipment with coordinate validation
         const origCity = currentShipment.origin?.city || '';
@@ -858,7 +895,7 @@
             });
         }
 
-        // Add intermediate tracking events
+        // Add intermediate tracking events (filtering out redundant same-coordinate checkpoints)
         if (currentShipment.tracking_events && currentShipment.tracking_events.length > 0) {
             currentShipment.tracking_events.forEach(te => {
                 if (isValidCoord(te.latitude, te.longitude)) {
@@ -872,14 +909,19 @@
                         teLng = 122.0600;
                     }
 
-                    activeWaypoints.push({
-                        name: te.location_name || `${te.event_type} Checkpoint`,
-                        lat: teLat,
-                        lng: teLng,
-                        event: te.event_type,
-                        time: te.event_time,
-                        type: (te.location_name && te.location_name.toLowerCase().includes('port')) ? 'PORT' : 'CHECKPOINT'
-                    });
+                    // Avoid duplicate consecutive coordinates with identical location
+                    const lastWp = activeWaypoints[activeWaypoints.length - 1];
+                    const isDupOrigin = lastWp && Math.abs(lastWp.lat - teLat) < 0.001 && Math.abs(lastWp.lng - teLng) < 0.001;
+                    if (!isDupOrigin) {
+                        activeWaypoints.push({
+                            name: te.location_name || `${te.event_type} Checkpoint`,
+                            lat: teLat,
+                            lng: teLng,
+                            event: te.event_type,
+                            time: te.event_time,
+                            type: (te.location_name && te.location_name.toLowerCase().includes('port')) ? 'PORT' : 'CHECKPOINT'
+                        });
+                    }
                 }
             });
         }

@@ -662,8 +662,18 @@
             // 3. Air freight:
             if (/airport|bandara|cargocity|air charter|air freight|air consignment|flight/.test(combined)) return TRANSPORT_MODES.AIR;
 
-            // 4. Ocean / Maritime:
-            if (/maersk|ocean|maritime|sea lane/.test(combined) || (text1.includes('port') && text2.includes('port') && !combined.includes('airport'))) {
+            // 4. Continental Domestic Overland Corridors (Truk / Darat - Oranye Solid):
+            const isUsDomestic = (
+                (text1.includes('united states') || text1.includes('usa') || /,\s*(ny|fl|pa|va|ga|nc|sc|il|ca|tx|mi|wa|co|ma|nj|oh)\b/.test(text1) || text1.includes('new york') || text1.includes('miami')) &&
+                (text2.includes('united states') || text2.includes('usa') || /,\s*(ny|fl|pa|va|ga|nc|sc|il|ca|tx|mi|wa|co|ma|nj|oh)\b/.test(text2) || text2.includes('new york') || text2.includes('miami'))
+            );
+            const isOceanCarrier = /maersk|ocean liner|ocean container/.test(carrier);
+            if (isUsDomestic && !isOceanCarrier) {
+                return TRANSPORT_MODES.ROAD;
+            }
+
+            // 5. Ocean / Maritime:
+            if (isOceanCarrier || ((text1.includes('port') && text2.includes('port') && !isUsDomestic && !combined.includes('airport')))) {
                 return TRANSPORT_MODES.SEA;
             }
 

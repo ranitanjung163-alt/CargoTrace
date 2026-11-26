@@ -1020,8 +1020,15 @@
             // 3. Air:
             if (/airport|bandara|cargocity|flight|air/.test(combined)) return TRANSPORT_MODES.AIR;
 
-            // 4. Maritime:
-            if ((text1.includes('port') && text2.includes('port')) || /ocean|maritime|sea/.test(combined)) return TRANSPORT_MODES.SEA;
+            // 4. Continental Domestic Overland Corridors (Truk / Darat):
+            const isUsDomestic = (
+                (text1.includes('united states') || text1.includes('usa') || text1.includes('new york') || text1.includes('miami') || text1.includes('chicago') || text1.includes('austin') || text1.includes('denver') || text1.includes('detroit') || text1.includes('dallas')) &&
+                (text2.includes('united states') || text2.includes('usa') || text2.includes('new york') || text2.includes('miami') || text2.includes('chicago') || text2.includes('austin') || text2.includes('denver') || text2.includes('detroit') || text2.includes('dallas'))
+            );
+            if (isUsDomestic) return TRANSPORT_MODES.ROAD;
+
+            // 5. Maritime:
+            if (((text1.includes('port') && text2.includes('port')) || /ocean|maritime|sea/.test(combined)) && !isUsDomestic) return TRANSPORT_MODES.SEA;
 
             return TRANSPORT_MODES.ROAD;
         }
