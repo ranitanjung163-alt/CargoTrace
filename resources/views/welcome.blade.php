@@ -724,8 +724,18 @@
 
                 <!-- Leaflet Interactive Map Card -->
                 <div class="bg-white rounded-3xl border border-slate-200/90 shadow-soft-lg overflow-hidden relative">
-                    <!-- Map Canvas Container (Touch Action None & Grab Cursor for 4-Way Smooth Panning) -->
-                    <div id="landingCoverageMap" class="w-full h-[460px] z-10" style="touch-action: none !important; cursor: grab; background-color: #f8fafc !important;"></div>
+                    <!-- Map Canvas Container (Responsive Height, Touch Action None & Grab Cursor for 4-Way Smooth Panning) -->
+                    <div id="landingCoverageMap" class="w-full h-[70vh] min-h-[400px] max-h-[750px] z-10" style="touch-action: none !important; cursor: grab; background-color: #f8fafc !important;"></div>
+
+                    <!-- Reset Tampilan Dunia Quick Button -->
+                    <button type="button" onclick="resetCoverageMapView()" id="resetCoverageWorldBtn"
+                            title="Reset Peta ke Tampilan Seluruh Dunia" aria-label="Reset Tampilan Dunia"
+                            class="absolute top-2.5 left-14 z-20 bg-white/95 backdrop-blur-md hover:bg-blue-50 text-slate-700 hover:text-brand-primary active:scale-95 px-3 py-1.5 rounded-xl border border-slate-200 shadow-soft-sm text-xs font-bold flex items-center space-x-1.5 transition-all select-none focus:outline-none">
+                        <svg class="w-3.5 h-3.5 text-brand-primary shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        <span>Reset Tampilan Dunia</span>
+                    </button>
 
                     <!-- 4-Way D-Pad Pan Navigation Dock (Geser Peta: Atas, Bawah, Kiri, Kanan, Reset) -->
                     <div class="absolute top-20 left-3.5 z-20 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 shadow-soft-md flex flex-col items-center select-none">
@@ -760,7 +770,7 @@
                     </div>
 
                     <!-- Overlay Legend & Controls -->
-                    <div class="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-md px-4 py-3 rounded-2xl border border-slate-200 shadow-soft-xs text-xs font-bold text-slate-900 pointer-events-auto">
+                    <div class="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-md px-4 py-3 rounded-2xl border border-slate-200 shadow-soft-xs text-xs font-bold text-slate-900 pointer-events-auto max-w-[calc(100%-80px)] sm:max-w-none overflow-x-auto">
                         <div class="flex flex-wrap items-center gap-4">
                             <div class="flex items-center space-x-1.5">
                                 <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
@@ -1115,10 +1125,62 @@
         // 4. Leaflet Worldwide Network Map & Continuous Google Maps-style Navigation
         let coverageMap = null;
 
-        // Continuity Enforcement: Handled natively via maxBounds & maxBoundsViscosity
+        // Continuity Enforcement: Clamps vertical movement so map never reveals empty gray space above/below,
+        // while preserving completely smooth, unrestricted horizontal 360-degree panning across the antimeridian
         function enforceGoogleMapsContinuity(mapInstance) {
-            // Native Leaflet maxBounds handles boundary clamping
+            if (!mapInstance) return;
+            let isAdjusting = false;
+
+            function keepInVerticalBounds() {
+                if (isAdjusting) return;
+                const size = mapInstance.getSize();
+                if (!size || size.y <= 0) return;
+
+                const zoom = mapInstance.getZoom();
+                const worldHeight = 256 * Math.pow(2, zoom);
+                const viewHalfY = size.y / 2;
+                const center = mapInstance.getCenter();
+                const centerPoint = mapInstance.project(center, zoom);
+
+                let targetY = centerPoint.y;
+                if (worldHeight <= size.y) {
+                    targetY = worldHeight / 2;
+                } else {
+                    if (targetY - viewHalfY < 0) {
+                        targetY = viewHalfY;
+                    } else if (targetY + viewHalfY > worldHeight) {
+                        targetY = worldHeight - viewHalfY;
+                    }
+                }
+
+                if (Math.abs(targetY - centerPoint.y) > 0.5) {
+                    isAdjusting = true;
+                    try {
+                        const clampedCenter = mapInstance.unproject(L.point(centerPoint.x, targetY), zoom);
+                        mapInstance.setView([clampedCenter.lat, center.lng], zoom, { animate: false });
+                    } finally {
+                        isAdjusting = false;
+                    }
+                }
+            }
+
+            mapInstance.on('drag', keepInVerticalBounds);
+            mapInstance.on('move', keepInVerticalBounds);
+            mapInstance.on('zoomend', keepInVerticalBounds);
         }
+
+        // Dedicated Global World View Resetter (Satu Sentuhan Kembali ke Tampilan Seluruh Dunia)
+        window.resetCoverageMapView = function () {
+            if (!coverageMap) return;
+            const container = document.getElementById('landingCoverageMap');
+            const w = container ? container.clientWidth : window.innerWidth;
+            let targetZoom = 2.0;
+            if (w < 480) targetZoom = 1.25;
+            else if (w < 768) targetZoom = 1.5;
+            else if (w < 1024) targetZoom = 1.75;
+            coverageMap.setView([20.0, 10.0], targetZoom, { animate: true, duration: 0.5 });
+            setTimeout(() => { coverageMap.invalidateSize(); }, 250);
+        };
 
         // 4-Way Directional Pan Controller (Geser Peta ke Kiri, Kanan, Atas, Bawah, dan Reset)
         window.panCoverageMap = function (direction) {
@@ -1151,7 +1213,7 @@
                     break;
                 case 'world':
                 case 'center':
-                    coverageMap.setView([20.0, 15.0], 2, { animate: true });
+                    window.resetCoverageMapView();
                     break;
                 case 'focus':
                     // Focus on Singapore / Southeast Asia hub gateway
@@ -1196,16 +1258,20 @@
             const mapContainer = document.getElementById('landingCoverageMap');
             if (!mapContainer) return;
 
-            // Strict 1 World Geodetic Bounds (-85.051129 to 85.051129 lat, -180 to 180 lng) to PREVENT horizontal & vertical repetition
-            const worldBounds = L.latLngBounds(L.latLng(-85.051129, -180), L.latLng(85.051129, 180));
+            // Responsive initial zoom so the full globe is immediately visible on any device
+            const containerWidth = mapContainer.clientWidth || window.innerWidth;
+            let initialZoom = 2.0;
+            if (containerWidth < 480) initialZoom = 1.25;
+            else if (containerWidth < 768) initialZoom = 1.5;
+            else if (containerWidth < 1024) initialZoom = 1.75;
 
             coverageMap = L.map('landingCoverageMap', {
                 zoomControl: true,
-                minZoom: 2,
+                zoomSnap: 0.25,
+                zoomDelta: 0.5,
+                minZoom: 1.0,
                 maxZoom: 22, // Deep zoom level 22 to view individual houses, rooftops & parcels
-                maxBounds: worldBounds,
-                maxBoundsViscosity: 1.0,
-                worldCopyJump: false,
+                worldCopyJump: true, // Smooth horizontal continuous panning across antimeridian
                 scrollWheelZoom: true,
                 wheelDebounceTime: 40,
                 wheelPxPerZoomLevel: 60,
@@ -1217,13 +1283,18 @@
                 inertia: true,
                 inertiaDeceleration: 3000,
                 keyboard: true
-            }).setView([20.0, 15.0], 2);
+            }).setView([20.0, 10.0], initialZoom);
 
             // Explicitly enable all interaction capabilities
             coverageMap.dragging.enable();
             coverageMap.touchZoom.enable();
             coverageMap.doubleClickZoom.enable();
             coverageMap.scrollWheelZoom.enable();
+            coverageMap.boxZoom.enable();
+            coverageMap.keyboard.enable();
+
+            // Enforce smooth vertical bounds clamping (keeps user on world map without empty void above/below)
+            enforceGoogleMapsContinuity(coverageMap);
 
             // Mode 1: Google Maps Standard Roadmap (Bright Clean Road Network, Street & Village Detail)
             const googleRoadmap = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
@@ -1231,8 +1302,7 @@
                 maxNativeZoom: 20,
                 maxZoom: 22,
                 subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-                noWrap: true,
-                bounds: worldBounds
+                noWrap: false
             });
 
             // Mode 2: Google Maps Satellite Hybrid (Photorealistic Satellite Imagery with Roads, Labels & Individual Houses/Rooftops)
@@ -1241,8 +1311,7 @@
                 maxNativeZoom: 20,
                 maxZoom: 22,
                 subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-                noWrap: true,
-                bounds: worldBounds
+                noWrap: false
             });
 
             // Base Layer 3: OpenStreetMap Standard
@@ -1250,8 +1319,7 @@
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Leaflet',
                 maxNativeZoom: 19,
                 maxZoom: 22,
-                noWrap: true,
-                bounds: worldBounds
+                noWrap: false
             });
 
             // Default to Google Maps Standard Roadmap
@@ -1320,8 +1388,8 @@
                 });
             }
 
-            // Render hubs on single world map (offset 0)
-            const worldOffsets = [0];
+            // Render hubs across world copies [-360, 0, 360] for seamless continuous horizontal exploration
+            const worldOffsets = [-360, 0, 360];
             worldOffsets.forEach(offset => {
                 hubs.forEach(hub => {
                     const marker = L.marker([hub.lat, hub.lon + offset], { icon: createHubIcon() }).addTo(coverageMap);
@@ -1389,8 +1457,22 @@
                 });
             });
 
-            // Refresh size when window resizes
-            setTimeout(() => { coverageMap.invalidateSize(); }, 300);
+            // Refresh and invalidate size across initial load, timeout, and viewport resize
+            setTimeout(() => { if (coverageMap) coverageMap.invalidateSize(); }, 150);
+            setTimeout(() => { if (coverageMap) coverageMap.invalidateSize(); }, 500);
+
+            if (window.ResizeObserver) {
+                const ro = new ResizeObserver(() => {
+                    if (coverageMap) coverageMap.invalidateSize();
+                });
+                ro.observe(mapContainer);
+            }
+            window.addEventListener('resize', () => {
+                if (coverageMap) coverageMap.invalidateSize();
+            });
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden && coverageMap) coverageMap.invalidateSize();
+            });
         });
     </script>
 
