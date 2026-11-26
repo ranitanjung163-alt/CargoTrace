@@ -136,21 +136,21 @@
             <div>
                 <h3 class="text-sm font-extrabold text-brand-navy flex items-center gap-2">
                     <span>Global Network Coverage Map</span>
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">1 Dunia Lengkap</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">Complete World Map</span>
                 </h3>
-                <p class="text-xs text-brand-secondary">Jelajahi negara dan simpul logistik internasional seluruh dunia tanpa batas pengulangan peta</p>
+                <p class="text-xs text-brand-secondary">Explore international countries and logistics hubs worldwide with seamless global map navigation</p>
             </div>
             <div class="flex items-center space-x-2">
                 <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">{{ count($mapLocations) }} Hubs</span>
-                <span class="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">195+ Negara Tersedia</span>
+                <span class="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">195+ Countries Available</span>
             </div>
         </div>
 
-        <!-- Quick Country Explorer Bar (Pilihan Cepat Negara 1 Dunia untuk Dosen & Penguji) -->
+        <!-- Quick Country Explorer Bar (One-Click Global Country Selector) -->
         <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar select-none pt-1">
             <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
                 <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                Jelajahi Negara:
+                Explore Countries:
             </span>
             <button type="button" onclick="exploreCountryByName('pakistan')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
                 🇵🇰 <span>Pakistan (Islamabad)</span>
@@ -158,65 +158,65 @@
             <button type="button" onclick="exploreCountryByName('indonesia')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
                 🇮🇩 <span>Indonesia</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('jerman')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
-                🇩🇪 <span>Jerman</span>
+            <button type="button" onclick="exploreCountryByName('germany')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇩🇪 <span>Germany</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('jepang')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
-                🇯🇵 <span>Jepang</span>
+            <button type="button" onclick="exploreCountryByName('japan')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇯🇵 <span>Japan</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('amerika serikat')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
-                🇺🇸 <span>Amerika Serikat</span>
+            <button type="button" onclick="exploreCountryByName('united states')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇺🇸 <span>United States</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('arab saudi')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
-                🇸🇦 <span>Arab Saudi</span>
+            <button type="button" onclick="exploreCountryByName('saudi arabia')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇸🇦 <span>Saudi Arabia</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('tiongkok')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
-                🇨🇳 <span>Tiongkok</span>
+            <button type="button" onclick="exploreCountryByName('china')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇨🇳 <span>China</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('belanda')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
-                🇳🇱 <span>Belanda</span>
+            <button type="button" onclick="exploreCountryByName('netherlands')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇳🇱 <span>Netherlands</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('uni emirat arab')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+            <button type="button" onclick="exploreCountryByName('united arab emirates')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
                 🇦🇪 <span>UAE</span>
             </button>
             <button type="button" onclick="exploreCountryByName('australia')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
                 🇦🇺 <span>Australia</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('inggris')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
-                🇬🇧 <span>Inggris</span>
+            <button type="button" onclick="exploreCountryByName('united kingdom')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇬🇧 <span>United Kingdom</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('brasil')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
-                🇧🇷 <span>Brasil</span>
+            <button type="button" onclick="exploreCountryByName('brazil')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇧🇷 <span>Brazil</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('afrika selatan')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
-                🇿🇦 <span>Afrika Selatan</span>
+            <button type="button" onclick="exploreCountryByName('south africa')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇿🇦 <span>South Africa</span>
             </button>
             <button type="button" onclick="exploreCountryByName('india')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
                 🇮🇳 <span>India</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('prancis')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
-                🇫🇷 <span>Prancis</span>
+            <button type="button" onclick="exploreCountryByName('france')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇫🇷 <span>France</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('korea selatan')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
-                🇰🇷 <span>Korsel</span>
+            <button type="button" onclick="exploreCountryByName('south korea')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇰🇷 <span>South Korea</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('turki')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
-                🇹🇷 <span>Turki</span>
+            <button type="button" onclick="exploreCountryByName('turkey')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇹🇷 <span>Turkey</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('mesir')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
-                🇪🇬 <span>Mesir</span>
+            <button type="button" onclick="exploreCountryByName('egypt')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇪🇬 <span>Egypt</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('kanada')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
-                🇨🇦 <span>Kanada</span>
+            <button type="button" onclick="exploreCountryByName('canada')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇨🇦 <span>Canada</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('singapura')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
-                🇸🇬 <span>Singapura</span>
+            <button type="button" onclick="exploreCountryByName('singapore')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇸🇬 <span>Singapore</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('italia')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
-                🇮🇹 <span>Italia</span>
+            <button type="button" onclick="exploreCountryByName('italy')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇮🇹 <span>Italy</span>
             </button>
-            <button type="button" onclick="exploreCountryByName('rusia')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
-                🇷🇺 <span>Rusia</span>
+            <button type="button" onclick="exploreCountryByName('russia')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold text-[11px] border border-slate-200 shrink-0 transition-colors flex items-center gap-1 shadow-2xs">
+                🇷🇺 <span>Russia</span>
             </button>
         </div>
 
@@ -230,12 +230,12 @@
                     <div class="pl-2 text-slate-400">
                         <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </div>
-                    <input type="text" id="mapSearchInput" placeholder="Cari negara / kota dunia (contoh: Pakistan, Jerman, Jepang)..."
+                    <input type="text" id="mapSearchInput" placeholder="Search countries or global cities (e.g. Pakistan, Germany, Japan)..."
                            autocomplete="off"
                            class="w-full pl-2.5 pr-2 py-1 text-xs font-semibold text-slate-800 placeholder-slate-400 bg-transparent focus:outline-none">
                     <button type="button" id="clearMapSearchBtn" onclick="clearMapSearch()" class="hidden p-1 text-slate-400 hover:text-slate-700 text-xs font-bold mr-1">&times;</button>
                     <button type="button" onclick="executeMapSearch()" id="mapSearchBtn" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold rounded-xl shadow-xs transition-colors shrink-0">
-                        Cari
+                        Search
                     </button>
                 </div>
                 <!-- Auto-suggest Dropdown -->
@@ -248,10 +248,10 @@
                 <!-- Top Header Bar with Search Query & Close -->
                 <div class="p-3 border-b border-slate-100 flex items-center justify-between bg-white/90">
                     <div class="flex items-center space-x-2 truncate">
-                        <button type="button" onclick="closePlaceDetailDrawer()" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors" title="Tutup Detail">
+                        <button type="button" onclick="closePlaceDetailDrawer()" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors" title="Close Details">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                         </button>
-                        <span class="text-xs font-black text-slate-800 tracking-tight truncate" id="drawerSearchTitle">Telusuri Google Maps</span>
+                        <span class="text-xs font-black text-slate-800 tracking-tight truncate" id="drawerSearchTitle">Search Google Maps</span>
                     </div>
                     <button type="button" onclick="closePlaceDetailDrawer()" class="w-7 h-7 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-800 text-lg font-bold flex items-center justify-center">&times;</button>
                 </div>
@@ -274,74 +274,74 @@
                         <div class="flex items-center space-x-2.5">
                             <span class="text-2xl" id="drawerWeatherIcon">☀️</span>
                             <div>
-                                <span class="font-extrabold text-slate-800 text-xs" id="drawerWeatherText">Cerah &bull; 12 &deg;C</span>
-                                <p class="text-[10px] text-slate-400 font-medium">Cuaca &amp; kondisi terkini</p>
+                                <span class="font-extrabold text-slate-800 text-xs" id="drawerWeatherText">Clear &bull; 12 &deg;C</span>
+                                <p class="text-[10px] text-slate-400 font-medium">Weather &amp; current conditions</p>
                             </div>
                         </div>
                         <div class="text-right">
                             <span class="text-xs font-mono font-black text-slate-700 bg-white px-2 py-1 rounded-lg border border-slate-200 shadow-2xs" id="drawerLocalTime">06:57</span>
-                            <span class="text-[9px] text-slate-400 block mt-0.5">Waktu Lokal</span>
+                            <span class="text-[9px] text-slate-400 block mt-0.5">Local Time</span>
                         </div>
                     </div>
 
-                    <!-- Action Buttons (Rute, Simpan, Di Sekitar, Salin, Bagikan - Sesuai Gambar 2) -->
+                    <!-- Action Buttons (Directions, Save, Nearby, Copy, Share) -->
                     <div class="grid grid-cols-4 gap-2 text-center text-[10px] font-bold text-slate-700">
                         <a id="drawerRouteLink" href="{{ route('tracking.index') }}" class="flex flex-col items-center p-2 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-colors group">
                             <div class="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center mb-1 shadow-sm group-hover:scale-110 transition-transform">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
                             </div>
-                            <span>Rute</span>
+                            <span>Directions</span>
                         </a>
                         <button type="button" onclick="focusNearbyPlace()" class="flex flex-col items-center p-2 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-colors group">
                             <div class="w-9 h-9 rounded-full bg-slate-100 group-hover:bg-blue-100 text-slate-700 group-hover:text-blue-600 flex items-center justify-center mb-1 transition-transform">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>
                             </div>
-                            <span>Di Sekitar</span>
+                            <span>Nearby</span>
                         </button>
                         <button type="button" onclick="copyPlaceCoords()" class="flex flex-col items-center p-2 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-colors group">
                             <div class="w-9 h-9 rounded-full bg-slate-100 group-hover:bg-blue-100 text-slate-700 group-hover:text-blue-600 flex items-center justify-center mb-1 transition-transform">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                             </div>
-                            <span>Salin</span>
+                            <span>Copy</span>
                         </button>
                         <button type="button" onclick="sharePlaceDetails()" class="flex flex-col items-center p-2 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-colors group">
                             <div class="w-9 h-9 rounded-full bg-slate-100 group-hover:bg-blue-100 text-slate-700 group-hover:text-blue-600 flex items-center justify-center mb-1 transition-transform">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
                             </div>
-                            <span>Bagikan</span>
+                            <span>Share</span>
                         </button>
                     </div>
 
                     <div class="w-full h-px bg-slate-200"></div>
 
-                    <!-- Fakta Singkat (Exact Match to Image 2) -->
+                    <!-- Quick Facts -->
                     <div class="space-y-1.5">
                         <h3 class="text-xs font-black text-slate-900 tracking-tight flex items-center gap-1.5">
                             <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-4m0-4h.01"/></svg>
-                            Fakta singkat
+                            Quick Facts
                         </h3>
                         <p class="text-xs text-slate-600 leading-relaxed text-justify" id="drawerPlaceFacts">
                             <!-- Descriptive text populated here -->
                         </p>
                     </div>
 
-                    <!-- Spesifikasi Node Gateway Logistik -->
+                    <!-- Logistics Gateway Specifications -->
                     <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-2 text-xs">
-                        <h4 class="font-extrabold text-slate-700 text-[11px] uppercase tracking-wider">Spesifikasi Gateway Logistik</h4>
+                        <h4 class="font-extrabold text-slate-700 text-[11px] uppercase tracking-wider">Logistics Gateway Specifications</h4>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <span class="text-[10px] text-slate-400 block font-bold">Kode Simpul</span>
+                                <span class="text-[10px] text-slate-400 block font-bold">Node Code</span>
                                 <span class="font-mono font-black text-blue-600" id="drawerHubCode">-</span>
                             </div>
                             <div>
-                                <span class="text-[10px] text-slate-400 block font-bold">Status Hub</span>
+                                <span class="text-[10px] text-slate-400 block font-bold">Hub Status</span>
                                 <span class="font-bold text-emerald-600 flex items-center space-x-1">
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                    <span>Aktif 24/7 Global</span>
+                                    <span>Active 24/7 Global</span>
                                 </span>
                             </div>
                             <div class="col-span-2">
-                                <span class="text-[10px] text-slate-400 block font-bold">Koordinat Geografis WGS84</span>
+                                <span class="text-[10px] text-slate-400 block font-bold">WGS84 Geographic Coordinates</span>
                                 <span class="font-mono text-slate-700 font-bold text-[11px]" id="drawerHubCoords">-</span>
                             </div>
                         </div>
@@ -614,7 +614,7 @@
     let searchHighlightMarker = null;
     let currentSelectedCoords = null;
 
-    // Comprehensive Database of authentic high-res photographs & Indonesian factual descriptions for 1 World Explorer
+    // Comprehensive Global Logistics & Country Profile Database for Interactive World Explorer
     const PLACE_DATABASE = {
         'pakistan': {
             city: 'Islamabad',
@@ -623,10 +623,10 @@
             lng: 73.0479,
             zoom: 6,
             photo: 'https://images.unsplash.com/photo-1622546758596-f1f06ba11f58?w=800&q=80',
-            weather: 'Cerah • 12 °C',
+            weather: 'Clear • 12 °C',
             weatherIcon: '☀️',
             timeOffset: 5,
-            facts: 'Islamabad adalah ibukota Pakistan yang terletak di dalam Wilayah Ibukota Islamabad. Dengan populasi dua juta jiwa, ini adalah kota terbesar ke-10 di Pakistan dan merupakan pusat pemerintahan, diplomasi, serta koridor logistik terpadu CPEC yang menghubungkan pelabuhan selatan dengan Asia Tengah.',
+            facts: 'Islamabad is the federal capital of Pakistan, situated within the Islamabad Capital Territory. As the administrative, diplomatic, and governmental epicenter, it anchors key multimodal logistics corridors along the China-Pakistan Economic Corridor (CPEC) connecting Arabian Sea ports with Central Asian trade lanes.',
             type: 'CAPITAL_LOGISTICS_HUB'
         },
         'islamabad': {
@@ -636,10 +636,10 @@
             lng: 73.0479,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1622546758596-f1f06ba11f58?w=800&q=80',
-            weather: 'Cerah • 12 °C',
+            weather: 'Clear • 12 °C',
             weatherIcon: '☀️',
             timeOffset: 5,
-            facts: 'Islamabad adalah ibukota Pakistan yang terletak di dalam Wilayah Ibukota Islamabad. Dengan populasi dua juta jiwa, ini adalah kota terbesar ke-10 di Pakistan dan merupakan pusat pemerintahan, diplomasi, serta koridor logistik terpadu CPEC yang menghubungkan pelabuhan selatan dengan Asia Tengah.',
+            facts: 'Islamabad is the federal capital of Pakistan, situated within the Islamabad Capital Territory. As the administrative, diplomatic, and governmental epicenter, it anchors key multimodal logistics corridors along the China-Pakistan Economic Corridor (CPEC) connecting Arabian Sea ports with Central Asian trade lanes.',
             type: 'CAPITAL_LOGISTICS_HUB'
         },
         'indonesia': {
@@ -649,10 +649,10 @@
             lng: 106.8456,
             zoom: 5,
             photo: 'https://images.unsplash.com/photo-1555899434-94d1338eb352?w=800&q=80',
-            weather: 'Cerah Berawan • 31 °C',
+            weather: 'Partly Cloudy • 31 °C',
             weatherIcon: '⛅',
             timeOffset: 7,
-            facts: 'Indonesia adalah negara kepulauan terbesar di dunia dengan posisi maritim amat strategis di antara Samudra Hindia dan Pasifik. Simpul logistik utama berpusat di Pelabuhan Tanjung Priok (Jakarta) dan Tanjung Perak (Surabaya), serta tol laut nusantara.',
+            facts: 'Indonesia is the world\'s largest archipelagic state with a pivotal geostrategic position between the Indian and Pacific Oceans. Primary maritime hubs center around the Port of Tanjung Priok in Jakarta and Tanjung Perak in Surabaya, facilitating inter-island sea tollways and international shipping lanes.',
             type: 'MARITIME_NATION_HUB'
         },
         'jakarta': {
@@ -662,10 +662,10 @@
             lng: 106.8456,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1555899434-94d1338eb352?w=800&q=80',
-            weather: 'Cerah Berawan • 31 °C',
+            weather: 'Partly Cloudy • 31 °C',
             weatherIcon: '⛅',
             timeOffset: 7,
-            facts: 'Jakarta adalah pusat perekonomian dan logistik maritim terbesar di Indonesia dengan Pelabuhan Tanjung Priok sebagai simpul utama perdagangan kargo internasional dan distribusi logistik nasional.',
+            facts: 'Jakarta is Indonesia\'s primary commercial capital and maritime logistics center, anchored by the Port of Tanjung Priok as the nation\'s premier deepwater gateway for international container trade.',
             type: 'PORT'
         },
         'surabaya': {
@@ -675,23 +675,23 @@
             lng: 112.7521,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?w=800&q=80',
-            weather: 'Cerah • 32 °C',
+            weather: 'Sunny • 32 °C',
             weatherIcon: '☀️',
             timeOffset: 7,
-            facts: 'Surabaya adalah kota metropolitan terbesar kedua di Indonesia. Pelabuhan Tanjung Perak berfungsi sebagai hub maritim dan gerbang logistik utama untuk wilayah Indonesia bagian Timur.',
+            facts: 'Surabaya is Indonesia\'s second largest metropolitan area. The Port of Tanjung Perak serves as the primary maritime hub and distribution gateway for Eastern Indonesia.',
             type: 'PORT'
         },
         'jerman': {
             city: 'Frankfurt',
-            country: 'Jerman',
+            country: 'Germany',
             lat: 51.1657,
             lng: 10.4515,
             zoom: 6,
             photo: 'https://images.unsplash.com/photo-1587330979470-3595ac045ab0?w=800&q=80',
-            weather: 'Berawan • 9 °C',
+            weather: 'Cloudy • 9 °C',
             weatherIcon: '☁️',
             timeOffset: 1,
-            facts: 'Jerman adalah kekuatan industri manufaktur dan ekonomi terbesar di Uni Eropa. Memiliki konektivitas logistik global kelas dunia lewat Pelabuhan Hamburg dan Bandara Kargo Frankfurt CargoCity.',
+            facts: 'Germany is the economic and manufacturing backbone of the European Union, featuring world-class global logistics connectivity through the Port of Hamburg and Frankfurt CargoCity at Frankfurt Airport.',
             type: 'GLOBAL_LOGISTICS_HUB'
         },
         'germany': {
@@ -701,10 +701,10 @@
             lng: 10.4515,
             zoom: 6,
             photo: 'https://images.unsplash.com/photo-1587330979470-3595ac045ab0?w=800&q=80',
-            weather: 'Berawan • 9 °C',
+            weather: 'Cloudy • 9 °C',
             weatherIcon: '☁️',
             timeOffset: 1,
-            facts: 'Germany is Europe\'s industrial and economic powerhouse, home to Frankfurt CargoCity and Port of Hamburg.',
+            facts: 'Germany is the economic and manufacturing backbone of the European Union, featuring world-class global logistics connectivity through the Port of Hamburg and Frankfurt CargoCity at Frankfurt Airport.',
             type: 'GLOBAL_LOGISTICS_HUB'
         },
         'frankfurt': {
@@ -714,23 +714,23 @@
             lng: 8.6821,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1587330979470-3595ac045ab0?w=800&q=80',
-            weather: 'Berawan • 9 °C',
+            weather: 'Cloudy • 9 °C',
             weatherIcon: '☁️',
             timeOffset: 1,
-            facts: 'Frankfurt am Main adalah gerbang kargo udara terbesar di Eropa melalui fasilitas Frankfurt CargoCity South di Bandara Frankfurt, menangani lebih dari dua juta ton kargo udara ekspres per tahun.',
+            facts: 'Frankfurt am Main is Europe\'s premier air cargo gateway through the Frankfurt CargoCity South facility at Frankfurt Airport, processing over two million metric tons of international air express freight annually.',
             type: 'AIRPORT'
         },
         'jepang': {
             city: 'Tokyo',
-            country: 'Jepang',
+            country: 'Japan',
             lat: 36.2048,
             lng: 138.2529,
             zoom: 5,
             photo: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80',
-            weather: 'Cerah Dingin • 14 °C',
+            weather: 'Cold Clear • 14 °C',
             weatherIcon: '🌤️',
             timeOffset: 9,
-            facts: 'Jepang adalah pionir teknologi manufaktur presisi dunia dengan jaringan logistik maritim modern di Pelabuhan Tokyo, Yokohama, dan hub udara Narita yang menggerakkan ekspor berteknologi tinggi.',
+            facts: 'Japan is a global leader in high-tech precision manufacturing with advanced maritime logistics networks at the Port of Tokyo and Yokohama, and Narita air hub driving high-technology exports worldwide.',
             type: 'GLOBAL_TECH_HUB'
         },
         'japan': {
@@ -740,10 +740,10 @@
             lng: 138.2529,
             zoom: 5,
             photo: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80',
-            weather: 'Cerah Dingin • 14 °C',
+            weather: 'Cold Clear • 14 °C',
             weatherIcon: '🌤️',
             timeOffset: 9,
-            facts: 'Japan is a global leader in high-tech manufacturing with advanced maritime hubs at Port of Tokyo and Yokohama.',
+            facts: 'Japan is a global leader in high-tech precision manufacturing with advanced maritime logistics networks at the Port of Tokyo and Yokohama, and Narita air hub driving high-technology exports worldwide.',
             type: 'GLOBAL_TECH_HUB'
         },
         'tokyo': {
@@ -753,23 +753,23 @@
             lng: 139.6503,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=800&q=80',
-            weather: 'Cerah Dingin • 14 °C',
+            weather: 'Cold Clear • 14 °C',
             weatherIcon: '🌤️',
             timeOffset: 9,
-            facts: 'Tokyo adalah megapolitan dan pusat ekonomi terbesar Jepang. Pelabuhan Tokyo di Teluk Tokyo melayani arus kargo peti kemas untuk kawasan industri manufaktur berteknologi tinggi dan konsumsi Kanto.',
+            facts: 'Tokyo is Japan\'s largest economic center and megacity. The Port of Tokyo in Tokyo Bay processes critical container traffic supporting high-technology manufacturing and consumer distribution across the Kanto region.',
             type: 'PORT'
         },
         'amerika serikat': {
             city: 'Washington DC / New York',
-            country: 'Amerika Serikat',
+            country: 'United States',
             lat: 37.0902,
             lng: -95.7129,
             zoom: 4,
             photo: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800&q=80',
-            weather: 'Cerah Sejuk • 15 °C',
+            weather: 'Cool Sunny • 15 °C',
             weatherIcon: '☀️',
             timeOffset: -5,
-            facts: 'Amerika Serikat memiliki jaringan logistik terpadu terbesar di dunia, menghubungkan Pantai Barat Pasifik (Port of Los Angeles) ke Pantai Timur Atlantik (New York) via koridor kereta rel dan jalan raya Interstate.',
+            facts: 'The United States operates the world\'s most comprehensive integrated freight network, connecting Pacific West Coast ports to Atlantic East Coast hubs via transcontinental freight rail and interstate highway corridors.',
             type: 'CONTINENTAL_LOGISTICS_NETWORK'
         },
         'united states': {
@@ -779,23 +779,23 @@
             lng: -95.7129,
             zoom: 4,
             photo: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800&q=80',
-            weather: 'Cerah Sejuk • 15 °C',
+            weather: 'Cool Sunny • 15 °C',
             weatherIcon: '☀️',
             timeOffset: -5,
-            facts: 'The United States features the world\'s largest freight network bridging the Pacific and Atlantic oceans.',
+            facts: 'The United States operates the world\'s most comprehensive integrated freight network, connecting Pacific West Coast ports to Atlantic East Coast hubs via transcontinental freight rail and interstate highway corridors.',
             type: 'CONTINENTAL_LOGISTICS_NETWORK'
         },
         'arab saudi': {
             city: 'Riyadh',
-            country: 'Arab Saudi',
+            country: 'Saudi Arabia',
             lat: 23.8859,
             lng: 45.0792,
             zoom: 5,
             photo: 'https://images.unsplash.com/photo-1586724237569-f3d0c1dee8c6?w=800&q=80',
-            weather: 'Cerah Terik • 28 °C',
+            weather: 'Hot Sunny • 28 °C',
             weatherIcon: '☀️',
             timeOffset: 3,
-            facts: 'Arab Saudi adalah simpul energi dan perdagangan maritim di Laut Merah (Jeddah Islamic Port) dan Teluk Arab (King Abdulaziz Port Dammam), menghubungkan benua Asia, Afrika, dan Eropa.',
+            facts: 'Saudi Arabia is a strategic energy and maritime commerce hub along the Red Sea (Jeddah Islamic Port) and Arabian Gulf (King Abdulaziz Port Dammam), bridging Asian, African, and European trade routes.',
             type: 'MIDDLE_EAST_GATEWAY'
         },
         'saudi arabia': {
@@ -805,23 +805,23 @@
             lng: 45.0792,
             zoom: 5,
             photo: 'https://images.unsplash.com/photo-1586724237569-f3d0c1dee8c6?w=800&q=80',
-            weather: 'Cerah Terik • 28 °C',
+            weather: 'Hot Sunny • 28 °C',
             weatherIcon: '☀️',
             timeOffset: 3,
-            facts: 'Saudi Arabia serves as the vital maritime trade bridge between Asia, Africa, and Europe.',
+            facts: 'Saudi Arabia is a strategic energy and maritime commerce hub along the Red Sea (Jeddah Islamic Port) and Arabian Gulf (King Abdulaziz Port Dammam), bridging Asian, African, and European trade routes.',
             type: 'MIDDLE_EAST_GATEWAY'
         },
         'tiongkok': {
             city: 'Shanghai / Beijing',
-            country: 'Tiongkok',
+            country: 'China',
             lat: 35.8617,
             lng: 104.1954,
             zoom: 4,
             photo: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80',
-            weather: 'Cerah Berawan • 16 °C',
+            weather: 'Partly Cloudy • 16 °C',
             weatherIcon: '🌤️',
             timeOffset: 8,
-            facts: 'Tiongkok adalah raksasa manufaktur global dengan 7 dari 10 pelabuhan kontainer tersibuk di dunia termasuk Shanghai Yangshan, Ningbo-Zhoushan, dan Shenzhen.',
+            facts: 'China is the world\'s manufacturing superhub, housing 7 of the top 10 busiest container seaports globally including Shanghai Yangshan, Ningbo-Zhoushan, and Shenzhen.',
             type: 'MANUFACTURING_SUPERHUB'
         },
         'china': {
@@ -831,10 +831,10 @@
             lng: 121.4737,
             zoom: 5,
             photo: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80',
-            weather: 'Cerah Berawan • 16 °C',
+            weather: 'Partly Cloudy • 16 °C',
             weatherIcon: '🌤️',
             timeOffset: 8,
-            facts: 'Shanghai adalah pelabuhan kontainer tersibuk di dunia dengan kompleks Pelabuhan Air Dalam Yangshan.',
+            facts: 'Shanghai is the world\'s busiest container seaport, anchored by the deep-water Yangshan Port facility connected via the 32.5 km Donghai Bridge.',
             type: 'PORT'
         },
         'shanghai': {
@@ -844,23 +844,23 @@
             lng: 121.4737,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800&q=80',
-            weather: 'Cerah Berawan • 16 °C',
+            weather: 'Partly Cloudy • 16 °C',
             weatherIcon: '🌤️',
             timeOffset: 8,
-            facts: 'Shanghai adalah kota metropolitan terpadat di Tiongkok dan pelabuhan kontainer tersibuk di dunia dengan kompleks Pelabuhan Air Dalam Yangshan.',
+            facts: 'Shanghai is the world\'s busiest container seaport, anchored by the deep-water Yangshan Port facility connected via the 32.5 km Donghai Bridge.',
             type: 'PORT'
         },
         'belanda': {
             city: 'Rotterdam',
-            country: 'Belanda',
+            country: 'Netherlands',
             lat: 52.1326,
             lng: 5.2913,
             zoom: 7,
             photo: 'https://images.unsplash.com/photo-1517737211229-bbd45764f734?w=800&q=80',
-            weather: 'Sebagian Berawan • 11 °C',
+            weather: 'Partly Cloudy • 11 °C',
             weatherIcon: '⛅',
             timeOffset: 1,
-            facts: 'Belanda dikenal sebagai "Gerbang Eropa". Pelabuhan Rotterdam adalah pelabuhan peti kemas terbesar di Eropa yang melayani arus kargo maritim menuju pusat industri Eropa Barat.',
+            facts: 'The Netherlands is recognized as the Gateway to Europe. The Port of Rotterdam is Europe\'s largest container seaport, serving maritime container traffic to the industrial heartlands of Western Europe.',
             type: 'PORT'
         },
         'netherlands': {
@@ -870,10 +870,10 @@
             lng: 4.4777,
             zoom: 7,
             photo: 'https://images.unsplash.com/photo-1517737211229-bbd45764f734?w=800&q=80',
-            weather: 'Sebagian Berawan • 11 °C',
+            weather: 'Partly Cloudy • 11 °C',
             weatherIcon: '⛅',
             timeOffset: 1,
-            facts: 'Rotterdam adalah pelabuhan peti kemas terbesar di Eropa dan simpul logistik maritim dunia di delta sungai Rhine dan Meuse.',
+            facts: 'The Port of Rotterdam is Europe\'s largest container port and an essential maritime trade gateway situated at the Rhine-Meuse delta.',
             type: 'PORT'
         },
         'rotterdam': {
@@ -883,23 +883,36 @@
             lng: 4.4777,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1517737211229-bbd45764f734?w=800&q=80',
-            weather: 'Sebagian Berawan • 11 °C',
+            weather: 'Partly Cloudy • 11 °C',
             weatherIcon: '⛅',
             timeOffset: 1,
-            facts: 'Rotterdam adalah pelabuhan peti kemas terbesar di Eropa dan simpul logistik maritim dunia di delta sungai Rhine dan Meuse.',
+            facts: 'The Port of Rotterdam is Europe\'s largest container port and an essential maritime trade gateway situated at the Rhine-Meuse delta.',
             type: 'PORT'
         },
         'uni emirat arab': {
             city: 'Dubai',
-            country: 'Uni Emirat Arab',
+            country: 'United Arab Emirates',
             lat: 23.4241,
             lng: 53.8478,
             zoom: 6,
             photo: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&q=80',
-            weather: 'Cerah • 29 °C',
+            weather: 'Sunny • 29 °C',
             weatherIcon: '☀️',
             timeOffset: 4,
-            facts: 'Uni Emirat Arab adalah pusat transit kargo laut-udara terbesar di kawasan Teluk. Pelabuhan Jebel Ali Dubai adalah pelabuhan buatan terbesar di dunia.',
+            facts: 'The United Arab Emirates is the premier sea-air logistics and intermodal transit gateway of the Gulf region. Jebel Ali Port in Dubai is the world\'s largest man-made harbor and busiest container port in the Middle East.',
+            type: 'INTERMODAL_GATEWAY'
+        },
+        'united arab emirates': {
+            city: 'Dubai',
+            country: 'United Arab Emirates',
+            lat: 23.4241,
+            lng: 53.8478,
+            zoom: 6,
+            photo: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&q=80',
+            weather: 'Sunny • 29 °C',
+            weatherIcon: '☀️',
+            timeOffset: 4,
+            facts: 'The United Arab Emirates is the premier sea-air logistics and intermodal transit gateway of the Gulf region. Jebel Ali Port in Dubai is the world\'s largest man-made harbor and busiest container port in the Middle East.',
             type: 'INTERMODAL_GATEWAY'
         },
         'dubai': {
@@ -909,10 +922,10 @@
             lng: 55.2708,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&q=80',
-            weather: 'Cerah • 29 °C',
+            weather: 'Sunny • 29 °C',
             weatherIcon: '☀️',
             timeOffset: 4,
-            facts: 'Dubai adalah gerbang perdagangan Timur Tengah yang menaungi Pelabuhan Jebel Ali, pelabuhan buatan terbesar di dunia dan hub kargo laut-udara terintegrasi.',
+            facts: 'Dubai is the Middle East\'s primary trade crossroads, housing Jebel Ali Port—the largest man-made harbor in the world—and an integrated air-sea multimodal cargo infrastructure.',
             type: 'PORT'
         },
         'australia': {
@@ -922,10 +935,10 @@
             lng: 133.7751,
             zoom: 4,
             photo: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=800&q=80',
-            weather: 'Cerah Menyenangkan • 22 °C',
+            weather: 'Pleasant Sunny • 22 °C',
             weatherIcon: '☀️',
             timeOffset: 11,
-            facts: 'Australia adalah benua maritim strategis dengan simpul kargo utama di Port Botany Sydney dan Pelabuhan Melbourne, melayani ekspor sumber daya alam dan komoditas global.',
+            facts: 'Australia is a strategic maritime trading nation with key container gateways at Port Botany in Sydney and Port of Melbourne, facilitating natural resource exports and international supply chains.',
             type: 'OCEANIA_LOGISTICS_HUB'
         },
         'sydney': {
@@ -935,36 +948,62 @@
             lng: 151.2093,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=800&q=80',
-            weather: 'Cerah Menyenangkan • 22 °C',
+            weather: 'Pleasant Sunny • 22 °C',
             weatherIcon: '☀️',
             timeOffset: 11,
-            facts: 'Sydney adalah gerbang utama perdagangan kargo internasional Australia melalui Port Botany dan Bandara Internasional Kingsford Smith.',
+            facts: 'Sydney is Australia\'s primary commercial container gateway via Port Botany and Sydney Kingsford Smith International Airport.',
             type: 'PORT'
         },
         'inggris': {
             city: 'London',
-            country: 'Inggris',
+            country: 'United Kingdom',
             lat: 55.3781,
             lng: -3.4360,
             zoom: 5,
             photo: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&q=80',
-            weather: 'Berawan Sejuk • 12 °C',
+            weather: 'Cool Cloudy • 12 °C',
             weatherIcon: '⛅',
             timeOffset: 0,
-            facts: 'Britania Raya memiliki pelabuhan peti kemas modern seperti Felixstowe, Southampton, dan London Gateway yang mengendalikan arus impor dan ekspor Atlantik.',
+            facts: 'The United Kingdom maintains prominent deepwater maritime container terminals including Felixstowe, Southampton, and London Gateway, managing global trans-Atlantic and European shipping traffic.',
+            type: 'MARITIME_GATEWAY'
+        },
+        'united kingdom': {
+            city: 'London',
+            country: 'United Kingdom',
+            lat: 55.3781,
+            lng: -3.4360,
+            zoom: 5,
+            photo: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&q=80',
+            weather: 'Cool Cloudy • 12 °C',
+            weatherIcon: '⛅',
+            timeOffset: 0,
+            facts: 'The United Kingdom maintains prominent deepwater maritime container terminals including Felixstowe, Southampton, and London Gateway, managing global trans-Atlantic and European shipping traffic.',
             type: 'MARITIME_GATEWAY'
         },
         'brasil': {
             city: 'Santos / São Paulo',
-            country: 'Brasil',
+            country: 'Brazil',
             lat: -14.2350,
             lng: -51.9253,
             zoom: 4,
             photo: 'https://images.unsplash.com/photo-1516306580123-e6e52b1b7b5f?w=800&q=80',
-            weather: 'Cerah Tropis • 26 °C',
+            weather: 'Tropical Sunny • 26 °C',
             weatherIcon: '🌤️',
             timeOffset: -3,
-            facts: 'Brasil adalah raksasa ekonomi Amerika Selatan. Port of Santos merupakan kompleks pelabuhan peti kemas terbesar di Amerika Latin.',
+            facts: 'Brazil is South America\'s largest economic power. The Port of Santos is the largest container port complex in Latin America, handling agricultural commodities and manufactured industrial goods.',
+            type: 'PORT'
+        },
+        'brazil': {
+            city: 'Santos / São Paulo',
+            country: 'Brazil',
+            lat: -14.2350,
+            lng: -51.9253,
+            zoom: 4,
+            photo: 'https://images.unsplash.com/photo-1516306580123-e6e52b1b7b5f?w=800&q=80',
+            weather: 'Tropical Sunny • 26 °C',
+            weatherIcon: '🌤️',
+            timeOffset: -3,
+            facts: 'Brazil is South America\'s largest economic power. The Port of Santos is the largest container port complex in Latin America, handling agricultural commodities and manufactured industrial goods.',
             type: 'PORT'
         },
         'santos': {
@@ -974,23 +1013,36 @@
             lng: -46.3322,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1516306580123-e6e52b1b7b5f?w=800&q=80',
-            weather: 'Cerah Tropis • 26 °C',
+            weather: 'Tropical Sunny • 26 °C',
             weatherIcon: '🌤️',
             timeOffset: -3,
-            facts: 'Port of Santos adalah kompleks pelabuhan peti kemas terbesar di Amerika Latin, melayani ekspor komoditas utama dan produk industri Brasil.',
+            facts: 'The Port of Santos is the largest container port complex in Latin America, serving as Brazil\'s main gateway for international industrial and agricultural trade.',
             type: 'PORT'
         },
         'afrika selatan': {
             city: 'Durban',
-            country: 'Afrika Selatan',
+            country: 'South Africa',
             lat: -30.5595,
             lng: 22.9375,
             zoom: 5,
             photo: 'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=800&q=80',
-            weather: 'Cerah Hangat • 24 °C',
+            weather: 'Warm Sunny • 24 °C',
             weatherIcon: '☀️',
             timeOffset: 2,
-            facts: 'Afrika Selatan menempati posisi maritim strategis di Tanjung Harapan. Pelabuhan Durban adalah pelabuhan peti kemas tersibuk di Afrika Sub-Sahara.',
+            facts: 'South Africa occupies a pivotal strategic location along the Cape of Good Hope. The Port of Durban is the busiest container port in Sub-Saharan Africa.',
+            type: 'PORT'
+        },
+        'south africa': {
+            city: 'Durban',
+            country: 'South Africa',
+            lat: -30.5595,
+            lng: 22.9375,
+            zoom: 5,
+            photo: 'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=800&q=80',
+            weather: 'Warm Sunny • 24 °C',
+            weatherIcon: '☀️',
+            timeOffset: 2,
+            facts: 'South Africa occupies a pivotal strategic location along the Cape of Good Hope. The Port of Durban is the busiest container port in Sub-Saharan Africa.',
             type: 'PORT'
         },
         'durban': {
@@ -1000,10 +1052,10 @@
             lng: 31.0218,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=800&q=80',
-            weather: 'Cerah Hangat • 24 °C',
+            weather: 'Warm Sunny • 24 °C',
             weatherIcon: '☀️',
             timeOffset: 2,
-            facts: 'Durban adalah pelabuhan peti kemas tersibuk di Afrika Sub-Sahara yang menghubungkan rute maritim Samudra Hindia dengan kawasan industri Gauteng.',
+            facts: 'Durban is Sub-Saharan Africa\'s premier container hub, connecting Indian Ocean sea lanes with the inland industrial heartland of Gauteng.',
             type: 'PORT'
         },
         'india': {
@@ -1013,88 +1065,153 @@
             lng: 78.9629,
             zoom: 4,
             photo: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&q=80',
-            weather: 'Cerah Hangat • 27 °C',
+            weather: 'Warm Sunny • 27 °C',
             weatherIcon: '☀️',
             timeOffset: 5.5,
-            facts: 'India adalah negara berpenduduk terbesar di dunia dengan jaringan maritim yang berkembang cepat melalui JNPT Mumbai dan koridor Samudra Hindia.',
+            facts: 'India is a major global economic power with rapidly expanding maritime infrastructure anchored by Jawaharlal Nehru Port (JNPT) in Mumbai, facilitating Indian Ocean trade routes.',
             type: 'SOUTH_ASIA_HUB'
         },
         'prancis': {
             city: 'Paris / Le Havre',
-            country: 'Prancis',
+            country: 'France',
             lat: 46.2276,
             lng: 2.2137,
             zoom: 5,
             photo: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&q=80',
-            weather: 'Cerah Sejuk • 13 °C',
+            weather: 'Cool Sunny • 13 °C',
             weatherIcon: '🌤️',
             timeOffset: 1,
-            facts: 'Prancis menghubungkan jalur logistik Atlantik dan Laut Mediterania melalui kompleks pelabuhan Le Havre (HAROPA) dan Marseille-Fos.',
+            facts: 'France bridges Atlantic and Mediterranean trade routes through major container complexes at Le Havre (HAROPA Port) and Marseille-Fos.',
+            type: 'EUROPE_WEST_GATEWAY'
+        },
+        'france': {
+            city: 'Paris / Le Havre',
+            country: 'France',
+            lat: 46.2276,
+            lng: 2.2137,
+            zoom: 5,
+            photo: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&q=80',
+            weather: 'Cool Sunny • 13 °C',
+            weatherIcon: '🌤️',
+            timeOffset: 1,
+            facts: 'France bridges Atlantic and Mediterranean trade routes through major container complexes at Le Havre (HAROPA Port) and Marseille-Fos.',
             type: 'EUROPE_WEST_GATEWAY'
         },
         'korea selatan': {
             city: 'Seoul / Busan',
-            country: 'Korea Selatan',
+            country: 'South Korea',
             lat: 35.9078,
             lng: 127.7669,
             zoom: 6,
             photo: 'https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800&q=80',
-            weather: 'Cerah Berangin • 12 °C',
+            weather: 'Breezy Sunny • 12 °C',
             weatherIcon: '🌤️',
             timeOffset: 9,
-            facts: 'Korea Selatan adalah raksasa semikonduktor dan galangan kapal dunia. Pelabuhan Busan merupakan pelabuhan transshipment terbesar ke-6 di dunia.',
+            facts: 'South Korea is a global semiconductor and shipbuilding power. The Port of Busan ranks as the world\'s sixth busiest transshipment hub.',
+            type: 'EAST_ASIA_HUB'
+        },
+        'south korea': {
+            city: 'Seoul / Busan',
+            country: 'South Korea',
+            lat: 35.9078,
+            lng: 127.7669,
+            zoom: 6,
+            photo: 'https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800&q=80',
+            weather: 'Breezy Sunny • 12 °C',
+            weatherIcon: '🌤️',
+            timeOffset: 9,
+            facts: 'South Korea is a global semiconductor and shipbuilding power. The Port of Busan ranks as the world\'s sixth busiest transshipment hub.',
             type: 'EAST_ASIA_HUB'
         },
         'turki': {
             city: 'Istanbul / Ankara',
-            country: 'Turki',
+            country: 'Turkey',
             lat: 38.9637,
             lng: 35.2433,
             zoom: 5,
             photo: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=800&q=80',
-            weather: 'Cerah • 17 °C',
+            weather: 'Sunny • 17 °C',
             weatherIcon: '☀️',
             timeOffset: 3,
-            facts: 'Turki adalah jembatan penghubung antara Eropa dan Asia via Selat Bosporus, memainkan peran krusial dalam koridor perdagangan sutra modern.',
+            facts: 'Turkey serves as the transcontinental crossroads between Europe and Asia across the Bosphorus Strait, playing an essential role in modern Silk Road trade corridors.',
+            type: 'EURASIAN_CROSSROAD'
+        },
+        'turkey': {
+            city: 'Istanbul / Ankara',
+            country: 'Turkey',
+            lat: 38.9637,
+            lng: 35.2433,
+            zoom: 5,
+            photo: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=800&q=80',
+            weather: 'Sunny • 17 °C',
+            weatherIcon: '☀️',
+            timeOffset: 3,
+            facts: 'Turkey serves as the transcontinental crossroads between Europe and Asia across the Bosphorus Strait, playing an essential role in modern Silk Road trade corridors.',
             type: 'EURASIAN_CROSSROAD'
         },
         'mesir': {
-            city: 'Kairo / Port Said',
-            country: 'Mesir',
+            city: 'Cairo / Port Said',
+            country: 'Egypt',
             lat: 26.8206,
             lng: 30.8025,
             zoom: 5,
             photo: 'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?w=800&q=80',
-            weather: 'Cerah Kering • 25 °C',
+            weather: 'Dry Sunny • 25 °C',
             weatherIcon: '☀️',
             timeOffset: 2,
-            facts: 'Mesir mengendalikan Terusan Suez yang dilalui oleh 12% total volume perdagangan maritim dunia, memangkas jarak navigasi rute Asia ke Eropa.',
+            facts: 'Egypt controls the Suez Canal, through which approximately 12% of total global maritime trade volume passes, linking Asia-Pacific manufacturing to European markets.',
+            type: 'SUEZ_CANAL_GATEWAY'
+        },
+        'egypt': {
+            city: 'Cairo / Port Said',
+            country: 'Egypt',
+            lat: 26.8206,
+            lng: 30.8025,
+            zoom: 5,
+            photo: 'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?w=800&q=80',
+            weather: 'Dry Sunny • 25 °C',
+            weatherIcon: '☀️',
+            timeOffset: 2,
+            facts: 'Egypt controls the Suez Canal, through which approximately 12% of total global maritime trade volume passes, linking Asia-Pacific manufacturing to European markets.',
             type: 'SUEZ_CANAL_GATEWAY'
         },
         'kanada': {
             city: 'Toronto / Vancouver',
-            country: 'Kanada',
+            country: 'Canada',
             lat: 56.1304,
             lng: -106.3468,
             zoom: 3,
             photo: 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=800&q=80',
-            weather: 'Dingin • 4 °C',
+            weather: 'Cold • 4 °C',
             weatherIcon: '❄️',
             timeOffset: -5,
-            facts: 'Kanada adalah negara terluas kedua di dunia dengan gerbang kargo Pasifik utama di Pelabuhan Vancouver dan koridor rel kargo trans-Kanada.',
+            facts: 'Canada operates vital trans-Pacific trade gateways through the Port of Vancouver and expansive transcontinental rail corridors connecting east and west coasts.',
+            type: 'NORTH_AMERICA_GATEWAY'
+        },
+        'canada': {
+            city: 'Toronto / Vancouver',
+            country: 'Canada',
+            lat: 56.1304,
+            lng: -106.3468,
+            zoom: 3,
+            photo: 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=800&q=80',
+            weather: 'Cold • 4 °C',
+            weatherIcon: '❄️',
+            timeOffset: -5,
+            facts: 'Canada operates vital trans-Pacific trade gateways through the Port of Vancouver and expansive transcontinental rail corridors connecting east and west coasts.',
             type: 'NORTH_AMERICA_GATEWAY'
         },
         'singapura': {
             city: 'Singapore',
-            country: 'Singapura',
+            country: 'Singapore',
             lat: 1.3521,
             lng: 103.8198,
             zoom: 11,
             photo: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&q=80',
-            weather: 'Hujan Ringan • 28 °C',
+            weather: 'Light Rain • 28 °C',
             weatherIcon: '🌦️',
             timeOffset: 8,
-            facts: 'Singapura adalah hub transshipment tersibuk di dunia di Selat Malaka, menghubungkan rute pelayaran maritim antar-benua dengan otomatisasi pelabuhan termaju di dunia.',
+            facts: 'Singapore is the world\'s premier transshipment hub along the Strait of Malacca, connecting intercontinental shipping lanes with world-leading port automation.',
             type: 'PORT'
         },
         'singapore': {
@@ -1104,10 +1221,10 @@
             lng: 103.8198,
             zoom: 11,
             photo: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&q=80',
-            weather: 'Hujan Ringan • 28 °C',
+            weather: 'Light Rain • 28 °C',
             weatherIcon: '🌦️',
             timeOffset: 8,
-            facts: 'Singapura adalah hub transshipment tersibuk di dunia yang berlokasi strategis di Selat Malaka.',
+            facts: 'Singapore is the world\'s premier transshipment hub along the Strait of Malacca, connecting intercontinental shipping lanes with world-leading port automation.',
             type: 'PORT'
         },
         'los angeles': {
@@ -1117,10 +1234,10 @@
             lng: -118.2437,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1580655653885-65763b2597d0?w=800&q=80',
-            weather: 'Cerah Berangin • 21 °C',
+            weather: 'Breezy Sunny • 21 °C',
             weatherIcon: '☀️',
             timeOffset: -8,
-            facts: 'Los Angeles adalah gerbang maritim tersibuk di Amerika Utara melalui kompleks Port of Los Angeles di San Pedro Bay, menangani volume impor kontainer terbesar dari kawasan Asia-Pasifik.',
+            facts: 'Los Angeles is the premier maritime gateway in North America through the Port of Los Angeles complex at San Pedro Bay, handling the largest volume of trans-Pacific container imports from Asia.',
             type: 'PORT'
         },
         'new york': {
@@ -1130,10 +1247,10 @@
             lng: -74.0060,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800&q=80',
-            weather: 'Cerah Sejuk • 13 °C',
+            weather: 'Cool Sunny • 13 °C',
             weatherIcon: '🌤️',
             timeOffset: -5,
-            facts: 'New York adalah pusat keuangan global dan simpul maritim Pantai Timur AS melalui Port of New York and New Jersey, menghubungkan rantai pasok perdagangan Atlantik.',
+            facts: 'New York is a global financial center and major East Coast maritime gateway through the Port of New York and New Jersey, anchoring trans-Atlantic trade.',
             type: 'PORT'
         },
         'chicago': {
@@ -1143,10 +1260,10 @@
             lng: -87.6298,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1494522855154-9297ac14b55f?w=800&q=80',
-            weather: 'Berawan Dingin • 7 °C',
+            weather: 'Cold Cloudy • 7 °C',
             weatherIcon: '☁️',
             timeOffset: -6,
-            facts: 'Chicago adalah simpul kereta api intermodal terbesar di Amerika Utara, menghubungkan seluruh koridor rel kargo lintas benua dan distribusi darat Midwest.',
+            facts: 'Chicago is North America\'s largest intermodal freight rail crossroads, serving as the central distribution hub linking transcontinental supply chains.',
             type: 'DISTRIBUTION_CENTER'
         },
         'san francisco': {
@@ -1156,10 +1273,10 @@
             lng: -122.4194,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800&q=80',
-            weather: 'Berkabut • 15 °C',
+            weather: 'Foggy • 15 °C',
             weatherIcon: '🌫️',
             timeOffset: -8,
-            facts: 'San Francisco Bay Area adalah pusat inovasi teknologi global dan gateway logistik udara-maritim penting di pesisir barat AS.',
+            facts: 'The San Francisco Bay Area is a global innovation capital and major West Coast air-sea freight gateway through the Port of Oakland and SFO Airport.',
             type: 'AIRPORT'
         },
         'dallas': {
@@ -1169,10 +1286,10 @@
             lng: -96.7970,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1545153996-e01b50d6f272?w=800&q=80',
-            weather: 'Cerah • 23 °C',
+            weather: 'Sunny • 23 °C',
             weatherIcon: '☀️',
             timeOffset: -6,
-            facts: 'Dallas-Fort Worth merupakan simpul logistik inland terbesar di Amerika Serikat bagian selatan dengan koridor distribusi darat dan bandara kargo DFW.',
+            facts: 'Dallas-Fort Worth is the primary inland distribution and logistics hub of the southern United States with major freight rail corridors and DFW air cargo.',
             type: 'DISTRIBUTION_CENTER'
         },
         'miami': {
@@ -1182,10 +1299,10 @@
             lng: -80.1918,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1506953823976-52e1fdc0149a?w=800&q=80',
-            weather: 'Cerah Hangat • 27 °C',
+            weather: 'Warm Sunny • 27 °C',
             weatherIcon: '☀️',
             timeOffset: -5,
-            facts: 'Miami dikenal sebagai "Gerbang Benua Amerika" yang menghubungkan rantai pasok antara Amerika Utara, Karibia, dan Amerika Latin.',
+            facts: 'Miami serves as the Gateway of the Americas, linking supply chains across North America, the Caribbean, and Latin America.',
             type: 'PORT'
         },
         'seattle': {
@@ -1195,10 +1312,10 @@
             lng: -122.3321,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1502175353174-a7a70e73b362?w=800&q=80',
-            weather: 'Gerimis • 10 °C',
+            weather: 'Light Rain • 10 °C',
             weatherIcon: '🌧️',
             timeOffset: -8,
-            facts: 'Seattle adalah pelabuhan laut utama Pacific Northwest yang menghubungkan rute logistik tercepat antara Asia dan daratan Amerika Serikat.',
+            facts: 'Seattle is the Pacific Northwest\'s primary ocean shipping hub, offering the fastest direct maritime transit route between North America and Asia.',
             type: 'PORT'
         },
         'detroit': {
@@ -1208,10 +1325,10 @@
             lng: -83.0458,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1596484552834-6a58f850e0a1?w=800&q=80',
-            weather: 'Cerah Sejuk • 8 °C',
+            weather: 'Cool Sunny • 8 °C',
             weatherIcon: '🌤️',
             timeOffset: -5,
-            facts: 'Detroit adalah simpul logistik manufaktur otomotif utama dan gerbang perdagangan darat tersibuk antara AS dan Kanada via Ambassador Bridge.',
+            facts: 'Detroit is a cornerstone automotive manufacturing center and the busiest commercial land border gateway between the US and Canada via the Ambassador Bridge.',
             type: 'WAREHOUSE'
         },
         'austin': {
@@ -1221,10 +1338,10 @@
             lng: -97.7431,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1531218150217-54595bc2b934?w=800&q=80',
-            weather: 'Cerah • 24 °C',
+            weather: 'Sunny • 24 °C',
             weatherIcon: '☀️',
             timeOffset: -6,
-            facts: 'Austin adalah kawasan industri teknologi dan semikonduktor "Silicon Hills" dengan jaringan distribusi kargo ekspres yang terus berkembang.',
+            facts: 'Austin is a thriving semiconductor and tech innovation capital in the Silicon Hills, supported by expansive regional freight logistics networks.',
             type: 'DISTRIBUTION_CENTER'
         },
         'denver': {
@@ -1234,36 +1351,62 @@
             lng: -104.9903,
             zoom: 9,
             photo: 'https://images.unsplash.com/photo-1546955870-9f3796d13bd6?w=800&q=80',
-            weather: 'Cerah Dingin • 6 °C',
+            weather: 'Cold Clear • 6 °C',
             weatherIcon: '☀️',
             timeOffset: -7,
-            facts: 'Denver adalah pusat distribusi utama kawasan Rocky Mountain yang melayani konektivitas logistik antara kawasan Midwest dan Barat AS.',
+            facts: 'Denver is the key distribution nexus of the Rocky Mountain region, connecting transport corridors between the Midwest and Western states.',
             type: 'WAREHOUSE'
         },
         'italia': {
-            city: 'Roma',
-            country: 'Italia',
+            city: 'Rome',
+            country: 'Italy',
             lat: 41.8719,
             lng: 12.5674,
             zoom: 5,
             photo: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&q=80',
-            weather: 'Cerah Hangat • 18 °C',
+            weather: 'Warm Sunny • 18 °C',
             weatherIcon: '☀️',
             timeOffset: 1,
-            facts: 'Italia adalah semenanjung strategis Mediterania dengan pelabuhan utama Genoa dan Trieste yang menghubungkan pasar Eropa Selatan dan Tengah.',
+            facts: 'Italy is a strategically positioned Mediterranean peninsula with major seaports at Genoa and Trieste connecting cargo routes to Southern and Central European markets.',
+            type: 'MEDITERRANEAN_HUB'
+        },
+        'italy': {
+            city: 'Rome',
+            country: 'Italy',
+            lat: 41.8719,
+            lng: 12.5674,
+            zoom: 5,
+            photo: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&q=80',
+            weather: 'Warm Sunny • 18 °C',
+            weatherIcon: '☀️',
+            timeOffset: 1,
+            facts: 'Italy is a strategically positioned Mediterranean peninsula with major seaports at Genoa and Trieste connecting cargo routes to Southern and Central European markets.',
             type: 'MEDITERRANEAN_HUB'
         },
         'rusia': {
-            city: 'Moskwa',
-            country: 'Rusia',
+            city: 'Moscow',
+            country: 'Russia',
             lat: 61.5240,
             lng: 105.3188,
             zoom: 3,
             photo: 'https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?w=800&q=80',
-            weather: 'Dingin • -2 °C',
+            weather: 'Cold • -2 °C',
             weatherIcon: '❄️',
             timeOffset: 3,
-            facts: 'Rusia adalah negara terluas di dunia yang membentang melintasi Eropa Timur dan Asia Utara, menghubungkan rute kereta api Trans-Siberia dan jalur maritim Arktik.',
+            facts: 'Russia is the world\'s largest nation by area, bridging Eastern Europe and Northern Asia along the Trans-Siberian rail corridor and Arctic maritime sea routes.',
+            type: 'EURASIAN_TERRITORY'
+        },
+        'russia': {
+            city: 'Moscow',
+            country: 'Russia',
+            lat: 61.5240,
+            lng: 105.3188,
+            zoom: 3,
+            photo: 'https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?w=800&q=80',
+            weather: 'Cold • -2 °C',
+            weatherIcon: '❄️',
+            timeOffset: 3,
+            facts: 'Russia is the world\'s largest nation by area, bridging Eastern Europe and Northern Asia along the Trans-Siberian rail corridor and Arctic maritime sea routes.',
             type: 'EURASIAN_TERRITORY'
         }
     };
@@ -1299,10 +1442,10 @@
             lat: lat,
             lng: lng,
             photo: photo,
-            weather: `Cerah • ${temp} °C`,
+            weather: `Clear • ${temp} °C`,
             weatherIcon: temp < 10 ? '🌤️' : '☀️',
             timeOffset: Math.round((Number(lng) || 0) / 15),
-            facts: `${city || 'Kawasan ini'} adalah bagian penting dalam peta geografis dunia di ${country || 'wilayah terhubung'}, terintegrasi langsung dalam jaringan pemantauan kargo global WorldCargo 360 untuk menghubungkan perdagangan internasional secara akurat dan transparan.`,
+            facts: `${city || 'This region'} is an essential strategic node on the world logistics map in ${country || 'connected international territories'}, fully integrated into the WorldCargo 360 global tracking platform to power accurate and transparent international commerce.`,
             type: type || 'LOGISTICS_NODE'
         };
     }
@@ -1366,10 +1509,10 @@
                 </div>
                 <div class="p-2.5 flex items-center justify-between bg-white border-t border-slate-100">
                     <button type="button" onclick="openPlaceDetailDrawerFromId('${loc.id}')" class="text-xs font-black text-blue-600 hover:text-blue-800 flex items-center space-x-1">
-                        <span>Lihat detail</span>
+                        <span>View details</span>
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </button>
-                    <button type="button" onclick="openPlaceDetailDrawerFromId('${loc.id}')" class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 active:scale-95 transition-all shadow-xs" title="Buka Detail">
+                    <button type="button" onclick="openPlaceDetailDrawerFromId('${loc.id}')" class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 active:scale-95 transition-all shadow-xs" title="Open Details">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
                     </button>
                 </div>
@@ -1387,7 +1530,7 @@
         document.getElementById('drawerPlaceCity').textContent = city;
         document.getElementById('drawerPlaceCountry').textContent = country;
         document.getElementById('drawerPlaceType').textContent = type || 'LOGISTICS NODE';
-        document.getElementById('drawerWeatherText').textContent = placeInfo.weather || 'Cerah • 22 °C';
+        document.getElementById('drawerWeatherText').textContent = placeInfo.weather || 'Clear • 22 °C';
         document.getElementById('drawerWeatherIcon').textContent = placeInfo.weatherIcon || '☀️';
         document.getElementById('drawerLocalTime').textContent = getLocalTimeForLng(lng);
         document.getElementById('drawerPlaceFacts').textContent = placeInfo.facts;
@@ -1542,10 +1685,10 @@
                     openPlaceDetailDrawer('search', city, country, 'GEOCODED NODE', lat, lon, placeInfo);
                 }
             } else {
-                alert(`Lokasi "${query}" tidak ditemukan. Silakan coba nama negara atau kota lain.`);
+                alert(`Location "${query}" was not found. Please try another country or city name.`);
             }
         } catch (e) {
-            alert('Pencarian peta gagal: ' + e.message);
+            alert('Map search failed: ' + e.message);
         } finally {
             if (btn) {
                 btn.textContent = originalText;
@@ -1575,9 +1718,9 @@
         if (!currentSelectedCoords) return;
         const text = `${currentSelectedCoords.lat.toFixed(6)}, ${currentSelectedCoords.lng.toFixed(6)}`;
         navigator.clipboard.writeText(text).then(() => {
-            alert(`Koordinat disalin: ${text}`);
+            alert(`Coordinates copied: ${text}`);
         }).catch(() => {
-            alert(`Koordinat: ${text}`);
+            alert(`Coordinates: ${text}`);
         });
     };
 
@@ -1590,21 +1733,21 @@
         if (!currentSelectedCoords) return;
         const url = window.location.href;
         navigator.clipboard.writeText(url).then(() => {
-            alert('Tautan lokasi berhasil disalin ke papan klip!');
+            alert('Location link copied to clipboard!');
         }).catch(() => {
-            alert(`Tautan: ${url}`);
+            alert(`Link: ${url}`);
         });
     };
 
     async function searchGeocode() {
         const query = document.getElementById('geocodeInput').value.trim();
         if (!query) {
-            alert('Silakan masukkan nama kota atau negara.');
+            alert('Please enter a city or country name.');
             return;
         }
 
         const btn = document.getElementById('geocodeBtn');
-        btn.textContent = 'Mencari Geocoding...';
+        btn.textContent = 'Searching Geocode...';
         btn.disabled = true;
 
         try {
@@ -1653,10 +1796,10 @@
                     openPlaceDetailDrawer('search', city, country, 'GEOCODED NODE', lat, lon, placeInfo);
                 }
             } else {
-                alert(json.message || 'Lokasi tidak ditemukan.');
+                alert(json.message || 'Location not found.');
             }
         } catch (e) {
-            alert('Pencarian geocoding gagal: ' + e.message);
+            alert('Geocoding search failed: ' + e.message);
         } finally {
             btn.textContent = 'Lookup Coordinates';
             btn.disabled = false;
