@@ -125,10 +125,10 @@
 
     <div class="flex h-screen overflow-hidden relative">
         <!-- Mobile Sidebar Backdrop Overlay -->
-        <div id="sidebarBackdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden md:hidden transition-opacity duration-300"></div>
+        <div id="sidebarBackdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[1050] hidden md:hidden transition-opacity duration-300"></div>
 
         <!-- ================= SIDEBAR ================= -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200/90 flex flex-col justify-between transition-transform duration-300 ease-in-out transform -translate-x-full md:translate-x-0 md:static md:z-30 shrink-0 shadow-soft-lg md:shadow-soft-sm">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-[1100] w-64 bg-white border-r border-slate-200/90 flex flex-col justify-between transition-transform duration-300 ease-in-out transform -translate-x-full md:translate-x-0 md:static md:z-30 shrink-0 shadow-soft-lg md:shadow-soft-sm">
             <div>
                 <!-- Brand Logo: WorldCargo 360 -->
                 <div class="h-20 flex items-center justify-between px-6 border-b border-slate-100">

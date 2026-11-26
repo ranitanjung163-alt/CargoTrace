@@ -253,7 +253,7 @@
         <div id="trackingMapArea" class="flex-1 relative w-full h-[70vh] min-h-[440px] max-h-[780px] lg:h-full lg:min-h-0 bg-slate-100 order-1 lg:order-2">
 
             <!-- Floating Top Search & POI Bar (Find any place or remote region on earth) -->
-            <div class="absolute top-2.5 sm:top-4 left-2.5 sm:left-4 right-2.5 sm:right-4 z-[400] flex items-center gap-1.5 sm:gap-2 pointer-events-none overflow-x-auto scrollbar-none pb-1">
+            <div class="absolute top-2.5 sm:top-4 left-2.5 sm:left-4 right-2.5 sm:right-4 z-20 flex items-center gap-1.5 sm:gap-2 pointer-events-none overflow-x-auto scrollbar-none pb-1">
                 <!-- Search Input Pill -->
                 <form onsubmit="searchRemoteLocation(event)" class="pointer-events-auto bg-white/95 backdrop-blur-md rounded-full shadow-md border border-slate-200/90 px-3 py-1.5 sm:px-3.5 sm:py-2 flex items-center space-x-1.5 sm:space-x-2 text-xs w-48 sm:w-72 md:w-80 shrink-0">
                     <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -288,7 +288,7 @@
             <div id="googleDirectionsMap" class="w-full h-full relative z-10 select-none" style="touch-action: none !important; cursor: grab; background-color: #f8fafc !important;"></div>
 
             <!-- Floating Transport Mode & Route Legend (Keterangan Warna Moda Transportasi) -->
-            <div id="transportLegendCard" class="absolute top-13 sm:top-16 left-2.5 sm:left-4 z-[390] bg-white/95 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg border border-slate-200/90 p-2 sm:p-3 select-none max-w-[210px] sm:max-w-xs transition-all duration-200 pointer-events-auto">
+            <div id="transportLegendCard" class="absolute top-13 sm:top-16 left-2.5 sm:left-4 z-20 bg-white/95 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg border border-slate-200/90 p-2 sm:p-3 select-none max-w-[210px] sm:max-w-xs transition-all duration-200 pointer-events-auto">
                 <div class="flex items-center justify-between pb-1 sm:pb-1.5 border-b border-slate-100 mb-1.5 cursor-pointer" onclick="toggleTransportLegend()">
                     <div class="flex items-center space-x-1.5">
                         <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
@@ -341,7 +341,7 @@
             </div>
 
             <!-- Floating Controls Dock: Directional Pan Controller, Zoom, and Google Maps Signature "Lapisan" (Dual Mode) Widget -->
-            <div class="absolute bottom-2.5 sm:bottom-4 left-2.5 sm:left-4 z-[400] flex items-end gap-1.5 sm:gap-2.5 pointer-events-auto">
+            <div class="absolute bottom-2.5 sm:bottom-4 left-2.5 sm:left-4 z-20 flex items-end gap-1.5 sm:gap-2.5 pointer-events-auto">
                 <!-- Pan D-Pad & Zoom Controls: row on mobile, column on desktop -->
                 <div class="flex flex-row sm:flex-col items-center gap-1.5 sm:gap-2">
                     <!-- 4-Way Directional Pan Compass D-Pad -->
@@ -397,7 +397,7 @@
                 <!-- Google Maps Signature "Lapisan" Toggle Button & Mode Drawer -->
                 <div class="relative select-none" id="mapModeContainer">
                     <!-- Drawer Popup Menu (Jenis Peta: Default & Satelit) -->
-                    <div id="mapModeMenu" class="hidden absolute bottom-14 sm:bottom-16 left-0 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/90 p-2.5 sm:p-3 w-52 sm:w-56 z-[450] select-none transition-all duration-200 max-w-[calc(100vw-2rem)]">
+                    <div id="mapModeMenu" class="hidden absolute bottom-14 sm:bottom-16 left-0 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/90 p-2.5 sm:p-3 w-52 sm:w-56 z-30 select-none transition-all duration-200 max-w-[calc(100vw-2rem)]">
                         <div class="flex items-center justify-between pb-1.5 sm:pb-2 mb-1.5 sm:mb-2 border-b border-slate-100">
                             <span class="text-xs font-black text-slate-800 tracking-tight flex items-center gap-1.5">
                                 <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
@@ -466,7 +466,7 @@
             </div>
 
             <!-- Floating Map Navigation Help Overlay -->
-            <div class="absolute bottom-2.5 sm:bottom-4 right-2.5 sm:right-4 z-[400] bg-white/95 backdrop-blur-md px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-slate-200 shadow-md text-[10px] sm:text-[11px] font-bold text-slate-700 flex items-center space-x-1.5 sm:space-x-2 max-w-[140px] sm:max-w-none select-none">
+            <div class="absolute bottom-2.5 sm:bottom-4 right-2.5 sm:right-4 z-20 bg-white/95 backdrop-blur-md px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-slate-200 shadow-md text-[10px] sm:text-[11px] font-bold text-slate-700 flex items-center space-x-1.5 sm:space-x-2 max-w-[140px] sm:max-w-none select-none">
                 <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse shrink-0"></span>
                 <span id="routeDistanceStatus" class="truncate">912 km &bull; 10 hr 12 min</span>
             </div>
@@ -476,7 +476,7 @@
 
 <!-- ================= MODAL: ADD TRACKING WAYPOINT (PRESERVING ALL OPERATIONAL CAPABILITIES) ================= -->
 @if($shipment && !auth()->user()->isCustomer())
-<div id="trackingModal" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+<div id="trackingModal" class="hidden fixed inset-0 z-[2000] bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl border border-brand-border max-w-lg w-full p-6 shadow-soft-lg space-y-4">
         <div class="flex items-center justify-between border-b border-brand-border pb-3">
             <h3 class="text-base font-extrabold text-brand-navy">Add Route Waypoint / Stop</h3>
@@ -527,7 +527,7 @@
 @endif
 
 <!-- ================= MODAL: ROUTE OPTIONS ================= -->
-<div id="optionsModal" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+<div id="optionsModal" class="hidden fixed inset-0 z-[2000] bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl border border-brand-border max-w-sm w-full p-6 shadow-soft-lg space-y-4">
         <div class="flex items-center justify-between border-b border-brand-border pb-3">
             <h3 class="text-base font-extrabold text-brand-navy">Route Options</h3>
@@ -630,14 +630,44 @@
         -webkit-user-drag: none !important;
     }
 
+    /* Keep Leaflet internal controls and panes bounded within local map stacking context */
+    #googleDirectionsMap .leaflet-top,
+    #googleDirectionsMap .leaflet-bottom {
+        z-index: 25 !important;
+    }
+    #googleDirectionsMap .leaflet-pane {
+        z-index: 10 !important;
+    }
+
+    /* Explicit map canvas base dimensions (guarantees non-zero dimensions on mobile initialization) */
+    #googleDirectionsMap {
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 460px !important;
+    }
+
     /* Mobile Responsive View Modes for Tracking Workstation (Large Map Matching Homepage Experience) */
     @media (max-width: 1023px) {
+        #trackingMapArea {
+            width: 100% !important;
+            height: 72vh !important;
+            height: 72dvh !important;
+            min-height: 460px !important;
+        }
+        #googleDirectionsMap {
+            width: 100% !important;
+            height: 72vh !important;
+            height: 72dvh !important;
+            min-height: 460px !important;
+        }
+
         .tracking-mobile-map #trackingDirectionsDrawer {
             display: none !important;
         }
         .tracking-mobile-map #trackingMapArea {
             display: block !important;
             height: 72vh !important;
+            height: 72dvh !important;
             min-height: 460px !important;
             max-height: 780px !important;
         }
@@ -653,6 +683,7 @@
         .tracking-mobile-both #trackingMapArea {
             display: block !important;
             height: 65vh !important;
+            height: 65dvh !important;
             min-height: 420px !important;
             max-height: 720px !important;
         }
@@ -1198,8 +1229,7 @@
             maxNativeZoom: 20,
             maxZoom: 22,
             subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-            noWrap: true,
-            bounds: worldBounds
+            noWrap: false
         });
 
         // Mode 2: Google Maps Satellite Hybrid (Photorealistic Satellite Imagery with Roads, Labels & Individual Houses/Rooftops)
@@ -1208,8 +1238,7 @@
             maxNativeZoom: 20,
             maxZoom: 22,
             subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-            noWrap: true,
-            bounds: worldBounds
+            noWrap: false
         });
 
         // Mode 3: OpenStreetMap Standard (Community Ground-Truth Detail)
@@ -1217,8 +1246,7 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Leaflet',
             maxNativeZoom: 19,
             maxZoom: 22,
-            noWrap: true,
-            bounds: worldBounds
+            noWrap: false
         });
 
         // Default to Google Maps Standard Roadmap (Clean, bright, street-level coverage)
@@ -1264,10 +1292,34 @@
 
         plotRouteOnMap();
 
-        setTimeout(function() {
-            map.invalidateSize();
-        }, 200);
+        // Multi-stage automated resize triggers to ensure immediate and reliable tile rendering on mobile devices
+        [50, 150, 300, 600, 1000, 1500].forEach(d => triggerMapResize(d));
+
+        // Use ResizeObserver for instant responsive rendering as soon as dimensions are calculated
+        if (window.ResizeObserver) {
+            const ro = new ResizeObserver(() => {
+                triggerMapResize(0);
+            });
+            const mapEl = document.getElementById('googleDirectionsMap');
+            const areaEl = document.getElementById('trackingMapArea');
+            if (mapEl) ro.observe(mapEl);
+            if (areaEl) ro.observe(areaEl);
+        }
     });
+
+    // Reliable resize helper
+    function triggerMapResize(delay = 0) {
+        if (!map) return;
+        if (delay === 0) {
+            try { map.invalidateSize({ animate: false }); } catch (e) {}
+        } else {
+            setTimeout(function() {
+                if (map) {
+                    try { map.invalidateSize({ animate: false }); } catch (e) {}
+                }
+            }, delay);
+        }
+    }
 
     // Mobile Tracking View Switcher (Map vs Details vs Both)
     window.setMobileTrackingView = function(view) {
@@ -1302,17 +1354,29 @@
             }
         });
 
+        triggerMapResize(20);
+        triggerMapResize(100);
+        triggerMapResize(250);
         setTimeout(function() {
-            if (map) {
-                map.invalidateSize();
-            }
+            fitActiveRoute();
         }, 120);
     };
 
+    window.addEventListener('load', function() {
+        triggerMapResize(50);
+        triggerMapResize(200);
+        fitActiveRoute();
+    });
+
     window.addEventListener('resize', function() {
-        if (map) {
-            map.invalidateSize();
-        }
+        triggerMapResize(0);
+        triggerMapResize(150);
+    });
+
+    window.addEventListener('orientationchange', function() {
+        triggerMapResize(100);
+        triggerMapResize(300);
+        fitActiveRoute();
     });
 
     // 4-Way Directional Pan Controller (Geser Peta ke Kiri, Kanan, Atas, Bawah, Reset, dan Fokus)
