@@ -835,47 +835,9 @@
         let dashboardMapInstance = null;
         let dashboardBounds = [];
 
-        // Continuity Enforcement: Clamps vertical movement smoothly so map never reveals empty space above/below
+        // Continuity Enforcement: Handled natively via maxBounds & maxBoundsViscosity
         function enforceGoogleMapsContinuity(mapInstance) {
-            if (!mapInstance) return;
-            let isAdjusting = false;
-
-            function keepInVerticalBounds() {
-                if (isAdjusting) return;
-                const size = mapInstance.getSize();
-                if (!size || size.y <= 0) return;
-
-                const zoom = mapInstance.getZoom();
-                const worldHeight = 256 * Math.pow(2, zoom);
-                const viewHalfY = size.y / 2;
-                const center = mapInstance.getCenter();
-                const centerPoint = mapInstance.project(center, zoom);
-
-                let targetY = centerPoint.y;
-                if (worldHeight <= size.y) {
-                    targetY = worldHeight / 2;
-                } else {
-                    if (targetY - viewHalfY < 0) {
-                        targetY = viewHalfY;
-                    } else if (targetY + viewHalfY > worldHeight) {
-                        targetY = worldHeight - viewHalfY;
-                    }
-                }
-
-                if (Math.abs(targetY - centerPoint.y) > 0.5) {
-                    isAdjusting = true;
-                    try {
-                        const clampedCenter = mapInstance.unproject(L.point(centerPoint.x, targetY), zoom);
-                        mapInstance.setView([clampedCenter.lat, center.lng], zoom, { animate: false });
-                    } finally {
-                        isAdjusting = false;
-                    }
-                }
-            }
-
-            mapInstance.on('drag', keepInVerticalBounds);
-            mapInstance.on('move', keepInVerticalBounds);
-            mapInstance.on('zoomend', keepInVerticalBounds);
+            // Native Leaflet maxBounds handles boundary clamping
         }
 
         // 4-Way Directional Pan Controller for Dashboard Map
@@ -921,11 +883,17 @@
             }
         };
 
-        // Global map initialization (worldwide bounds -90..90, -180..180, deep zoom & smooth horizontal drag)
+        // Strict 1 World Geodetic Bounds (-85.051129 to 85.051129 lat, -180 to 180 lng) to PREVENT horizontal & vertical repetition
+        const worldBounds = L.latLngBounds(L.latLng(-85.051129, -180), L.latLng(85.051129, 180));
+
+        // Global map initialization (Single World Map, EPSG:3857, no horizontal/vertical repetition)
         const map = L.map('dashboardMap', {
             zoomControl: true,
             minZoom: 2,
             maxZoom: 22, // Deep zoom level 22 to view individual houses, rooftops & parcels
+            maxBounds: worldBounds,
+            maxBoundsViscosity: 1.0,
+            worldCopyJump: false,
             scrollWheelZoom: true,
             wheelDebounceTime: 40,
             wheelPxPerZoomLevel: 60,
@@ -935,8 +903,7 @@
             dragging: true,
             tap: false,
             inertia: true,
-            inertiaDeceleration: 3000,
-            worldCopyJump: true
+            inertiaDeceleration: 3000
         }).setView([20.0, 0.0], 2);
 
         dashboardMapInstance = map;
@@ -946,7 +913,6 @@
         map.touchZoom.enable();
         map.doubleClickZoom.enable();
         map.scrollWheelZoom.enable();
-        enforceGoogleMapsContinuity(map);
 
         // Mode 1: Google Maps Standard Roadmap (Bright Clean Road Network, Street & Village Detail)
         const googleRoadmap = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
@@ -954,7 +920,8 @@
             maxNativeZoom: 20,
             maxZoom: 22,
             subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-            noWrap: false
+            noWrap: true,
+            bounds: worldBounds
         });
 
         // Mode 2: Google Maps Satellite Hybrid (Photorealistic Satellite Imagery with Roads, Labels & Individual Houses/Rooftops)
@@ -963,7 +930,8 @@
             maxNativeZoom: 20,
             maxZoom: 22,
             subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-            noWrap: false
+            noWrap: true,
+            bounds: worldBounds
         });
 
         // Base Layer 3: OpenStreetMap Standard
@@ -971,7 +939,8 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Leaflet',
             maxNativeZoom: 19,
             maxZoom: 22,
-            noWrap: false
+            noWrap: true,
+            bounds: worldBounds
         });
 
         // Default to Google Maps Standard Roadmap

@@ -1865,8 +1865,8 @@
             }
         };
 
-        // Strict 1 World Geodetic Bounds (-85 to 85 lat, -180 to 180 lng) to PREVENT horizontal repetition
-        const worldBounds = L.latLngBounds(L.latLng(-85, -180), L.latLng(85, 180));
+        // Strict 1 World Geodetic Bounds (-85.051129 to 85.051129 lat, -180 to 180 lng) to PREVENT horizontal & vertical repetition
+        const worldBounds = L.latLngBounds(L.latLng(-85.051129, -180), L.latLng(85.051129, 180));
 
         map = L.map('worldLocationsMap', {
             zoomControl: false, // Managed by custom floating dock

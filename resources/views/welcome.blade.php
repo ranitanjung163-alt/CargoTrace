@@ -1115,47 +1115,9 @@
         // 4. Leaflet Worldwide Network Map & Continuous Google Maps-style Navigation
         let coverageMap = null;
 
-        // Continuity Enforcement: Clamps vertical movement smoothly so map never reveals empty space above/below
+        // Continuity Enforcement: Handled natively via maxBounds & maxBoundsViscosity
         function enforceGoogleMapsContinuity(mapInstance) {
-            if (!mapInstance) return;
-            let isAdjusting = false;
-
-            function keepInVerticalBounds() {
-                if (isAdjusting) return;
-                const size = mapInstance.getSize();
-                if (!size || size.y <= 0) return;
-
-                const zoom = mapInstance.getZoom();
-                const worldHeight = 256 * Math.pow(2, zoom);
-                const viewHalfY = size.y / 2;
-                const center = mapInstance.getCenter();
-                const centerPoint = mapInstance.project(center, zoom);
-
-                let targetY = centerPoint.y;
-                if (worldHeight <= size.y) {
-                    targetY = worldHeight / 2;
-                } else {
-                    if (targetY - viewHalfY < 0) {
-                        targetY = viewHalfY;
-                    } else if (targetY + viewHalfY > worldHeight) {
-                        targetY = worldHeight - viewHalfY;
-                    }
-                }
-
-                if (Math.abs(targetY - centerPoint.y) > 0.5) {
-                    isAdjusting = true;
-                    try {
-                        const clampedCenter = mapInstance.unproject(L.point(centerPoint.x, targetY), zoom);
-                        mapInstance.setView([clampedCenter.lat, center.lng], zoom, { animate: false });
-                    } finally {
-                        isAdjusting = false;
-                    }
-                }
-            }
-
-            mapInstance.on('drag', keepInVerticalBounds);
-            mapInstance.on('move', keepInVerticalBounds);
-            mapInstance.on('zoomend', keepInVerticalBounds);
+            // Native Leaflet maxBounds handles boundary clamping
         }
 
         // 4-Way Directional Pan Controller (Geser Peta ke Kiri, Kanan, Atas, Bawah, dan Reset)
@@ -1234,11 +1196,16 @@
             const mapContainer = document.getElementById('landingCoverageMap');
             if (!mapContainer) return;
 
+            // Strict 1 World Geodetic Bounds (-85.051129 to 85.051129 lat, -180 to 180 lng) to PREVENT horizontal & vertical repetition
+            const worldBounds = L.latLngBounds(L.latLng(-85.051129, -180), L.latLng(85.051129, 180));
+
             coverageMap = L.map('landingCoverageMap', {
                 zoomControl: true,
                 minZoom: 2,
                 maxZoom: 22, // Deep zoom level 22 to view individual houses, rooftops & parcels
-                worldCopyJump: true,
+                maxBounds: worldBounds,
+                maxBoundsViscosity: 1.0,
+                worldCopyJump: false,
                 scrollWheelZoom: true,
                 wheelDebounceTime: 40,
                 wheelPxPerZoomLevel: 60,
@@ -1258,16 +1225,14 @@
             coverageMap.doubleClickZoom.enable();
             coverageMap.scrollWheelZoom.enable();
 
-            // Bind continuous smooth bounds clamping
-            enforceGoogleMapsContinuity(coverageMap);
-
             // Mode 1: Google Maps Standard Roadmap (Bright Clean Road Network, Street & Village Detail)
             const googleRoadmap = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
                 attribution: '&copy; Google Maps &bull; Leaflet',
                 maxNativeZoom: 20,
                 maxZoom: 22,
                 subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-                noWrap: false
+                noWrap: true,
+                bounds: worldBounds
             });
 
             // Mode 2: Google Maps Satellite Hybrid (Photorealistic Satellite Imagery with Roads, Labels & Individual Houses/Rooftops)
@@ -1276,7 +1241,8 @@
                 maxNativeZoom: 20,
                 maxZoom: 22,
                 subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-                noWrap: false
+                noWrap: true,
+                bounds: worldBounds
             });
 
             // Base Layer 3: OpenStreetMap Standard
@@ -1284,7 +1250,8 @@
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Leaflet',
                 maxNativeZoom: 19,
                 maxZoom: 22,
-                noWrap: false
+                noWrap: true,
+                bounds: worldBounds
             });
 
             // Default to Google Maps Standard Roadmap
@@ -1353,8 +1320,8 @@
                 });
             }
 
-            // Render hubs across world copies [-360, 0, 360] for endless horizontal continuity
-            const worldOffsets = [-360, 0, 360];
+            // Render hubs on single world map (offset 0)
+            const worldOffsets = [0];
             worldOffsets.forEach(offset => {
                 hubs.forEach(hub => {
                     const marker = L.marker([hub.lat, hub.lon + offset], { icon: createHubIcon() }).addTo(coverageMap);
