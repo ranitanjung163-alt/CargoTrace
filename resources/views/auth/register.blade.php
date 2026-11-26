@@ -45,9 +45,27 @@
             background-image: radial-gradient(#CBD5E1 0.75px, transparent 0.75px);
             background-size: 24px 24px;
         }
-        /* Clean Google Translate Integration */
+        /* Clean Google Translate Integration - Permanently Hide Top Banner & Displacement */
         body { top: 0px !important; position: static !important; }
-        .goog-te-banner-frame, #goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
+        html { top: 0px !important; }
+        .goog-te-banner-frame,
+        iframe.goog-te-banner-frame,
+        iframe.skiptranslate,
+        .VIpgJd-ZVi9od-ORHb-Oxf5Ak-oaFdbe,
+        .VIpgJd-ZVi9od-ORHb-Oxf5Ak-bN97Pc,
+        #goog-gt-tt,
+        .goog-te-balloon-frame,
+        div#goog-gt-tt,
+        body > .skiptranslate:not(#google_translate_element),
+        body > iframe.skiptranslate,
+        body > .skiptranslate iframe {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0px !important;
+            width: 0px !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
         .goog-text-highlight { background: none !important; box-shadow: none !important; }
     </style>
 </head>

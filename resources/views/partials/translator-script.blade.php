@@ -1,6 +1,31 @@
 <!-- Google Translate Element & Dynamic Multilingual Engine (Semua Negara 130+ Bahasa) -->
 <div id="google_translate_element" style="position:absolute; left:-9999px; top:-9999px; opacity:0; pointer-events:none;"></div>
 
+<style>
+    /* Complete Google Translate Banner & Shift Elimination */
+    body { top: 0px !important; position: static !important; }
+    html { top: 0px !important; }
+    .goog-te-banner-frame,
+    iframe.goog-te-banner-frame,
+    iframe.skiptranslate,
+    .VIpgJd-ZVi9od-ORHb-Oxf5Ak-oaFdbe,
+    .VIpgJd-ZVi9od-ORHb-Oxf5Ak-bN97Pc,
+    #goog-gt-tt,
+    .goog-te-balloon-frame,
+    div#goog-gt-tt,
+    body > .skiptranslate:not(#google_translate_element),
+    body > iframe.skiptranslate,
+    body > .skiptranslate iframe {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+        width: 0px !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+    .goog-text-highlight { background: none !important; box-shadow: none !important; }
+</style>
+
 <script type="text/javascript">
     const WC360_ALL_LANGS = [
     {
@@ -932,11 +957,45 @@
     const WC360_LANG_MAP = {};
     WC360_ALL_LANGS.forEach(l => { WC360_LANG_MAP[l.code] = l; });
 
+    function enforceCleanTranslateUI() {
+        if (document.body) {
+            if (document.body.style.top && document.body.style.top !== '0px') {
+                document.body.style.top = '0px';
+            }
+            if (document.body.style.position && document.body.style.position !== 'static') {
+                document.body.style.position = 'static';
+            }
+        }
+        if (document.documentElement && document.documentElement.style.top && document.documentElement.style.top !== '0px') {
+            document.documentElement.style.top = '0px';
+        }
+        const banners = document.querySelectorAll('iframe.skiptranslate, iframe.goog-te-banner-frame, .VIpgJd-ZVi9od-ORHb-Oxf5Ak-oaFdbe, .VIpgJd-ZVi9od-ORHb-Oxf5Ak-bN97Pc');
+        banners.forEach(b => {
+            b.style.setProperty('display', 'none', 'important');
+            b.style.setProperty('visibility', 'hidden', 'important');
+            b.style.setProperty('height', '0px', 'important');
+            b.style.setProperty('width', '0px', 'important');
+            b.style.setProperty('opacity', '0', 'important');
+            b.style.setProperty('pointer-events', 'none', 'important');
+        });
+    }
+
+    if (window.MutationObserver) {
+        new MutationObserver(enforceCleanTranslateUI).observe(document.documentElement, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class']
+        });
+    }
+    window.addEventListener('load', enforceCleanTranslateUI);
+
     function googleTranslateElementInit() {
         new google.translate.TranslateElement({
             pageLanguage: 'en',
             autoDisplay: false
         }, 'google_translate_element');
+        enforceCleanTranslateUI();
     }
 
     function changeAppLanguage(langCode) {
@@ -956,6 +1015,10 @@
         if (combo) {
             combo.value = langCode;
             combo.dispatchEvent(new Event('change'));
+            setTimeout(enforceCleanTranslateUI, 30);
+            setTimeout(enforceCleanTranslateUI, 100);
+            setTimeout(enforceCleanTranslateUI, 300);
+            setTimeout(enforceCleanTranslateUI, 800);
         } else {
             window.location.reload();
         }
