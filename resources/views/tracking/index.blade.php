@@ -253,33 +253,33 @@
         <div id="trackingMapArea" class="flex-1 relative w-full h-[70vh] min-h-[440px] max-h-[780px] lg:h-full lg:min-h-0 bg-slate-100 order-1 lg:order-2">
 
             <!-- Floating Top Search & POI Bar (Find any place or remote region on earth) -->
-            <div class="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 z-[400] flex flex-wrap items-center gap-2 pointer-events-none">
+            <div class="absolute top-2.5 sm:top-4 left-2.5 sm:left-4 right-2.5 sm:right-4 z-[400] flex items-center gap-1.5 sm:gap-2 pointer-events-none overflow-x-auto scrollbar-none pb-1">
                 <!-- Search Input Pill -->
-                <form onsubmit="searchRemoteLocation(event)" class="pointer-events-auto bg-white rounded-full shadow-md border border-slate-200/90 px-3 py-1.5 sm:px-3.5 sm:py-2 flex items-center space-x-2 text-xs w-full max-w-xs sm:w-80">
-                    <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <form onsubmit="searchRemoteLocation(event)" class="pointer-events-auto bg-white/95 backdrop-blur-md rounded-full shadow-md border border-slate-200/90 px-3 py-1.5 sm:px-3.5 sm:py-2 flex items-center space-x-1.5 sm:space-x-2 text-xs w-48 sm:w-72 md:w-80 shrink-0">
+                    <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     <input type="text" id="routeSearchInput" placeholder="Cari wilayah/kota terpencil di dunia..."
-                           class="bg-transparent border-none outline-none text-slate-800 placeholder-slate-400 font-medium text-xs w-full">
+                           class="bg-transparent border-none outline-none text-slate-800 placeholder-slate-400 font-medium text-xs w-full min-w-0">
                     <button type="submit" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 px-2 py-0.5 rounded-full bg-blue-50 hover:bg-blue-100 transition-colors shrink-0">Cari</button>
                 </form>
 
-                <!-- POI Filter Pills (Clickable) -->
-                <div class="pointer-events-auto flex items-center space-x-2 overflow-x-auto py-1 max-w-full">
+                <!-- POI Filter Pills (Clickable - smooth single line horizontal scroll) -->
+                <div class="pointer-events-auto flex items-center space-x-1.5 overflow-x-auto scrollbar-none shrink-0">
                     <button type="button" onclick="togglePoi('hotels')" id="poi-hotels"
-                            class="poi-btn px-3 py-1.5 sm:px-3.5 sm:py-2 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-full text-xs font-semibold text-slate-700 shadow-md flex items-center space-x-1.5 transition-all shrink-0">
-                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                            class="poi-btn px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-white/95 backdrop-blur-md hover:bg-slate-50 border border-slate-200/90 rounded-full text-[11px] sm:text-xs font-semibold text-slate-700 shadow-md flex items-center space-x-1 transition-all shrink-0">
+                        <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                         <span>Hotels</span>
                     </button>
 
                     <button type="button" onclick="togglePoi('petrol')" id="poi-petrol"
-                            class="poi-btn px-3 py-1.5 sm:px-3.5 sm:py-2 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-full text-xs font-semibold text-slate-700 shadow-md flex items-center space-x-1.5 transition-all shrink-0">
-                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                            class="poi-btn px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-white/95 backdrop-blur-md hover:bg-slate-50 border border-slate-200/90 rounded-full text-[11px] sm:text-xs font-semibold text-slate-700 shadow-md flex items-center space-x-1 transition-all shrink-0">
+                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                         <span>Petrol</span>
                     </button>
 
                     <button type="button" onclick="togglePoi('ev')" id="poi-ev"
-                            class="poi-btn px-3 py-1.5 sm:px-3.5 sm:py-2 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-full text-xs font-semibold text-slate-700 shadow-md flex items-center space-x-1.5 transition-all shrink-0">
-                        <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                        <span>EV charging</span>
+                            class="poi-btn px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-white/95 backdrop-blur-md hover:bg-slate-50 border border-slate-200/90 rounded-full text-[11px] sm:text-xs font-semibold text-slate-700 shadow-md flex items-center space-x-1 transition-all shrink-0">
+                        <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        <span>EV</span>
                     </button>
                 </div>
             </div>
@@ -288,114 +288,108 @@
             <div id="googleDirectionsMap" class="w-full h-full relative z-10 select-none" style="touch-action: none !important; cursor: grab; background-color: #f8fafc !important;"></div>
 
             <!-- Floating Transport Mode & Route Legend (Keterangan Warna Moda Transportasi) -->
-            <div id="transportLegendCard" class="absolute top-16 left-3 sm:left-4 z-[400] bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-slate-200/90 p-2.5 sm:p-3 select-none max-w-[calc(100%-1.5rem)] sm:max-w-xs transition-all duration-200 pointer-events-auto">
-                <div class="flex items-center justify-between pb-1.5 border-b border-slate-100 mb-2">
+            <div id="transportLegendCard" class="absolute top-13 sm:top-16 left-2.5 sm:left-4 z-[390] bg-white/95 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg border border-slate-200/90 p-2 sm:p-3 select-none max-w-[210px] sm:max-w-xs transition-all duration-200 pointer-events-auto">
+                <div class="flex items-center justify-between pb-1 sm:pb-1.5 border-b border-slate-100 mb-1.5 cursor-pointer" onclick="toggleTransportLegend()">
                     <div class="flex items-center space-x-1.5">
-                        <span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
-                        <span class="text-xs font-black text-slate-900 tracking-tight">Keterangan Moda &amp; Warna Rute</span>
+                        <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
+                        <span class="text-[11px] sm:text-xs font-black text-slate-900 tracking-tight">Keterangan Moda</span>
                     </div>
-                    <button type="button" onclick="toggleTransportLegend()" class="text-slate-400 hover:text-slate-700 text-xs px-1 font-bold" title="Minimize / Expand">&minus;</button>
+                    <button type="button" onclick="event.stopPropagation(); toggleTransportLegend();" class="text-slate-400 hover:text-slate-700 text-xs px-1 font-bold" id="legendToggleIcon" title="Minimize / Expand">&minus;</button>
                 </div>
-                <div id="legendContent" class="space-y-1.5 text-xs">
+                <div id="legendContent" class="space-y-1 sm:space-y-1.5 text-[10px] sm:text-xs">
                     <div class="flex items-center justify-between py-0.5">
-                        <span class="flex items-center space-x-1.5 font-bold text-slate-800 text-[11px]">
+                        <span class="flex items-center space-x-1.5 font-bold text-slate-800">
                             <span>✈️</span>
                             <span>Pesawat (Air)</span>
                         </span>
-                        <div class="flex items-center space-x-2">
-                            <span class="w-9 h-1 rounded-full bg-blue-600 inline-block shadow-2xs"></span>
-                            <span class="text-[10px] font-bold text-blue-700">Biru Solid</span>
+                        <div class="flex items-center space-x-1.5">
+                            <span class="w-7 sm:w-9 h-1 rounded-full bg-blue-600 inline-block shadow-2xs"></span>
+                            <span class="text-[9px] sm:text-[10px] font-bold text-blue-700">Biru</span>
                         </div>
                     </div>
                     <div class="flex items-center justify-between py-0.5">
-                        <span class="flex items-center space-x-1.5 font-bold text-slate-800 text-[11px]">
+                        <span class="flex items-center space-x-1.5 font-bold text-slate-800">
                             <span>🚢</span>
-                            <span>Kapal Laut (Ocean)</span>
+                            <span>Kapal (Ocean)</span>
                         </span>
-                        <div class="flex items-center space-x-2">
-                            <span class="w-9 h-0 border-t-2 border-dashed border-emerald-500 inline-block"></span>
-                            <span class="text-[10px] font-bold text-emerald-700">Hijau Putus</span>
+                        <div class="flex items-center space-x-1.5">
+                            <span class="w-7 sm:w-9 h-0 border-t-2 border-dashed border-emerald-500 inline-block"></span>
+                            <span class="text-[9px] sm:text-[10px] font-bold text-emerald-700">Hijau</span>
                         </div>
                     </div>
                     <div class="flex items-center justify-between py-0.5">
-                        <span class="flex items-center space-x-1.5 font-bold text-slate-800 text-[11px]">
+                        <span class="flex items-center space-x-1.5 font-bold text-slate-800">
                             <span>🚚</span>
-                            <span>Truk / Darat (Road)</span>
+                            <span>Truk (Road)</span>
                         </span>
-                        <div class="flex items-center space-x-2">
-                            <span class="w-9 h-1 rounded-full bg-amber-500 inline-block shadow-2xs"></span>
-                            <span class="text-[10px] font-bold text-amber-700">Oranye Solid</span>
+                        <div class="flex items-center space-x-1.5">
+                            <span class="w-7 sm:w-9 h-1 rounded-full bg-amber-500 inline-block shadow-2xs"></span>
+                            <span class="text-[9px] sm:text-[10px] font-bold text-amber-700">Oranye</span>
                         </div>
                     </div>
                     <div class="flex items-center justify-between py-0.5">
-                        <span class="flex items-center space-x-1.5 font-bold text-slate-800 text-[11px]">
+                        <span class="flex items-center space-x-1.5 font-bold text-slate-800">
                             <span>🚆</span>
-                            <span>Kereta Api (Rail)</span>
+                            <span>Kereta (Rail)</span>
                         </span>
-                        <div class="flex items-center space-x-2">
-                            <span class="w-9 h-0 border-t-2 border-dotted border-purple-500 inline-block"></span>
-                            <span class="text-[10px] font-bold text-purple-700">Ungu Putus</span>
+                        <div class="flex items-center space-x-1.5">
+                            <span class="w-7 sm:w-9 h-0 border-t-2 border-dotted border-purple-500 inline-block"></span>
+                            <span class="text-[9px] sm:text-[10px] font-bold text-purple-700">Ungu</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Floating Controls Dock: Directional Pan Controller, Zoom, and Google Maps Signature "Lapisan" (Dual Mode) Widget -->
-            <div class="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 z-[400] flex items-end gap-2 sm:gap-2.5 pointer-events-auto">
-                <!-- 4-Way Directional Pan Compass D-Pad & Zoom Controls -->
-                <div class="flex flex-col items-center gap-2">
+            <div class="absolute bottom-2.5 sm:bottom-4 left-2.5 sm:left-4 z-[400] flex items-end gap-1.5 sm:gap-2.5 pointer-events-auto">
+                <!-- Pan D-Pad & Zoom Controls: row on mobile, column on desktop -->
+                <div class="flex flex-row sm:flex-col items-center gap-1.5 sm:gap-2">
                     <!-- 4-Way Directional Pan Compass D-Pad -->
-                    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-slate-200/90 p-1.5 flex flex-col items-center gap-1 select-none">
+                    <div class="bg-white/95 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg border border-slate-200/90 p-1 sm:p-1.5 flex flex-col items-center gap-0.5 sm:gap-1 select-none">
                         <!-- Up / Atas -->
                         <button type="button" onclick="panMap('up')" title="Geser Peta ke Atas (Pan Up)"
-                                class="w-7 h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+                                class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
                         </button>
                         <!-- Middle Row: Left, Center Re-fit, Right -->
-                        <div class="flex items-center gap-1">
+                        <div class="flex items-center gap-0.5 sm:gap-1">
                             <!-- Left / Kiri -->
                             <button type="button" onclick="panMap('left')" title="Geser Peta ke Kiri (Pan Left)"
-                                    class="w-7 h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                                    class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
+                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                             </button>
                             <!-- Center: Fit Route / Reset View -->
                             <button type="button" onclick="panMap('center')" title="Fokuskan ke Rute Pengiriman (Focus Consignment Route)"
-                                    class="w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white flex items-center justify-center transition-all active:scale-95 font-bold text-xs" id="fitRouteBtn">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg>
+                                    class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white flex items-center justify-center transition-all active:scale-95 font-bold text-xs" id="fitRouteBtn">
+                                <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg>
                             </button>
                             <!-- Right / Kanan -->
                             <button type="button" onclick="panMap('right')" title="Geser Peta ke Kanan (Pan Right)"
-                                    class="w-7 h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                                    class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
+                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                             </button>
                         </div>
                         <!-- Down / Bawah -->
                         <button type="button" onclick="panMap('down')" title="Geser Peta ke Bawah (Pan Down)"
-                                class="w-7 h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                                class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                     </div>
 
                     <!-- Navigation Quick Actions (World View & Fit Consignment) & Zoom Controls (+ and -) -->
-                    <div class="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-slate-200/90 p-0.5 flex flex-col items-center select-none">
+                    <div class="bg-white/95 backdrop-blur-md rounded-lg sm:rounded-xl shadow-md sm:shadow-lg border border-slate-200/90 p-0.5 flex flex-col items-center select-none">
                         <!-- Zoom In -->
                         <button type="button" onclick="map && map.zoomIn()" title="Perbesar (Zoom In)"
-                                class="w-7 h-7 hover:bg-slate-100 text-slate-700 font-bold flex items-center justify-center rounded-lg transition-all text-sm active:scale-95">+</button>
+                                class="w-6 h-6 sm:w-7 sm:h-7 hover:bg-slate-100 text-slate-700 font-bold flex items-center justify-center rounded-lg transition-all text-xs sm:text-sm active:scale-95">+</button>
                         <div class="w-full h-px bg-slate-200"></div>
                         <!-- Zoom Out -->
                         <button type="button" onclick="map && map.zoomOut()" title="Perkecil (Zoom Out)"
-                                class="w-7 h-7 hover:bg-slate-100 text-slate-700 font-bold flex items-center justify-center rounded-lg transition-all text-sm active:scale-95">&minus;</button>
+                                class="w-6 h-6 sm:w-7 sm:h-7 hover:bg-slate-100 text-slate-700 font-bold flex items-center justify-center rounded-lg transition-all text-xs sm:text-sm active:scale-95">&minus;</button>
                         <div class="w-full h-px bg-slate-200"></div>
                         <!-- World View (Kembali ke Tampilan Seluruh Dunia) -->
                         <button type="button" onclick="panMap('world')" title="Kembali ke Tampilan Seluruh Dunia (World View)"
-                                class="w-7 h-7 hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center rounded-lg transition-all text-xs active:scale-95">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                        </button>
-                        <div class="w-full h-px bg-slate-200"></div>
-                        <!-- Focus Consignment (Kembali ke Lokasi/Area Shipment) -->
-                        <button type="button" onclick="panMap('center')" title="Fokus ke Area Shipment Terpilih (Focus Consignment)"
-                                class="w-7 h-7 hover:bg-emerald-50 text-slate-700 hover:text-emerald-600 flex items-center justify-center rounded-lg transition-all text-xs active:scale-95">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                class="w-6 h-6 sm:w-7 sm:h-7 hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center rounded-lg transition-all text-xs active:scale-95">
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                         </button>
                     </div>
                 </div>
@@ -403,8 +397,8 @@
                 <!-- Google Maps Signature "Lapisan" Toggle Button & Mode Drawer -->
                 <div class="relative select-none" id="mapModeContainer">
                     <!-- Drawer Popup Menu (Jenis Peta: Default & Satelit) -->
-                    <div id="mapModeMenu" class="hidden absolute bottom-16 left-0 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/90 p-3 w-56 z-[450] select-none transition-all duration-200">
-                        <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                    <div id="mapModeMenu" class="hidden absolute bottom-14 sm:bottom-16 left-0 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/90 p-2.5 sm:p-3 w-52 sm:w-56 z-[450] select-none transition-all duration-200 max-w-[calc(100vw-2rem)]">
+                        <div class="flex items-center justify-between pb-1.5 sm:pb-2 mb-1.5 sm:mb-2 border-b border-slate-100">
                             <span class="text-xs font-black text-slate-800 tracking-tight flex items-center gap-1.5">
                                 <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
                                 Jenis peta
@@ -415,7 +409,7 @@
                             <!-- Option 1: Default Mode -->
                             <button type="button" onclick="setMapDisplayMode('default')" id="btnModeDefault"
                                     class="group flex flex-col items-center p-1.5 rounded-xl border border-slate-200 hover:border-blue-500 transition-all text-center">
-                                <div class="w-full h-14 rounded-lg overflow-hidden border border-slate-200 mb-1 relative bg-slate-100 flex items-center justify-center">
+                                <div class="w-full h-12 sm:h-14 rounded-lg overflow-hidden border border-slate-200 mb-1 relative bg-slate-100 flex items-center justify-center">
                                     <svg viewBox="0 0 60 60" class="w-full h-full object-cover">
                                         <rect width="60" height="60" fill="#f2efe9"/>
                                         <path d="M0 20 Q 30 15 60 25 L 60 60 L 0 60 Z" fill="#aad3df" opacity="0.7"/>
@@ -424,14 +418,14 @@
                                         <circle cx="30" cy="30" r="3.5" fill="#ea4335"/>
                                     </svg>
                                 </div>
-                                <span class="text-[11px] font-bold text-slate-800 group-hover:text-blue-600">Default</span>
-                                <span class="text-[9px] text-slate-400">Peta Jalan</span>
+                                <span class="text-[10px] sm:text-[11px] font-bold text-slate-800 group-hover:text-blue-600">Default</span>
+                                <span class="text-[8px] sm:text-[9px] text-slate-400">Peta Jalan</span>
                             </button>
 
                             <!-- Option 2: Satelit Mode -->
                             <button type="button" onclick="setMapDisplayMode('satellite')" id="btnModeSatellite"
                                     class="group flex flex-col items-center p-1.5 rounded-xl border border-slate-200 hover:border-blue-500 transition-all text-center">
-                                <div class="w-full h-14 rounded-lg overflow-hidden border border-slate-200 mb-1 relative bg-slate-800 flex items-center justify-center">
+                                <div class="w-full h-12 sm:h-14 rounded-lg overflow-hidden border border-slate-200 mb-1 relative bg-slate-800 flex items-center justify-center">
                                     <svg viewBox="0 0 60 60" class="w-full h-full object-cover">
                                         <rect width="60" height="60" fill="#142838"/>
                                         <path d="M0 25 Q 25 15 60 35 L 60 60 L 0 60 Z" fill="#2d4a22"/>
@@ -444,8 +438,8 @@
                                         <circle cx="28" cy="26" r="2.5" fill="#ea4335"/>
                                     </svg>
                                 </div>
-                                <span class="text-[11px] font-bold text-slate-800 group-hover:text-blue-600">Satelit</span>
-                                <span class="text-[9px] text-slate-400">Rumah Warga</span>
+                                <span class="text-[10px] sm:text-[11px] font-bold text-slate-800 group-hover:text-blue-600">Satelit</span>
+                                <span class="text-[8px] sm:text-[9px] text-slate-400">Rumah Warga</span>
                             </button>
                         </div>
                     </div>
@@ -453,28 +447,28 @@
                     <!-- Main "Lapisan" Square Thumbnail Button -->
                     <button type="button" onclick="toggleMapMode()" oncontextmenu="event.preventDefault(); toggleMapModeMenu();"
                             id="mapModeToggleBtn" title="Ganti Mode Peta (Default / Satelit) - Klik untuk beralih mode, klik menu untuk memilih"
-                            class="group relative w-14 h-14 rounded-xl overflow-hidden shadow-lg border-2 border-white hover:border-blue-500 transition-all duration-200 flex flex-col justify-end bg-slate-900 active:scale-95">
+                            class="group relative w-11 h-11 sm:w-14 sm:h-14 rounded-xl overflow-hidden shadow-md sm:shadow-lg border-2 border-white hover:border-blue-500 transition-all duration-200 flex flex-col justify-end bg-slate-900 active:scale-95">
                         <div id="mapModeThumbnail" class="absolute inset-0 w-full h-full pointer-events-none">
                             <!-- In default mode, thumbnail shows satellite image encouraging user to switch -->
                         </div>
                         <div class="relative z-10 w-full bg-gradient-to-t from-black/80 via-black/50 to-transparent py-0.5 px-0.5 text-center pointer-events-none">
-                            <span class="text-[10px] font-extrabold text-white tracking-tight flex items-center justify-center">
+                            <span class="text-[9px] sm:text-[10px] font-extrabold text-white tracking-tight flex items-center justify-center">
                                 <span id="mapModeBtnLabel">Lapisan</span>
                             </span>
                         </div>
                     </button>
                     <!-- Small Menu Trigger Dot / Icon on button corner -->
                     <button type="button" onclick="toggleMapModeMenu()" title="Pilih Jenis Peta"
-                            class="absolute -top-1.5 -right-1.5 z-20 w-5 h-5 rounded-full bg-white shadow-md border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center text-[10px] font-bold">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                            class="absolute -top-1.5 -right-1.5 z-20 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white shadow-md border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center text-[8px] sm:text-[10px] font-bold">
+                        <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                     </button>
                 </div>
             </div>
 
             <!-- Floating Map Navigation Help Overlay -->
-            <div class="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 z-[400] bg-white/90 backdrop-blur-sm px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-slate-200 shadow-md text-[10px] sm:text-[11px] font-bold text-slate-700 flex items-center space-x-1.5 sm:space-x-2 max-w-[200px] truncate select-none">
-                <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
-                <span id="routeDistanceStatus">912 km &bull; 10 hr 12 min</span>
+            <div class="absolute bottom-2.5 sm:bottom-4 right-2.5 sm:right-4 z-[400] bg-white/95 backdrop-blur-md px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-slate-200 shadow-md text-[10px] sm:text-[11px] font-bold text-slate-700 flex items-center space-x-1.5 sm:space-x-2 max-w-[140px] sm:max-w-none select-none">
+                <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse shrink-0"></span>
+                <span id="routeDistanceStatus" class="truncate">912 km &bull; 10 hr 12 min</span>
             </div>
         </div>
     </div>
@@ -665,6 +659,16 @@
         .tracking-mobile-both #trackingDirectionsDrawer {
             display: flex !important;
             width: 100% !important;
+        }
+    }
+
+    /* Mobile Leaflet control spacing to avoid overlapping custom UI controls */
+    @media (max-width: 640px) {
+        #googleDirectionsMap .leaflet-top.leaflet-right {
+            margin-top: 50px !important;
+        }
+        #googleDirectionsMap .leaflet-bottom.leaflet-right {
+            margin-bottom: 34px !important;
         }
     }
 </style>
@@ -879,8 +883,12 @@
 
     window.toggleTransportLegend = function() {
         const content = document.getElementById('legendContent');
+        const icon = document.getElementById('legendToggleIcon');
         if (content) {
-            content.classList.toggle('hidden');
+            const isHidden = content.classList.toggle('hidden');
+            if (icon) {
+                icon.innerHTML = isHidden ? '+' : '&minus;';
+            }
         }
     };
 
