@@ -1039,6 +1039,70 @@
         document.querySelectorAll('[data-lang-label], #currentLangLabel, #welcomeCurrentLangLabel, #authCurrentLangLabel').forEach(el => {
             el.textContent = info.name;
         });
+
+        // Dynamic Input Placeholder & Search Button Multilingual Synchronization
+        const routeInput = document.getElementById('routeSearchInput');
+        if (routeInput) {
+            const placeholders = {
+                'en': 'Search any region or city in the world...',
+                'id': 'Cari wilayah atau kota di dunia...',
+                'zh-CN': '在世界上搜索任何地区或城市...',
+                'zh-TW': '在世界上搜尋任何地區或城市...',
+                'ja': '世界の地域や都市を検索...',
+                'es': 'Buscar cualquier región o ciudad del mundo...',
+                'fr': 'Rechercher une région ou une ville dans le monde...',
+                'de': 'Beliebige Region oder Stadt weltweit suchen...',
+                'ar': 'ابحث عن أي منطقة أو مدينة في العالم...',
+                'ru': 'Поиск любого региона или города в мире...',
+                'pt': 'Pesquisar qualquer região ou cidade no mundo...',
+                'ko': '세계의 모든 지역 또는 도시 검색...',
+                'it': 'Cerca qualsiasi regione o città nel mondo...',
+                'nl': 'Zoek een regio of stad in de wereld...'
+            };
+            routeInput.placeholder = placeholders[langCode] || placeholders['en'];
+        }
+
+        const globalSearch = document.querySelector('input[name="search"]');
+        if (globalSearch) {
+            const globalPlaceholders = {
+                'en': 'Search shipment, carrier, port...',
+                'id': 'Cari pengiriman, kurir, pelabuhan...',
+                'zh-CN': '搜索货运、承运商、港口...',
+                'zh-TW': '搜尋貨運、承運商、港口...',
+                'ja': '貨物、運送業者、港を検索...',
+                'es': 'Buscar envío, transportista, puerto...',
+                'fr': 'Rechercher une expédition, un transporteur, un port...',
+                'de': 'Sendung, Spediteur, Hafen suchen...',
+                'ar': 'البحث عن الشحنة، الناقل، الميناء...',
+                'ru': 'Поиск груза, перевозчика, порта...',
+                'pt': 'Pesquisar remessa, transportadora, porto...',
+                'ko': '배송, 운송업체, 항구 검색...',
+                'it': 'Cerca spedizione, vettore, porto...',
+                'nl': 'Zoek zending, vervoerder, haven...'
+            };
+            globalSearch.placeholder = globalPlaceholders[langCode] || globalPlaceholders['en'];
+        }
+
+        const routeBtn = document.getElementById('routeSearchBtn');
+        if (routeBtn) {
+            const btnTexts = {
+                'en': 'Search',
+                'id': 'Cari',
+                'zh-CN': '搜索',
+                'zh-TW': '搜尋',
+                'ja': '検索',
+                'es': 'Buscar',
+                'fr': 'Rechercher',
+                'de': 'Suchen',
+                'ar': 'بحث',
+                'ru': 'Поиск',
+                'pt': 'Buscar',
+                'ko': '검색',
+                'it': 'Cerca',
+                'nl': 'Zoeken'
+            };
+            routeBtn.textContent = btnTexts[langCode] || 'Search';
+        }
     }
 
     function renderLangContainerList(listContainer, filterText = '') {

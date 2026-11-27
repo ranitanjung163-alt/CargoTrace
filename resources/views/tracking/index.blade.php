@@ -55,22 +55,22 @@
         </div>
     </div>
 
-    <!-- Mobile View Mode Switcher (Peta Rute Besar vs Rincian Waypoint vs Keduanya) -->
+    <!-- Mobile View Mode Switcher (Large Route Map vs Waypoint Details vs Both) -->
     <div class="lg:hidden bg-white p-1 rounded-2xl border border-brand-border shadow-soft-sm flex items-center justify-between gap-1 text-xs font-bold select-none">
         <button type="button" onclick="setMobileTrackingView('map')" id="mobileViewBtn-map"
                 class="flex-1 py-2 px-2.5 rounded-xl text-center transition-all bg-brand-primary text-white shadow-soft-xs flex items-center justify-center space-x-1.5 focus:outline-none">
             <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-            <span>Peta Rute</span>
+            <span>Route Map</span>
         </button>
         <button type="button" onclick="setMobileTrackingView('details')" id="mobileViewBtn-details"
                 class="flex-1 py-2 px-2.5 rounded-xl text-center transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-50 flex items-center justify-center space-x-1.5 focus:outline-none">
             <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-            <span>Rincian Rute</span>
+            <span>Route Details</span>
         </button>
         <button type="button" onclick="setMobileTrackingView('both')" id="mobileViewBtn-both"
                 class="flex-1 py-2 px-2.5 rounded-xl text-center transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-50 flex items-center justify-center space-x-1.5 focus:outline-none">
             <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7"/></svg>
-            <span>Keduanya</span>
+            <span>Both Views</span>
         </button>
     </div>
 
@@ -257,9 +257,9 @@
                 <!-- Search Input Pill -->
                 <form onsubmit="searchRemoteLocation(event)" class="pointer-events-auto bg-white/95 backdrop-blur-md rounded-full shadow-md border border-slate-200/90 px-3 py-1.5 sm:px-3.5 sm:py-2 flex items-center space-x-1.5 sm:space-x-2 text-xs w-48 sm:w-72 md:w-80 shrink-0">
                     <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input type="text" id="routeSearchInput" placeholder="Cari wilayah/kota terpencil di dunia..."
+                    <input type="text" id="routeSearchInput" placeholder="Search any region or city in the world..."
                            class="bg-transparent border-none outline-none text-slate-800 placeholder-slate-400 font-medium text-xs w-full min-w-0">
-                    <button type="submit" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 px-2 py-0.5 rounded-full bg-blue-50 hover:bg-blue-100 transition-colors shrink-0">Cari</button>
+                    <button type="submit" id="routeSearchBtn" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 px-2 py-0.5 rounded-full bg-blue-50 hover:bg-blue-100 transition-colors shrink-0">Search</button>
                 </form>
 
                 <!-- POI Filter Pills (Clickable - smooth single line horizontal scroll) -->
@@ -287,12 +287,12 @@
             <!-- Leaflet Map Container with Smooth 4-Way Panning (Drag Ke Kiri, Kanan, Atas, Bawah) -->
             <div id="googleDirectionsMap" class="w-full h-full relative z-10 select-none" style="touch-action: none !important; cursor: grab; background-color: #f8fafc !important;"></div>
 
-            <!-- Floating Transport Mode & Route Legend (Keterangan Warna Moda Transportasi) -->
+            <!-- Floating Transport Mode & Route Legend (Transport Modes & Route Colors) -->
             <div id="transportLegendCard" class="absolute top-14 sm:top-16 left-2.5 sm:left-4 z-20 bg-white/95 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg border border-slate-200/90 p-2 sm:p-3 select-none max-w-[215px] sm:max-w-xs transition-all duration-200 pointer-events-auto">
                 <div class="flex items-center justify-between pb-1 sm:pb-1.5 border-b border-slate-100 mb-1.5 cursor-pointer" onclick="toggleTransportLegend()">
                     <div class="flex items-center space-x-1.5">
                         <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
-                        <span class="text-[11px] sm:text-xs font-black text-slate-900 tracking-tight">Keterangan Moda</span>
+                        <span class="text-[11px] sm:text-xs font-black text-slate-900 tracking-tight">Transport Modes</span>
                     </div>
                     <button type="button" onclick="event.stopPropagation(); toggleTransportLegend();" class="text-slate-400 hover:text-slate-700 text-xs px-1 font-bold" id="legendToggleIcon" title="Minimize / Expand">&minus;</button>
                 </div>
@@ -300,41 +300,41 @@
                     <div class="flex items-center justify-between py-0.5">
                         <span class="flex items-center space-x-1.5 font-bold text-slate-800">
                             <span>✈️</span>
-                            <span>Pesawat (Air)</span>
+                            <span>Flight (Air)</span>
                         </span>
                         <div class="flex items-center space-x-1.5">
                             <span class="w-7 sm:w-9 h-1 rounded-full bg-blue-600 inline-block shadow-2xs"></span>
-                            <span class="text-[9px] sm:text-[10px] font-bold text-blue-700">Biru</span>
+                            <span class="text-[9px] sm:text-[10px] font-bold text-blue-700">Blue</span>
                         </div>
                     </div>
                     <div class="flex items-center justify-between py-0.5">
                         <span class="flex items-center space-x-1.5 font-bold text-slate-800">
                             <span>🚢</span>
-                            <span>Kapal (Ocean)</span>
+                            <span>Ship (Ocean)</span>
                         </span>
                         <div class="flex items-center space-x-1.5">
                             <span class="w-7 sm:w-9 h-0 border-t-2 border-dashed border-emerald-500 inline-block"></span>
-                            <span class="text-[9px] sm:text-[10px] font-bold text-emerald-700">Hijau</span>
+                            <span class="text-[9px] sm:text-[10px] font-bold text-emerald-700">Green</span>
                         </div>
                     </div>
                     <div class="flex items-center justify-between py-0.5">
                         <span class="flex items-center space-x-1.5 font-bold text-slate-800">
                             <span>🚚</span>
-                            <span>Truk (Road)</span>
+                            <span>Truck (Road)</span>
                         </span>
                         <div class="flex items-center space-x-1.5">
                             <span class="w-7 sm:w-9 h-1 rounded-full bg-amber-500 inline-block shadow-2xs"></span>
-                            <span class="text-[9px] sm:text-[10px] font-bold text-amber-700">Oranye</span>
+                            <span class="text-[9px] sm:text-[10px] font-bold text-amber-700">Orange</span>
                         </div>
                     </div>
                     <div class="flex items-center justify-between py-0.5">
                         <span class="flex items-center space-x-1.5 font-bold text-slate-800">
                             <span>🚆</span>
-                            <span>Kereta (Rail)</span>
+                            <span>Train (Rail)</span>
                         </span>
                         <div class="flex items-center space-x-1.5">
                             <span class="w-7 sm:w-9 h-0 border-t-2 border-dotted border-purple-500 inline-block"></span>
-                            <span class="text-[9px] sm:text-[10px] font-bold text-purple-700">Ungu</span>
+                            <span class="text-[9px] sm:text-[10px] font-bold text-purple-700">Purple</span>
                         </div>
                     </div>
                 </div>
@@ -346,31 +346,31 @@
                 <div class="flex flex-row sm:flex-col items-center gap-1.5 sm:gap-2">
                     <!-- 4-Way Directional Pan Compass D-Pad -->
                     <div class="bg-white/95 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg border border-slate-200/90 p-1 sm:p-1.5 flex flex-col items-center gap-0.5 sm:gap-1 select-none">
-                        <!-- Up / Atas -->
-                        <button type="button" onclick="panMap('up')" title="Geser Peta ke Atas (Pan Up)"
+                        <!-- Up -->
+                        <button type="button" onclick="panMap('up')" title="Pan Up"
                                 class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
                             <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
                         </button>
                         <!-- Middle Row: Left, Center Re-fit, Right -->
                         <div class="flex items-center gap-0.5 sm:gap-1">
-                            <!-- Left / Kiri -->
-                            <button type="button" onclick="panMap('left')" title="Geser Peta ke Kiri (Pan Left)"
+                            <!-- Left -->
+                            <button type="button" onclick="panMap('left')" title="Pan Left"
                                     class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
                                 <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                             </button>
                             <!-- Center: Fit Route / Reset View -->
-                            <button type="button" onclick="panMap('center')" title="Fokuskan ke Rute Pengiriman (Focus Consignment Route)"
+                            <button type="button" onclick="panMap('center')" title="Focus Consignment Route"
                                     class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white flex items-center justify-center transition-all active:scale-95 font-bold text-xs" id="fitRouteBtn">
                                 <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg>
                             </button>
-                            <!-- Right / Kanan -->
-                            <button type="button" onclick="panMap('right')" title="Geser Peta ke Kanan (Pan Right)"
+                            <!-- Right -->
+                            <button type="button" onclick="panMap('right')" title="Pan Right"
                                     class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
                                 <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                             </button>
                         </div>
-                        <!-- Down / Bawah -->
-                        <button type="button" onclick="panMap('down')" title="Geser Peta ke Bawah (Pan Down)"
+                        <!-- Down -->
+                        <button type="button" onclick="panMap('down')" title="Pan Down"
                                 class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center transition-all active:scale-95">
                             <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                         </button>
@@ -379,29 +379,29 @@
                     <!-- Navigation Quick Actions (World View & Fit Consignment) & Zoom Controls (+ and -) -->
                     <div class="bg-white/95 backdrop-blur-md rounded-lg sm:rounded-xl shadow-md sm:shadow-lg border border-slate-200/90 p-0.5 flex flex-col items-center select-none">
                         <!-- Zoom In -->
-                        <button type="button" onclick="map && map.zoomIn()" title="Perbesar (Zoom In)"
+                        <button type="button" onclick="map && map.zoomIn()" title="Zoom In"
                                 class="w-6 h-6 sm:w-7 sm:h-7 hover:bg-slate-100 text-slate-700 font-bold flex items-center justify-center rounded-lg transition-all text-xs sm:text-sm active:scale-95">+</button>
                         <div class="w-full h-px bg-slate-200"></div>
                         <!-- Zoom Out -->
-                        <button type="button" onclick="map && map.zoomOut()" title="Perkecil (Zoom Out)"
+                        <button type="button" onclick="map && map.zoomOut()" title="Zoom Out"
                                 class="w-6 h-6 sm:w-7 sm:h-7 hover:bg-slate-100 text-slate-700 font-bold flex items-center justify-center rounded-lg transition-all text-xs sm:text-sm active:scale-95">&minus;</button>
                         <div class="w-full h-px bg-slate-200"></div>
-                        <!-- World View (Kembali ke Tampilan Seluruh Dunia) -->
-                        <button type="button" onclick="panMap('world')" title="Kembali ke Tampilan Seluruh Dunia (World View)"
+                        <!-- World View -->
+                        <button type="button" onclick="panMap('world')" title="World View"
                                 class="w-6 h-6 sm:w-7 sm:h-7 hover:bg-blue-50 text-slate-700 hover:text-blue-600 flex items-center justify-center rounded-lg transition-all text-xs active:scale-95">
                             <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                         </button>
                     </div>
                 </div>
 
-                <!-- Google Maps Signature "Lapisan" Toggle Button & Mode Drawer -->
+                <!-- Google Maps Signature "Layers" Toggle Button & Mode Drawer -->
                 <div class="relative select-none" id="mapModeContainer">
-                    <!-- Drawer Popup Menu (Jenis Peta: Default & Satelit) -->
+                    <!-- Drawer Popup Menu (Map Type: Default & Satellite) -->
                     <div id="mapModeMenu" class="hidden absolute bottom-14 sm:bottom-16 left-0 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/90 p-2.5 sm:p-3 w-52 sm:w-56 z-30 select-none transition-all duration-200 max-w-[calc(100vw-2rem)]">
                         <div class="flex items-center justify-between pb-1.5 sm:pb-2 mb-1.5 sm:mb-2 border-b border-slate-100">
                             <span class="text-xs font-black text-slate-800 tracking-tight flex items-center gap-1.5">
                                 <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-                                Jenis peta
+                                Map type
                             </span>
                             <button type="button" onclick="closeMapModeMenu()" class="text-slate-400 hover:text-slate-700 text-sm font-bold px-1">&times;</button>
                         </div>
@@ -419,10 +419,10 @@
                                     </svg>
                                 </div>
                                 <span class="text-[10px] sm:text-[11px] font-bold text-slate-800 group-hover:text-blue-600">Default</span>
-                                <span class="text-[8px] sm:text-[9px] text-slate-400">Peta Jalan</span>
+                                <span class="text-[8px] sm:text-[9px] text-slate-400">Roadmap</span>
                             </button>
 
-                            <!-- Option 2: Satelit Mode -->
+                            <!-- Option 2: Satellite Mode -->
                             <button type="button" onclick="setMapDisplayMode('satellite')" id="btnModeSatellite"
                                     class="group flex flex-col items-center p-1.5 rounded-xl border border-slate-200 hover:border-blue-500 transition-all text-center">
                                 <div class="w-full h-12 sm:h-14 rounded-lg overflow-hidden border border-slate-200 mb-1 relative bg-slate-800 flex items-center justify-center">
@@ -438,27 +438,27 @@
                                         <circle cx="28" cy="26" r="2.5" fill="#ea4335"/>
                                     </svg>
                                 </div>
-                                <span class="text-[10px] sm:text-[11px] font-bold text-slate-800 group-hover:text-blue-600">Satelit</span>
-                                <span class="text-[8px] sm:text-[9px] text-slate-400">Rumah Warga</span>
+                                <span class="text-[10px] sm:text-[11px] font-bold text-slate-800 group-hover:text-blue-600">Satellite</span>
+                                <span class="text-[8px] sm:text-[9px] text-slate-400">Satellite View</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Main "Lapisan" Square Thumbnail Button -->
+                    <!-- Main "Layers" Square Thumbnail Button -->
                     <button type="button" onclick="toggleMapMode()" oncontextmenu="event.preventDefault(); toggleMapModeMenu();"
-                            id="mapModeToggleBtn" title="Ganti Mode Peta (Default / Satelit) - Klik untuk beralih mode, klik menu untuk memilih"
+                            id="mapModeToggleBtn" title="Switch Map Mode (Default / Satellite)"
                             class="group relative w-11 h-11 sm:w-14 sm:h-14 rounded-xl overflow-hidden shadow-md sm:shadow-lg border-2 border-white hover:border-blue-500 transition-all duration-200 flex flex-col justify-end bg-slate-900 active:scale-95">
                         <div id="mapModeThumbnail" class="absolute inset-0 w-full h-full pointer-events-none">
                             <!-- In default mode, thumbnail shows satellite image encouraging user to switch -->
                         </div>
                         <div class="relative z-10 w-full bg-gradient-to-t from-black/80 via-black/50 to-transparent py-0.5 px-0.5 text-center pointer-events-none">
                             <span class="text-[9px] sm:text-[10px] font-extrabold text-white tracking-tight flex items-center justify-center">
-                                <span id="mapModeBtnLabel">Lapisan</span>
+                                <span id="mapModeBtnLabel">Layers</span>
                             </span>
                         </div>
                     </button>
                     <!-- Small Menu Trigger Dot / Icon on button corner -->
-                    <button type="button" onclick="toggleMapModeMenu()" title="Pilih Jenis Peta"
+                    <button type="button" onclick="toggleMapModeMenu()" title="Choose Map Type"
                             class="absolute -top-1.5 -right-1.5 z-20 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white shadow-md border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center text-[8px] sm:text-[10px] font-bold">
                         <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                     </button>
@@ -810,43 +810,43 @@
     const TRANSPORT_MODES = {
         AIR: {
             key: 'AIR',
-            label: 'Pesawat (Air Freight)',
+            label: 'Air Freight',
             color: '#2563EB',      // Blue Solid
             casingColor: '#1E3A8A',
             dashArray: null,       // Solid
             weight: 5.5,
             icon: '✈️',
-            description: 'Penerbangan Kargo Udara Lintas Negara'
+            description: 'International Air Freight'
         },
         SEA: {
             key: 'SEA',
-            label: 'Kapal Laut (Ocean Cargo)',
+            label: 'Ocean Cargo',
             color: '#10B981',      // Emerald Green Dashed
             casingColor: '#064E3B',
-            dashArray: '8, 8',     // Dashed / Putus-putus
+            dashArray: '8, 8',     // Dashed
             weight: 5,
             icon: '🚢',
-            description: 'Pelayaran Kontainer Samudra'
+            description: 'Ocean Container Shipping'
         },
         ROAD: {
             key: 'ROAD',
-            label: 'Truk / Darat (Road Transport)',
+            label: 'Road Transport',
             color: '#F59E0B',      // Amber Solid
             casingColor: '#78350F',
             dashArray: null,       // Solid
             weight: 5,
             icon: '🚚',
-            description: 'Jalur Distribusi Darat & Intermodal'
+            description: 'Overland Highway & Intermodal'
         },
         RAIL: {
             key: 'RAIL',
-            label: 'Kereta Api (Rail Freight)',
+            label: 'Rail Freight',
             color: '#8B5CF6',      // Purple Dotted
             casingColor: '#4C1D95',
-            dashArray: '4, 6',     // Dotted / Putus-putus
+            dashArray: '4, 6',     // Dotted
             weight: 5,
             icon: '🚆',
-            description: 'Koridor Kereta Api Kargo'
+            description: 'Rail Freight Corridor'
         }
     };
 
@@ -1127,7 +1127,7 @@
                     <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold" style="background-color: ${mode.color}15; color: ${mode.color}; border: 1px solid ${mode.color}35;">
                         <span>${mode.icon}</span>
                         <span>Leg ${index + 1}: ${mode.label}</span>
-                        <span class="text-[9px] opacity-80 font-medium">(${mode.dashArray ? 'Garis Putus-putus' : 'Garis Solid'})</span>
+                        <span class="text-[9px] opacity-80 font-medium">(${mode.dashArray ? 'Dashed Line' : 'Solid Line'})</span>
                     </div>
                 `;
                 container.appendChild(legBadge);
@@ -1209,7 +1209,7 @@
             }
         } else {
             if (thumb) thumb.innerHTML = SATELLITE_THUMB_SVG;
-            if (label) label.textContent = 'Satelit';
+            if (label) label.textContent = 'Satellite';
             if (btnDef) {
                 btnDef.className = 'group flex flex-col items-center p-1.5 rounded-xl border-2 border-blue-600 bg-blue-50/60 ring-2 ring-blue-500/30 transition-all text-center';
             }
@@ -1285,9 +1285,9 @@
 
         // Layer Switcher Control (topright)
         const baseLayers = {
-            "🗺️ Default (Peta Standar)": googleRoadmapLayer,
-            "🛰️ Satelit (Citra Satelit & Rumah Warga)": googleSatelliteLayer,
-            "🌐 OpenStreetMap (Peta Jalan & Desa)": osmDetailedLayer
+            "🗺️ Default (Roadmap)": googleRoadmapLayer,
+            "🛰️ Satellite (Satellite & Aerial Imagery)": googleSatelliteLayer,
+            "🌐 OpenStreetMap (Street & Community Detail)": osmDetailedLayer
         };
         L.control.layers(baseLayers, null, { position: 'topright' }).addTo(map);
 
@@ -1748,7 +1748,7 @@
         const query = queryInput ? queryInput.value.trim() : '';
         if (!query) return;
 
-        showToast(`Mencari "${query}" di peta dunia...`);
+        showToast(`Searching "${query}" on global map...`);
 
         // 1. Check local hub locations first
         if (typeof locationsData !== 'undefined' && Array.isArray(locationsData)) {
@@ -1772,7 +1772,7 @@
                 }).addTo(map);
                 searchMarker.bindPopup(`<strong>${escapeHtml(matchLoc.name)}</strong><br>${escapeHtml(matchLoc.city)}, ${escapeHtml(matchLoc.country)}<br><span class="text-[10px] text-slate-500 font-mono">${lat.toFixed(4)}, ${lng.toFixed(4)}</span>`).openPopup();
                 map.flyTo([lat, lng], 13, { duration: 1.5 });
-                showToast(`Wilayah ditemukan: ${matchLoc.city}, ${matchLoc.country}`);
+                showToast(`Location found: ${matchLoc.city}, ${matchLoc.country}`);
                 return;
             }
         }
@@ -1801,14 +1801,14 @@
                         const shortName = displayName.split(',')[0];
                         searchMarker.bindPopup(`<strong>${escapeHtml(shortName)}</strong><br><span class="text-xs text-slate-600">${escapeHtml(displayName)}</span><br><span class="text-[10px] text-slate-500 font-mono">${lat.toFixed(4)}, ${lon.toFixed(4)}</span>`).openPopup();
                         map.flyTo([lat, lon], 14, { duration: 1.5 });
-                        showToast(`Wilayah ditemukan: ${shortName}`);
+                        showToast(`Location found: ${shortName}`);
                         return;
                     }
                 }
             }
-            showToast(`Wilayah "${query}" tidak ditemukan.`);
+            showToast(`Location "${query}" not found.`);
         } catch (err) {
-            showToast(`Pencarian wilayah selesai.`);
+            showToast(`Location search complete.`);
         }
     }
 
