@@ -4,30 +4,30 @@
 <div class="space-y-4">
 
     <!-- Top Breadcrumb & Fleet Switcher Bar -->
-    <div class="bg-white px-5 py-3 rounded-2xl border border-brand-border shadow-soft-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div class="flex items-center space-x-3">
+    <div class="bg-white px-3.5 sm:px-5 py-3 rounded-2xl border border-brand-border shadow-soft-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full max-w-full overflow-hidden box-border">
+        <div class="flex items-center space-x-3 min-w-0">
             <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-brand-primary to-sky-400 text-white flex items-center justify-center shadow-glow-primary shrink-0">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
                 </svg>
             </div>
-            <div>
-                <div class="flex items-center space-x-2">
-                    <h2 class="text-base font-extrabold text-brand-navy">Interactive Route Navigation</h2>
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-50 text-brand-primary border border-blue-200">
+            <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <h2 class="text-sm sm:text-base font-extrabold text-brand-navy truncate">Interactive Route Navigation</h2>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-50 text-brand-primary border border-blue-200 shrink-0">
                         Leaflet / OpenStreetMap
                     </span>
                 </div>
-                <p class="text-xs text-brand-secondary">Multimodal turn-by-turn waypoint routing, transit telemetry, and worldwide coverage</p>
+                <p class="text-[11px] sm:text-xs text-brand-secondary truncate sm:whitespace-normal">Multimodal turn-by-turn waypoint routing, transit telemetry, and worldwide coverage</p>
             </div>
         </div>
 
         <!-- Quick Fleet Consignment Selector -->
-        <div class="flex flex-wrap items-center gap-2">
-            <label for="consignmentSelect" class="text-xs font-bold text-slate-500 hidden md:inline">Select Fleet Consignment:</label>
-            <form action="{{ route('tracking.index') }}" method="GET" class="flex items-center space-x-2">
+        <div class="w-full sm:w-auto flex items-center gap-2 min-w-0">
+            <label for="consignmentSelect" class="text-xs font-bold text-slate-500 hidden md:inline shrink-0">Select Fleet Consignment:</label>
+            <form action="{{ route('tracking.index') }}" method="GET" class="flex-1 min-w-0 sm:flex-initial flex items-center space-x-2">
                 <select id="consignmentSelect" name="shipment_number" onchange="this.form.submit()"
-                        class="px-3.5 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-brand-navy focus:outline-none focus:border-brand-primary focus:bg-white shadow-xs">
+                        class="w-full sm:w-auto sm:max-w-xs md:max-w-sm lg:max-w-md px-2.5 sm:px-3.5 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-brand-navy focus:outline-none focus:border-brand-primary focus:bg-white shadow-xs truncate block">
                     @if(!$shipment && request('shipment_number') !== 'DEMO-FR-NORMANDY')
                         <option value="" disabled selected>-- Select Shipment --</option>
                     @endif
@@ -42,14 +42,14 @@
                         </option>
                     </optgroup>
                 </select>
-                <noscript><button type="submit" class="px-3 py-1.5 bg-brand-primary text-white text-xs font-bold rounded-xl">Load</button></noscript>
+                <noscript><button type="submit" class="px-3 py-1.5 bg-brand-primary text-white text-xs font-bold rounded-xl shrink-0">Load</button></noscript>
             </form>
 
             @if($shipment && !auth()->user()->isCustomer())
             <button type="button" onclick="document.getElementById('trackingModal').classList.remove('hidden')"
-                    class="inline-flex items-center px-3.5 py-1.5 bg-brand-primary hover:bg-brand-primary-hover text-white rounded-xl text-xs font-bold shadow-soft-sm shadow-brand-primary/25 transition-all">
+                    class="inline-flex items-center px-3 sm:px-3.5 py-1.5 bg-brand-primary hover:bg-brand-primary-hover text-white rounded-xl text-xs font-bold shadow-soft-sm shadow-brand-primary/25 transition-all shrink-0 whitespace-nowrap">
                 <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                Add Stop
+                <span>Add Stop</span>
             </button>
             @endif
         </div>
@@ -288,7 +288,7 @@
             <div id="googleDirectionsMap" class="w-full h-full relative z-10 select-none" style="touch-action: none !important; cursor: grab; background-color: #f8fafc !important;"></div>
 
             <!-- Floating Transport Mode & Route Legend (Keterangan Warna Moda Transportasi) -->
-            <div id="transportLegendCard" class="absolute top-13 sm:top-16 left-2.5 sm:left-4 z-20 bg-white/95 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg border border-slate-200/90 p-2 sm:p-3 select-none max-w-[210px] sm:max-w-xs transition-all duration-200 pointer-events-auto">
+            <div id="transportLegendCard" class="absolute top-14 sm:top-16 left-2.5 sm:left-4 z-20 bg-white/95 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg border border-slate-200/90 p-2 sm:p-3 select-none max-w-[215px] sm:max-w-xs transition-all duration-200 pointer-events-auto">
                 <div class="flex items-center justify-between pb-1 sm:pb-1.5 border-b border-slate-100 mb-1.5 cursor-pointer" onclick="toggleTransportLegend()">
                     <div class="flex items-center space-x-1.5">
                         <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
@@ -700,6 +700,37 @@
         }
         #googleDirectionsMap .leaflet-bottom.leaflet-right {
             margin-bottom: 34px !important;
+        }
+    }
+
+    /* Transport Mode & Route Legend Card (Keterangan Moda) explicit responsive visibility */
+    #transportLegendCard {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        z-index: 20 !important;
+    }
+    @media (max-width: 639px) {
+        #transportLegendCard {
+            top: 52px !important;
+            left: 10px !important;
+            max-width: 215px !important;
+        }
+    }
+
+    /* Responsive Consignment Selector on Mobile to Prevent Horizontal Overflow */
+    #consignmentSelect {
+        box-sizing: border-box !important;
+        max-width: 100% !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+    }
+    @media (max-width: 639px) {
+        #consignmentSelect {
+            width: 100% !important;
+            font-size: 11px !important;
         }
     }
 </style>
