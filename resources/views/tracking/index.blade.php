@@ -1228,7 +1228,7 @@
         // Initialize Map with Global Worldwide View (Single World Map, EPSG:3857, no horizontal/vertical repetition)
         map = L.map('googleDirectionsMap', {
             zoomControl: false, // Managed by custom floating controller dock
-            minZoom: 2,
+            minZoom: 1,
             maxZoom: 22, // Deep zoom level 22 to view individual houses, rooftops, alleys & parcels
             maxBounds: worldBounds,
             maxBoundsViscosity: 1.0,
@@ -1244,7 +1244,10 @@
             tap: false,
             inertia: true,
             inertiaDeceleration: 3000
-        }).setView([20.0, 0.0], 2);
+        });
+
+        // Set initial view to full 1 world bounds
+        map.fitBounds([[-60, -170], [75, 170]]);
 
         // Explicitly activate dragging and all interaction handlers
         map.dragging.enable();
@@ -1260,7 +1263,8 @@
             maxNativeZoom: 20,
             maxZoom: 22,
             subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-            noWrap: false
+            noWrap: true,
+            bounds: worldBounds
         });
 
         // Mode 2: Google Maps Satellite Hybrid (Photorealistic Satellite Imagery with Roads, Labels & Individual Houses/Rooftops)
@@ -1269,7 +1273,8 @@
             maxNativeZoom: 20,
             maxZoom: 22,
             subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-            noWrap: false
+            noWrap: true,
+            bounds: worldBounds
         });
 
         // Mode 3: OpenStreetMap Standard (Community Ground-Truth Detail)
@@ -1277,7 +1282,8 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Leaflet',
             maxNativeZoom: 19,
             maxZoom: 22,
-            noWrap: false
+            noWrap: true,
+            bounds: worldBounds
         });
 
         // Default to Google Maps Standard Roadmap (Clean, bright, street-level coverage)
@@ -1440,7 +1446,7 @@
                 map.panBy([panDistance, 0], { animate: true, duration: 0.25 });
                 break;
             case 'world':
-                map.setView([20.0, 0.0], 2, { animate: true });
+                map.fitBounds([[-60, -170], [75, 170]], { animate: true, duration: 0.5 });
                 break;
             case 'center':
                 fitActiveRoute();
@@ -1458,7 +1464,7 @@
         } else if (validWaypoints.length === 1) {
             map.setView([validWaypoints[0].lat, validWaypoints[0].lng], 8);
         } else {
-            map.setView([20.0, 0.0], 2);
+            map.fitBounds([[-60, -170], [75, 170]]);
         }
     }
 

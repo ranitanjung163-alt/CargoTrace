@@ -1178,85 +1178,23 @@
         // 4. Leaflet Worldwide Network Map & Continuous Google Maps-style Navigation
         let coverageMap = null;
 
-        // Continuity Enforcement: Clamps vertical movement so map never reveals empty gray space above/below,
-        // while preserving completely smooth, unrestricted horizontal 360-degree panning across the antimeridian
-        function enforceGoogleMapsContinuity(mapInstance) {
-            if (!mapInstance) return;
-            let isAdjusting = false;
-
-            function keepInVerticalBounds() {
-                if (isAdjusting) return;
-                const size = mapInstance.getSize();
-                if (!size || size.y <= 0) return;
-
-                const zoom = mapInstance.getZoom();
-                const worldHeight = 256 * Math.pow(2, zoom);
-                const viewHalfY = size.y / 2;
-                const center = mapInstance.getCenter();
-                const centerPoint = mapInstance.project(center, zoom);
-
-                let targetY = centerPoint.y;
-                if (worldHeight <= size.y) {
-                    targetY = worldHeight / 2;
-                } else {
-                    if (targetY - viewHalfY < 0) {
-                        targetY = viewHalfY;
-                    } else if (targetY + viewHalfY > worldHeight) {
-                        targetY = worldHeight - viewHalfY;
-                    }
-                }
-
-                if (Math.abs(targetY - centerPoint.y) > 0.5) {
-                    isAdjusting = true;
-                    try {
-                        const clampedCenter = mapInstance.unproject(L.point(centerPoint.x, targetY), zoom);
-                        mapInstance.setView([clampedCenter.lat, center.lng], zoom, { animate: false });
-                    } finally {
-                        isAdjusting = false;
-                    }
-                }
-            }
-
-            mapInstance.on('drag', keepInVerticalBounds);
-            mapInstance.on('move', keepInVerticalBounds);
-            mapInstance.on('zoomend', keepInVerticalBounds);
-        }
-
         // Dedicated Global World View Resetter (Satu Sentuhan Kembali ke Tampilan Seluruh Dunia)
         window.resetCoverageMapView = function () {
             if (!coverageMap) return;
-            const container = document.getElementById('landingCoverageMap');
-            const w = container ? container.clientWidth : window.innerWidth;
-            let targetZoom = 2.0;
-            if (w < 480) targetZoom = 1.25;
-            else if (w < 768) targetZoom = 1.5;
-            else if (w < 1024) targetZoom = 1.75;
-            coverageMap.setView([20.0, 10.0], targetZoom, { animate: true, duration: 0.5 });
-            setTimeout(() => { coverageMap.invalidateSize(); }, 250);
+            coverageMap.fitBounds([[-60, -170], [75, 170]], { animate: true, duration: 0.5 });
+            setTimeout(() => { if (coverageMap) coverageMap.invalidateSize(); }, 250);
         };
 
         // 4-Way Directional Pan Controller (Geser Peta ke Kiri, Kanan, Atas, Bawah, dan Reset)
         window.panCoverageMap = function (direction) {
             if (!coverageMap) return;
             const panDistance = 240;
-            const size = coverageMap.getSize();
-            const zoom = coverageMap.getZoom();
-            const worldHeight = 256 * Math.pow(2, zoom);
-            const viewHalfY = size.y / 2;
-            const centerPoint = coverageMap.project(coverageMap.getCenter(), zoom);
-
             switch (direction) {
                 case 'up':
-                    if (centerPoint.y - viewHalfY > 2) {
-                        const dist = Math.min(panDistance, centerPoint.y - viewHalfY);
-                        coverageMap.panBy([0, -dist], { animate: true, duration: 0.25 });
-                    }
+                    coverageMap.panBy([0, -panDistance], { animate: true, duration: 0.25 });
                     break;
                 case 'down':
-                    if (centerPoint.y + viewHalfY < worldHeight - 2) {
-                        const dist = Math.min(panDistance, worldHeight - (centerPoint.y + viewHalfY));
-                        coverageMap.panBy([0, dist], { animate: true, duration: 0.25 });
-                    }
+                    coverageMap.panBy([0, panDistance], { animate: true, duration: 0.25 });
                     break;
                 case 'left':
                     coverageMap.panBy([-panDistance, 0], { animate: true, duration: 0.25 });
@@ -1280,12 +1218,6 @@
             if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
             if (!coverageMap) return;
             const step = 180;
-            const size = coverageMap.getSize();
-            const zoom = coverageMap.getZoom();
-            const worldHeight = 256 * Math.pow(2, zoom);
-            const viewHalfY = size.y / 2;
-            const centerPoint = coverageMap.project(coverageMap.getCenter(), zoom);
-
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
                 coverageMap.panBy([-step, 0], { animate: true, duration: 0.2 });
@@ -1294,16 +1226,10 @@
                 coverageMap.panBy([step, 0], { animate: true, duration: 0.2 });
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
-                if (centerPoint.y - viewHalfY > 2) {
-                    const dist = Math.min(step, centerPoint.y - viewHalfY);
-                    coverageMap.panBy([0, -dist], { animate: true, duration: 0.2 });
-                }
+                coverageMap.panBy([0, -step], { animate: true, duration: 0.2 });
             } else if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                if (centerPoint.y + viewHalfY < worldHeight - 2) {
-                    const dist = Math.min(step, worldHeight - (centerPoint.y + viewHalfY));
-                    coverageMap.panBy([0, dist], { animate: true, duration: 0.2 });
-                }
+                coverageMap.panBy([0, step], { animate: true, duration: 0.2 });
             }
         });
 
@@ -1311,12 +1237,8 @@
             const mapContainer = document.getElementById('landingCoverageMap');
             if (!mapContainer) return;
 
-            // Responsive initial zoom so the full globe is immediately visible on any device
-            const containerWidth = mapContainer.clientWidth || window.innerWidth;
-            let initialZoom = 2.0;
-            if (containerWidth < 480) initialZoom = 1.25;
-            else if (containerWidth < 768) initialZoom = 1.5;
-            else if (containerWidth < 1024) initialZoom = 1.75;
+            // Strict 1 World Geodetic Bounds (-85.0511 to 85.0511 lat, -180 to 180 lng) to PREVENT horizontal & vertical repetition
+            const worldBounds = L.latLngBounds(L.latLng(-85.0511, -180), L.latLng(85.0511, 180));
 
             coverageMap = L.map('landingCoverageMap', {
                 zoomControl: true,
@@ -1324,7 +1246,9 @@
                 zoomDelta: 0.5,
                 minZoom: 1.0,
                 maxZoom: 22, // Deep zoom level 22 to view individual houses, rooftops & parcels
-                worldCopyJump: true, // Smooth horizontal continuous panning across antimeridian
+                maxBounds: worldBounds,
+                maxBoundsViscosity: 1.0,
+                worldCopyJump: false,
                 scrollWheelZoom: true,
                 wheelDebounceTime: 40,
                 wheelPxPerZoomLevel: 60,
@@ -1336,7 +1260,10 @@
                 inertia: true,
                 inertiaDeceleration: 3000,
                 keyboard: true
-            }).setView([20.0, 10.0], initialZoom);
+            });
+
+            // Initial view: full 1-world view without repetition
+            coverageMap.fitBounds([[-60, -170], [75, 170]]);
 
             // Explicitly enable all interaction capabilities
             coverageMap.dragging.enable();
@@ -1346,16 +1273,14 @@
             coverageMap.boxZoom.enable();
             coverageMap.keyboard.enable();
 
-            // Enforce smooth vertical bounds clamping (keeps user on world map without empty void above/below)
-            enforceGoogleMapsContinuity(coverageMap);
-
             // Mode 1: Google Maps Standard Roadmap (Bright Clean Road Network, Street & Village Detail)
             const googleRoadmap = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
                 attribution: '&copy; Google Maps &bull; Leaflet',
                 maxNativeZoom: 20,
                 maxZoom: 22,
                 subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-                noWrap: false
+                noWrap: true,
+                bounds: worldBounds
             });
 
             // Mode 2: Google Maps Satellite Hybrid (Photorealistic Satellite Imagery with Roads, Labels & Individual Houses/Rooftops)
@@ -1364,7 +1289,8 @@
                 maxNativeZoom: 20,
                 maxZoom: 22,
                 subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-                noWrap: false
+                noWrap: true,
+                bounds: worldBounds
             });
 
             // Base Layer 3: OpenStreetMap Standard
@@ -1372,7 +1298,8 @@
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Leaflet',
                 maxNativeZoom: 19,
                 maxZoom: 22,
-                noWrap: false
+                noWrap: true,
+                bounds: worldBounds
             });
 
             // Default to Google Maps Standard Roadmap
@@ -1441,19 +1368,16 @@
                 });
             }
 
-            // Render hubs across world copies [-360, 0, 360] for seamless continuous horizontal exploration
-            const worldOffsets = [-360, 0, 360];
-            worldOffsets.forEach(offset => {
-                hubs.forEach(hub => {
-                    const marker = L.marker([hub.lat, hub.lon + offset], { icon: createHubIcon() }).addTo(coverageMap);
-                    marker.bindPopup(`
-                        <div style="font-family: 'Plus Jakarta Sans', sans-serif; padding: 4px;">
-                            <span style="font-size: 10px; font-weight: 800; color: #0284C7; text-transform: uppercase;">${hub.code}</span>
-                            <h4 style="font-size: 12px; font-weight: 800; color: #0F172A; margin: 2px 0;">${hub.name}</h4>
-                            <p style="font-size: 11px; color: #64748B; margin: 0;">${hub.type} &bull; ${hub.country}</p>
-                        </div>
-                    `);
-                });
+            // Render hubs on standard 1-world coordinates (-180 to 180)
+            hubs.forEach(hub => {
+                const marker = L.marker([hub.lat, hub.lon], { icon: createHubIcon() }).addTo(coverageMap);
+                marker.bindPopup(`
+                    <div style="font-family: 'Plus Jakarta Sans', sans-serif; padding: 4px;">
+                        <span style="font-size: 10px; font-weight: 800; color: #0284C7; text-transform: uppercase;">${hub.code}</span>
+                        <h4 style="font-size: 12px; font-weight: 800; color: #0F172A; margin: 2px 0;">${hub.name}</h4>
+                        <p style="font-size: 11px; color: #64748B; margin: 0;">${hub.type} &bull; ${hub.country}</p>
+                    </div>
+                `);
             });
 
             // Multimodal Trade Corridors: Pesawat (Biru Solid), Kapal Laut (Hijau Putus), Truk/Intermodal (Oranye Solid)
@@ -1480,7 +1404,8 @@
                     weight: 3.5,
                     points: [
                         [[51.9244, 4.4777], [-23.9608, -46.3336]],
-                        [[34.0522, -118.2437], [35.6762, 139.6503]]
+                        [[35.6762, 139.6503], [35.034, 180.0]],
+                        [[35.034, -180.0], [34.0522, -118.2437]]
                     ]
                 },
                 // Truk / Darat (Americas Intermodal Highway)
@@ -1495,18 +1420,15 @@
                 }
             ];
 
-            worldOffsets.forEach(offset => {
-                multimodalCorridors.forEach(group => {
-                    group.points.forEach(segment => {
-                        const shiftedSegment = segment.map(pt => [pt[0], pt[1] + offset]);
-                        L.polyline(shiftedSegment, {
-                            color: group.color,
-                            weight: group.weight,
-                            dashArray: group.dashArray,
-                            opacity: 0.9,
-                            interactive: false
-                        }).addTo(coverageMap);
-                    });
+            multimodalCorridors.forEach(group => {
+                group.points.forEach(segment => {
+                    L.polyline(segment, {
+                        color: group.color,
+                        weight: group.weight,
+                        dashArray: group.dashArray,
+                        opacity: 0.9,
+                        interactive: false
+                    }).addTo(coverageMap);
                 });
             });
 
