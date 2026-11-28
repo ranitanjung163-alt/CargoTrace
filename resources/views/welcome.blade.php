@@ -613,7 +613,7 @@
                             </div>
                             <h3 class="text-base font-extrabold text-slate-900">Global Shipment Tracking</h3>
                             <p class="text-xs text-slate-600 font-medium leading-relaxed mt-2.5">
-                                Memantau pergerakan pengiriman internasional secara real-time. Unified end-to-end cargo visibility across multimodal transport lines (ocean vessel, air freight, inland trucking).
+                                Monitor international shipment movements in real-time. Unified end-to-end cargo visibility across multimodal transport lines (ocean vessel, air freight, inland trucking).
                             </p>
                         </div>
                         <div class="mt-6 pt-4 border-t border-slate-100 text-[11px] font-bold text-brand-primary flex items-center">
@@ -630,7 +630,7 @@
                             </div>
                             <h3 class="text-base font-extrabold text-slate-900">Real-Time Tracking Timeline</h3>
                             <p class="text-xs text-slate-600 font-medium leading-relaxed mt-2.5">
-                                Melihat riwayat dan perkembangan status pengiriman secara kronologis. Enforces sequential event chronology from CREATED to DELIVERED with atomic location updates.
+                                Track chronological shipment milestones and real-time status progression. Enforces sequential event chronology from CREATED to DELIVERED with atomic location updates.
                             </p>
                         </div>
                         <div class="mt-6 pt-4 border-t border-slate-100 text-[11px] font-bold text-emerald-600 flex items-center">
@@ -647,7 +647,7 @@
                             </div>
                             <h3 class="text-base font-extrabold text-slate-900">Estimated Time of Arrival (ETA)</h3>
                             <p class="text-xs text-slate-600 font-medium leading-relaxed mt-2.5">
-                                Mengetahui estimasi waktu kedatangan secara akurat. Deterministic SLA calculation engine comparing scheduled arrival deadlines against real-time predictive transit milestones.
+                                Accurate deterministic Estimated Time of Arrival (ETA) predictions. Deterministic SLA calculation engine comparing scheduled arrival deadlines against real-time predictive transit milestones.
                             </p>
                         </div>
                         <div class="mt-6 pt-4 border-t border-slate-100 text-[11px] font-bold text-amber-600 flex items-center">
@@ -664,7 +664,7 @@
                             </div>
                             <h3 class="text-base font-extrabold text-slate-900">Delay &amp; Exception Monitoring</h3>
                             <p class="text-xs text-slate-600 font-medium leading-relaxed mt-2.5">
-                                Memantau keterlambatan dan kendala operasional dengan ambang batas (threshold) 12 jam. Structured incident management for Weather Delays, Customs Holds, and Port Congestion.
+                                Detect delays and operational exceptions with a 12-hour threshold. Structured incident management for Weather Delays, Customs Holds, and Port Congestion.
                             </p>
                         </div>
                         <div class="mt-6 pt-4 border-t border-slate-100 text-[11px] font-bold text-rose-600 flex items-center">
@@ -681,7 +681,7 @@
                             </div>
                             <h3 class="text-base font-extrabold text-slate-900">Global Location Mapping</h3>
                             <p class="text-xs text-slate-600 font-medium leading-relaxed mt-2.5">
-                                Melihat lokasi pengiriman melalui peta interaktif OpenStreetMap dan Leaflet.js dengan cakupan penuh seluruh dunia (-90° s/d +90° Lat, -180° s/d +180° Lon) dan antimeridian wrapping.
+                                View worldwide shipment locations through interactive OpenStreetMap and Leaflet.js maps with full global geodetic coverage (-90° to +90° Lat, -180° to +180° Lon) and antimeridian wrapping.
                             </p>
                         </div>
                         <div class="mt-6 pt-4 border-t border-slate-100 text-[11px] font-bold text-sky-600 flex items-center">
@@ -698,7 +698,7 @@
                             </div>
                             <h3 class="text-base font-extrabold text-slate-900">Logistics Performance Analytics</h3>
                             <p class="text-xs text-slate-600 font-medium leading-relaxed mt-2.5">
-                                Memahami performa operasional melalui data aktual: On-Time Delivery Rate, carrier delay percentages, status breakdown bar charts, and formula-injection-safe CSV exports.
+                                Understand operational performance with live metrics: On-Time Delivery Rate, carrier delay percentages, status breakdown bar charts, and formula-injection-safe CSV exports.
                             </p>
                         </div>
                         <div class="mt-6 pt-4 border-t border-slate-100 text-[11px] font-bold text-indigo-600 flex items-center">
@@ -727,43 +727,43 @@
                     <!-- Map Canvas Container (Responsive Height, Touch Action None & Grab Cursor for 4-Way Smooth Panning) -->
                     <div id="landingCoverageMap" class="w-full h-[70vh] min-h-[400px] max-h-[750px] z-10" style="touch-action: none !important; cursor: grab; background-color: #f8fafc !important;"></div>
 
-                    <!-- Reset Tampilan Dunia Quick Button -->
+                    <!-- Reset World View Quick Button -->
                     <button type="button" onclick="resetCoverageMapView()" id="resetCoverageWorldBtn"
-                            title="Reset Peta ke Tampilan Seluruh Dunia" aria-label="Reset Tampilan Dunia"
+                            title="Reset Map to Full World View" aria-label="Reset World View"
                             class="absolute top-2.5 left-14 z-20 bg-white/95 backdrop-blur-md hover:bg-blue-50 text-slate-700 hover:text-brand-primary active:scale-95 px-3 py-1.5 rounded-xl border border-slate-200 shadow-soft-sm text-xs font-bold flex items-center space-x-1.5 transition-all select-none focus:outline-none">
                         <svg class="w-3.5 h-3.5 text-brand-primary shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                         </svg>
-                        <span>Reset Tampilan Dunia</span>
+                        <span>Reset World View</span>
                     </button>
 
-                    <!-- 4-Way D-Pad Pan Navigation Dock (Geser Peta: Atas, Bawah, Kiri, Kanan, Reset) -->
+                    <!-- 4-Way D-Pad Pan Navigation Dock (Pan Map: Up, Down, Left, Right, Reset) -->
                     <div class="absolute top-20 left-3.5 z-20 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 shadow-soft-md flex flex-col items-center select-none">
-                        <button type="button" onclick="panCoverageMap('up')" title="Geser ke Atas (Pan Up)" aria-label="Geser ke Atas"
+                        <button type="button" onclick="panCoverageMap('up')" title="Pan Up" aria-label="Pan Up"
                                 class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors focus:outline-none">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
                         </button>
                         <div class="flex items-center space-x-1 my-0.5">
-                            <button type="button" onclick="panCoverageMap('left')" title="Geser ke Kiri (Pan Left)" aria-label="Geser ke Kiri"
+                            <button type="button" onclick="panCoverageMap('left')" title="Pan Left" aria-label="Pan Left"
                                     class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors focus:outline-none">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
                             </button>
-                            <button type="button" onclick="panCoverageMap('focus')" title="Fokuskan ke Jaringan Hub" aria-label="Fokus Hub"
+                            <button type="button" onclick="panCoverageMap('focus')" title="Focus Hub Network" aria-label="Focus Hubs"
                                     class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 active:scale-95 transition-all focus:outline-none">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                             </button>
-                            <button type="button" onclick="panCoverageMap('right')" title="Geser ke Kanan (Pan Right)" aria-label="Geser ke Kanan"
+                            <button type="button" onclick="panCoverageMap('right')" title="Pan Right" aria-label="Pan Right"
                                     class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors focus:outline-none">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                             </button>
                         </div>
-                        <button type="button" onclick="panCoverageMap('down')" title="Geser ke Bawah (Pan Down)" aria-label="Geser ke Bawah"
+                        <button type="button" onclick="panCoverageMap('down')" title="Pan Down" aria-label="Pan Down"
                                 class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors focus:outline-none">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div class="w-full h-px bg-slate-200 my-1"></div>
                         <!-- World View Button -->
-                        <button type="button" onclick="panCoverageMap('world')" title="Kembali ke Tampilan Seluruh Dunia" aria-label="Tampilan Dunia"
+                        <button type="button" onclick="panCoverageMap('world')" title="Reset to Full World View" aria-label="World View"
                                 class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-700 hover:text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors focus:outline-none">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                         </button>
@@ -774,19 +774,19 @@
                         <div class="flex flex-wrap items-center gap-4">
                             <div class="flex items-center space-x-1.5">
                                 <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-                                <span>Hub Logistik Dunia</span>
+                                <span>Global Logistics Hubs</span>
                             </div>
                             <div class="flex items-center space-x-1.5">
                                 <span class="w-5 h-1 rounded-full bg-blue-600 inline-block shadow-2xs"></span>
-                                <span>✈️ Rute Pesawat (Biru Solid)</span>
+                                <span>✈️ Air Freight Route (Solid Blue)</span>
                             </div>
                             <div class="flex items-center space-x-1.5">
                                 <span class="w-5 h-0 border-t-2 border-dashed border-emerald-500 inline-block"></span>
-                                <span>🚢 Koridor Kapal Laut (Hijau Putus)</span>
+                                <span>🚢 Ocean Cargo Corridor (Dashed Green)</span>
                             </div>
                             <div class="flex items-center space-x-1.5">
                                 <span class="w-5 h-1 rounded-full bg-amber-500 inline-block shadow-2xs"></span>
-                                <span>🚚 Rute Darat / Intermodal</span>
+                                <span>🚚 Overland / Intermodal Route</span>
                             </div>
                         </div>
                     </div>
@@ -794,13 +794,13 @@
                     <!-- Google Maps Signature "Lapisan" (Dual Mode) Toggle Button -->
                     <div class="absolute bottom-4 right-4 z-20 select-none">
                         <button type="button" onclick="toggleWelcomeMapMode()" id="welcomeMapModeBtn"
-                                title="Ganti Mode Peta (Default / Satelit) - Zoom hingga rumah warga"
+                                title="Switch Map Mode (Default / Satellite)"
                                 class="w-12 h-12 rounded-xl overflow-hidden shadow-md border-2 border-white hover:border-blue-500 transition-all flex flex-col justify-end bg-slate-900 active:scale-95">
                             <div id="welcomeMapModeThumb" class="absolute inset-0 w-full h-full pointer-events-none">
                                 <svg viewBox="0 0 60 60" class="w-full h-full object-cover"><rect width="60" height="60" fill="#142838"/><path d="M0 25 Q 25 15 60 35 L 60 60 L 0 60 Z" fill="#2d4a22"/><path d="M15 10 Q 35 30 50 15" fill="#4d5336"/><path d="M0 18 L 60 42" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.8"/><path d="M20 0 L 25 60" stroke="#fbd364" stroke-width="1.2" stroke-opacity="0.8"/><rect x="22" y="24" width="4" height="4" fill="#ffffff" opacity="0.9"/><rect x="30" y="28" width="5" height="3" fill="#ffffff" opacity="0.9"/><rect x="28" y="20" width="3" height="4" fill="#ffffff" opacity="0.9"/><circle cx="28" cy="26" r="2.5" fill="#ea4335"/></svg>
                             </div>
                             <div class="relative z-10 w-full bg-gradient-to-t from-black/80 to-transparent py-0.5 text-center pointer-events-none">
-                                <span class="text-[9px] font-extrabold text-white tracking-tight leading-none" id="welcomeMapModeLabel">Satelit</span>
+                                <span class="text-[9px] font-extrabold text-white tracking-tight leading-none" id="welcomeMapModeLabel">Satellite</span>
                             </div>
                         </button>
                     </div>
@@ -1326,8 +1326,8 @@
             googleRoadmap.addTo(coverageMap);
 
             const baseLayers = {
-                "🗺️ Default (Peta Standar)": googleRoadmap,
-                "🛰️ Satelit (Citra Satelit & Rumah Warga)": googleSatellite,
+                "🗺️ Default (Roadmap)": googleRoadmap,
+                "🛰️ Satellite (Satellite Imagery)": googleSatellite,
                 "🌐 OpenStreetMap": osmLayer
             };
             L.control.layers(baseLayers, null, { position: 'topright' }).addTo(coverageMap);
@@ -1350,7 +1350,7 @@
                     if (!coverageMap.hasLayer(googleRoadmap)) googleRoadmap.addTo(coverageMap);
                     currentWelcomeMode = 'default';
                     document.getElementById('welcomeMapModeThumb').innerHTML = WEL_SAT_SVG;
-                    document.getElementById('welcomeMapModeLabel').textContent = 'Satelit';
+                    document.getElementById('welcomeMapModeLabel').textContent = 'Satellite';
                 }
             };
 
@@ -1362,7 +1362,7 @@
                 } else if (e.layer === googleRoadmap) {
                     currentWelcomeMode = 'default';
                     document.getElementById('welcomeMapModeThumb').innerHTML = WEL_SAT_SVG;
-                    document.getElementById('welcomeMapModeLabel').textContent = 'Satelit';
+                    document.getElementById('welcomeMapModeLabel').textContent = 'Satellite';
                 }
             });
 

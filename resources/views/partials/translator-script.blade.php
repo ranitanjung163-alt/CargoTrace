@@ -1083,6 +1083,27 @@
             globalSearch.placeholder = globalPlaceholders[langCode] || globalPlaceholders['en'];
         }
 
+        const trackingInput = document.getElementById('trackingInput');
+        if (trackingInput) {
+            const trackingPlaceholders = {
+                'en': 'Enter tracking code (e.g. SHP-2024-001223, SHP-2024-001284...)',
+                'id': 'Masukkan kode pelacakan (misal SHP-2024-001223, SHP-2024-001284...)',
+                'zh-CN': '输入跟踪代码 (例如 SHP-2024-001223, SHP-2024-001284...)',
+                'zh-TW': '輸入追蹤代碼 (例如 SHP-2024-001223, SHP-2024-001284...)',
+                'ja': '追跡コードを入力 (例: SHP-2024-001223, SHP-2024-001284...)',
+                'es': 'Ingrese el código de seguimiento (ej. SHP-2024-001223, SHP-2024-001284...)',
+                'fr': 'Entrez le code de suivi (ex. SHP-2024-001223, SHP-2024-001284...)',
+                'de': 'Sendungsnummer eingeben (z. B. SHP-2024-001223, SHP-2024-001284...)',
+                'ar': 'أدخل رمز التتبع (مثل SHP-2024-001223, SHP-2024-001284...)',
+                'ru': 'Введите код отслеживания (напр. SHP-2024-001223, SHP-2024-001284...)',
+                'pt': 'Insira o código de rastreamento (ex. SHP-2024-001223, SHP-2024-001284...)',
+                'ko': '송장 번호 입력 (예: SHP-2024-001223, SHP-2024-001284...)',
+                'it': 'Inserisci il codice di tracciamento (es. SHP-2024-001223, SHP-2024-001284...)',
+                'nl': 'Voer trackingcode in (bijv. SHP-2024-001223, SHP-2024-001284...)'
+            };
+            trackingInput.placeholder = trackingPlaceholders[langCode] || trackingPlaceholders['en'];
+        }
+
         const routeBtn = document.getElementById('routeSearchBtn');
         if (routeBtn) {
             const btnTexts = {
