@@ -247,8 +247,21 @@
                     @endauth
                 </div>
 
-                <!-- Mobile Hamburger Button -->
-                <div class="flex items-center md:hidden">
+                <!-- Mobile Actions (Language Switcher & Hamburger Button) -->
+                <div class="flex items-center space-x-2 md:hidden">
+                    <!-- Language Translation Switcher (Mobile Header Bar) -->
+                    @include('partials.language-dropdown', [
+                        'containerId' => 'welcomeMobileLangContainer',
+                        'btnId' => 'welcomeMobileLangBtn',
+                        'flagId' => 'welcomeMobileCurrentLangFlag',
+                        'labelId' => 'welcomeMobileCurrentLangLabel',
+                        'labelClass' => 'hidden sm:inline',
+                        'menuId' => 'welcomeMobileLangMenu',
+                        'searchId' => 'welcomeMobileLangSearch',
+                        'listId' => 'welcomeMobileLangList',
+                        'menuClass' => '-right-12 sm:right-0'
+                    ])
+
                     <button type="button" id="mobileMenuButton" aria-label="Toggle Navigation Menu"
                             class="p-2.5 rounded-2xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 focus:outline-none transition-colors">
                         <svg class="w-6 h-6" id="menuIconClosed" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -265,7 +278,25 @@
 
         <!-- Mobile Dropdown Menu -->
         <div id="mobileMenu" class="hidden md:hidden bg-white border-b border-slate-200 px-4 pt-2 pb-6 space-y-4 shadow-soft-lg">
-            <nav class="flex flex-col space-y-1.5 text-sm font-bold text-slate-600 pt-2">
+            <!-- Mobile Drawer Language Switcher Bar -->
+            <div class="pt-2 pb-2.5 border-b border-slate-100 flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-500 flex items-center space-x-1.5">
+                    <svg class="w-4 h-4 text-brand-primary shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    <span>Language / Bahasa</span>
+                </span>
+                @include('partials.language-dropdown', [
+                    'containerId' => 'welcomeDrawerLangContainer',
+                    'btnId' => 'welcomeDrawerLangBtn',
+                    'flagId' => 'welcomeDrawerCurrentLangFlag',
+                    'labelId' => 'welcomeDrawerCurrentLangLabel',
+                    'labelClass' => 'inline',
+                    'menuId' => 'welcomeDrawerLangMenu',
+                    'searchId' => 'welcomeDrawerLangSearch',
+                    'listId' => 'welcomeDrawerLangList'
+                ])
+            </div>
+
+            <nav class="flex flex-col space-y-1.5 text-sm font-bold text-slate-600 pt-1">
                 <a href="#hero" class="px-3.5 py-2 rounded-xl hover:bg-slate-50 hover:text-brand-primary transition-colors">Home</a>
                 <a href="#tracking-section" class="px-3.5 py-2 rounded-xl hover:bg-slate-50 hover:text-brand-primary transition-colors">Track Shipment</a>
                 <a href="#features" class="px-3.5 py-2 rounded-xl hover:bg-slate-50 hover:text-brand-primary transition-colors">Features</a>
@@ -1041,7 +1072,29 @@
                 const isHidden = mobileMenu.classList.toggle('hidden');
                 iconClosed.classList.toggle('hidden', !isHidden);
                 iconOpen.classList.toggle('hidden', isHidden);
+                document.querySelectorAll('[data-lang-menu]').forEach(m => m.classList.add('hidden'));
             });
+
+            // Close mobile menu when clicking any nav link
+            mobileMenu.querySelectorAll('nav a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                    if (iconClosed) iconClosed.classList.remove('hidden');
+                    if (iconOpen) iconOpen.classList.add('hidden');
+                });
+            });
+
+            // Close mobile menu when mobile header language button is clicked
+            const mobileHeaderLangBtn = document.getElementById('welcomeMobileLangBtn');
+            if (mobileHeaderLangBtn) {
+                mobileHeaderLangBtn.addEventListener('click', () => {
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        if (iconClosed) iconClosed.classList.remove('hidden');
+                        if (iconOpen) iconOpen.classList.add('hidden');
+                    }
+                });
+            }
         }
 
         // 2. User Account Dropdown Toggle (Desktop)
